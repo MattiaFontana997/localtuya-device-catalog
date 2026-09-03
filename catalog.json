@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mappings": [
     {
-      "id": "wxmbjwpt8yea7bag-7a3475a61c",
+      "id": "wxmbjwpt8yea7bag-f7d60bcc53",
       "confidence": "experimental",
       "match": {
         "product_id": "wxmbjwpt8yea7bag",
@@ -34,7 +34,8 @@
             "preset_dp": 2,
             "preset_set": "auto/manual/temporary/boost/holiday",
             "hvac_mode_dp": 103,
-            "hvac_mode_set": "heatcool_heat/heatcool_cool/heatcool_heatcool"
+            "hvac_mode_set": "heatcool_heat/heatcool_cool/heatcool_heatcool",
+            "away_temperature_dp": 32
           },
           "override_keys": [
             "preset_set"
