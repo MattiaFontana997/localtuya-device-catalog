@@ -29,6 +29,12 @@ SENSITIVE_KEYS = {
     "region",
 }
 
+PROTECTED_OVERRIDE_KEYS = {
+    "id",
+    "platform",
+    "friendly_name",
+}
+
 DP_REFERENCE_KEYS = {
     "id",
     "brightness",
@@ -260,6 +266,45 @@ def validate_semantics(
             config = entity[
                 "config"
             ]
+
+            override_keys = entity.get(
+                "override_keys",
+                [],
+            )
+
+            for override_key in override_keys:
+                normalized_override = (
+                    str(override_key)
+                    .strip()
+                    .lower()
+                )
+
+                if (
+                    normalized_override
+                    in PROTECTED_OVERRIDE_KEYS
+                ):
+                    errors.append(
+                        f"{source}: mapping {mapping_id!r} "
+                        f"attempts protected override "
+                        f"{override_key!r}"
+                    )
+
+                if (
+                    normalized_override
+                    in SENSITIVE_KEYS
+                ):
+                    errors.append(
+                        f"{source}: mapping {mapping_id!r} "
+                        f"attempts sensitive override "
+                        f"{override_key!r}"
+                    )
+
+                if override_key not in config:
+                    errors.append(
+                        f"{source}: mapping {mapping_id!r} "
+                        f"override key {override_key!r} "
+                        "is missing from entity config"
+                    )
 
             if (
                 config.get("platform")

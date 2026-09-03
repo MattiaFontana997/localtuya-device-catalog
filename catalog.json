@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mappings": [
     {
-      "id": "wxmbjwpt8yea7bag-807333da46",
+      "id": "wxmbjwpt8yea7bag-704a40a7eb",
       "confidence": "experimental",
       "match": {
         "product_id": "wxmbjwpt8yea7bag",
@@ -33,7 +33,10 @@
             "target_temperature_dp": 16,
             "temperature_step": 0.1,
             "temperature_unit": "celsius"
-          }
+          },
+          "override_keys": [
+            "preset_set"
+          ]
         }
       ]
     }
