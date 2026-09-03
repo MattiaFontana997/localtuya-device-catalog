@@ -155,6 +155,68 @@ def validate_semantics(
         [],
     )
 
+    is_submission = (
+        source.parent.name
+        == "submissions"
+    )
+
+    if is_submission:
+        fingerprint = data.get(
+            "fingerprint"
+        )
+
+        if not isinstance(
+            fingerprint,
+            dict,
+        ):
+            errors.append(
+                f"{source}: submission is missing fingerprint"
+            )
+        else:
+            declared_required = set(
+                fingerprint.get(
+                    "required_dps",
+                    [],
+                )
+            )
+
+            mapping_required = set()
+
+            for mapping in mappings:
+                mapping_required.update(
+                    mapping["match"][
+                        "required_dps"
+                    ]
+                )
+
+            if (
+                declared_required
+                != mapping_required
+            ):
+                errors.append(
+                    f"{source}: fingerprint required_dps "
+                    "does not match mapping required_dps"
+                )
+
+            if (
+                fingerprint.get(
+                    "entity_count"
+                )
+                != sum(
+                    len(mapping["entities"])
+                    for mapping in mappings
+                )
+            ):
+                errors.append(
+                    f"{source}: fingerprint entity_count "
+                    "does not match entities"
+                )
+
+    elif "fingerprint" in data:
+        errors.append(
+            f"{source}: catalog.json must not contain fingerprint"
+        )
+
     mapping_ids: set[str] = set()
 
     for index, mapping in enumerate(
