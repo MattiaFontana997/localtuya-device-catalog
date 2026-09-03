@@ -1,0 +1,36 @@
+name: Validate Device Catalog
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate catalog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install validator
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "jsonschema>=4.23,<5"
+
+      - name: Validate catalog and submissions
+        run: |
+          python tools/validate_catalog.py
