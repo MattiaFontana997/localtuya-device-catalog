@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -141,6 +143,51 @@ def collect_config_dps(
     return result
 
 
+def safe_mapping_id_part(
+    value: str,
+) -> str:
+    """Create the canonical mapping ID product fragment."""
+    value = re.sub(
+        r"[^A-Za-z0-9._-]+",
+        "-",
+        value,
+    ).strip("-")
+
+    return value or "tuya-product"
+
+
+def expected_mapping_id(
+    mapping: dict[str, Any],
+) -> str:
+    """Return the deterministic ID expected for a submission mapping."""
+    mapping_without_id = {
+        key: value
+        for key, value
+        in mapping.items()
+        if key != "id"
+    }
+
+    canonical = json.dumps(
+        mapping_without_id,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+    digest = hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()[:10]
+
+    product_id = (
+        mapping["match"]["product_id"]
+    )
+
+    return (
+        f"{safe_mapping_id_part(product_id)}-"
+        f"{digest}"
+    )
+
+
+
 def validate_semantics(
     data: dict[str, Any],
     source: Path,
@@ -167,6 +214,63 @@ def validate_semantics(
     )
 
     if is_submission:
+        if len(mappings) != 1:
+            errors.append(
+                f"{source}: submission must contain "
+                "exactly one mapping"
+            )
+
+        elif isinstance(
+            mappings[0],
+            dict,
+        ):
+            mapping = mappings[0]
+
+            mapping_id = mapping.get(
+                "id"
+            )
+
+            if isinstance(
+                mapping_id,
+                str,
+            ):
+                expected_filename = (
+                    f"{mapping_id}.json"
+                )
+
+                if (
+                    source.name
+                    != expected_filename
+                ):
+                    errors.append(
+                        f"{source}: submission filename "
+                        f"must be {expected_filename!r}"
+                    )
+
+                try:
+                    canonical_id = (
+                        expected_mapping_id(
+                            mapping
+                        )
+                    )
+                except (
+                    KeyError,
+                    TypeError,
+                ):
+                    canonical_id = None
+
+                if (
+                    canonical_id is not None
+                    and mapping_id
+                    != canonical_id
+                ):
+                    errors.append(
+                        f"{source}: mapping id "
+                        f"{mapping_id!r} does not "
+                        "match its canonical content "
+                        f"id {canonical_id!r}"
+                    )
+
         fingerprint = data.get(
             "fingerprint"
         )
