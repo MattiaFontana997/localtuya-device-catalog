@@ -3,7 +3,7 @@
   "mappings": [
     {
       "id": "localtuya-e2e-test-device-3c408c1fdf",
-      "confidence": "community",
+      "confidence": "verified",
       "match": {
         "product_id": "localtuya-e2e-test-device",
         "category": "kg",
