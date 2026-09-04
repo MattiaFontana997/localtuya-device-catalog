@@ -19,6 +19,16 @@ The built-in LocalTuya mapper always has priority.
 Remote mappings may extend existing mappings, but must not remove or
 replace behaviour already detected by the built-in mapper.
 
+The catalog intentionally does **not** duplicate every generic device family
+that LocalTuya already understands. Product-specific catalog entries require a
+real Tuya product ID; generic switches, lights, covers, fans, thermostats,
+sensors and other metadata-driven entities remain handled by the built-in
+mapper.
+
+See [`docs/known-device-coverage.md`](docs/known-device-coverage.md) for the
+current inventory of product-specific mappings and generic coverage already
+known by the project.
+
 ## Confidence levels
 
 - `experimental` — submitted but not sufficiently confirmed
