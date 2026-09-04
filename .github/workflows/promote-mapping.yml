@@ -26,6 +26,7 @@ on:
         type: string
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -134,11 +135,29 @@ jobs:
               "$REVIEW_NOTE"
 
             printf '\n%s\n' \
-              "This PR must still pass **Validate catalog** before merge."
+              "This PR must pass **Validate catalog** and **PR policy** before merge."
           } > /tmp/promotion-pr.md
 
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "Promote ${MAPPING_ID} to ${TARGET}" \
-            --body-file /tmp/promotion-pr.md
+          PR_URL="$(
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "Promote ${MAPPING_ID} to ${TARGET}" \
+              --body-file /tmp/promotion-pr.md
+          )"
+
+          PR_NUMBER="${PR_URL##*/}"
+
+          if ! [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Unable to determine created PR number."
+            exit 1
+          fi
+
+          echo "Created promotion PR #${PR_NUMBER}: ${PR_URL}"
+
+          gh workflow run \
+            pr-policy.yml \
+            --ref "$BRANCH" \
+            -f "pr_number=${PR_NUMBER}"
+
+          echo "Dispatched PR policy for PR #${PR_NUMBER}."
