@@ -48,6 +48,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install "jsonschema>=4.23,<5"
 
+      - name: Check duplicate community selector
+        if: inputs.target == 'community'
+        env:
+          MAPPING_ID: ${{ inputs.mapping_id }}
+        run: |
+          python tools/check_promotion_candidate.py \
+            --mapping-id "$MAPPING_ID"
+
       - name: Promote mapping
         env:
           MAPPING_ID: ${{ inputs.mapping_id }}
