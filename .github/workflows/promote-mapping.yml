@@ -1,0 +1,136 @@
+name: Promote Device Mapping
+
+run-name: >-
+  Promote ${{ inputs.mapping_id }}
+  to ${{ inputs.target }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      mapping_id:
+        description: Mapping ID to promote
+        required: true
+        type: string
+
+      target:
+        description: Promotion target
+        required: true
+        type: choice
+        options:
+          - community
+          - verified
+
+      review_note:
+        description: Review or physical verification note
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    name: Prepare promotion PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install validator
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "jsonschema>=4.23,<5"
+
+      - name: Promote mapping
+        env:
+          MAPPING_ID: ${{ inputs.mapping_id }}
+          TARGET: ${{ inputs.target }}
+        run: |
+          python tools/promote_mapping.py \
+            --mapping-id "$MAPPING_ID" \
+            --target "$TARGET"
+
+      - name: Test catalog tooling
+        run: |
+          python -m unittest discover \
+            -s tests \
+            -p 'test_*.py' \
+            -v
+
+      - name: Validate resulting catalog
+        run: |
+          python tools/validate_catalog.py
+
+      - name: Create promotion pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAPPING_ID: ${{ inputs.mapping_id }}
+          TARGET: ${{ inputs.target }}
+          REVIEW_NOTE: ${{ inputs.review_note }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet; then
+            echo "::error::Promotion produced no changes."
+            exit 1
+          fi
+
+          BRANCH="promote/${MAPPING_ID}-${TARGET}-${GITHUB_RUN_ID}"
+
+          git config \
+            user.name \
+            "github-actions[bot]"
+
+          git config \
+            user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+
+          git add \
+            catalog.json \
+            submissions
+
+          git commit \
+            -m "Promote ${MAPPING_ID} to ${TARGET}"
+
+          git push \
+            origin \
+            "$BRANCH"
+
+          {
+            printf '%s\n\n' \
+              "Automated LocalTuya mapping promotion."
+
+            printf '%s\n' \
+              "**Mapping:** \`${MAPPING_ID}\`"
+
+            printf '%s\n' \
+              "**Target:** \`${TARGET}\`"
+
+            printf '%s\n' \
+              "**Requested by:** \`${GITHUB_ACTOR}\`"
+
+            printf '\n%s\n\n' \
+              "**Review note:**"
+
+            printf '%s\n' \
+              "$REVIEW_NOTE"
+
+            printf '\n%s\n' \
+              "This PR must still pass **Validate catalog** before merge."
+          } > /tmp/promotion-pr.md
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Promote ${MAPPING_ID} to ${TARGET}" \
+            --body-file /tmp/promotion-pr.md
