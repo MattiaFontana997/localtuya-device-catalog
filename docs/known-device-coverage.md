@@ -12,13 +12,38 @@ invented as fake catalog products.
 
 ### Verified
 
-- `wxmbjwpt8yea7bag-ef945de926`
-  - Product ID: `wxmbjwpt8yea7bag`
-  - Category: `wk`
-  - Platforms: climate plus number entities for product-specific holiday
-    temperature/day controls
-  - This is the only product-specific mapping currently backed by a real
-    product identity and physical verification in the project.
+#### LSC Smart Connect RGB+CCT smart light (Action)
+
+- Mapping ID: `r7sn2fda7l5hwzvx-0cc115f608`
+- Brand: LSC Smart Connect
+- Retailer: Action
+- Product ID: `r7sn2fda7l5hwzvx`
+- Category: `dj`
+- Platform: light
+- Protocol physically tested: Tuya 3.5
+- Required DPS:
+  - `20` — power
+  - `21` — work/color mode
+  - `22` — brightness
+  - `23` — color temperature
+  - `24` — RGB/HSV color
+- Physically validated for power, brightness, color temperature, color and
+  spontaneous device/Tuya app updates back to Home Assistant.
+- The exact Action retail SKU is not recorded; the catalog identifies the
+  product through its Tuya product ID and LAN DPS fingerprint.
+
+#### EMOS GoSmart P56201 Wi-Fi Room Thermostat
+
+- Mapping ID: `wxmbjwpt8yea7bag-ef945de926`
+- Brand: EMOS
+- Commercial model: GoSmart P56201 Wi-Fi Room Thermostat
+- Product ID: `wxmbjwpt8yea7bag`
+- Category: `wk`
+- Amazon ASIN: `B0BS3TL7DC`
+- EAN: `8592920117767`
+- Platforms: climate plus number entities for product-specific holiday
+  temperature/day controls
+- Physically verified on the real thermostat.
 
 ## Generic LocalTuya coverage
 
@@ -35,10 +60,12 @@ High-confidence light detection uses writable Boolean `switch_led` or
 - `bright_value_v2` / `bright_value`
 - `temp_value_v2` / `temp_value`
 - `work_mode`
-- legacy string/raw `colour_data` / `color_data`
+- string/raw `colour_data` / `color_data`
+- string/raw `colour_data_v2` / `color_data_v2`
 
-`colour_data_v2` is deliberately not inferred because current LocalTuya color
-handling expects the older encoded representation.
+The v2 color datapoints are mapped only when Tuya metadata reports a compatible
+string/raw representation. Structured JSON variants are deliberately not
+treated as LocalTuya encoded color strings.
 
 ### Thermostats
 
