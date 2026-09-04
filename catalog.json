@@ -2,6 +2,26 @@
   "schema_version": 1,
   "mappings": [
     {
+      "id": "localtuya-e2e-test-device-3c408c1fdf",
+      "confidence": "community",
+      "match": {
+        "product_id": "localtuya-e2e-test-device",
+        "category": "kg",
+        "required_dps": [
+          1
+        ]
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch"
+          }
+        }
+      ]
+    },
+    {
       "id": "wxmbjwpt8yea7bag-ef945de926",
       "confidence": "verified",
       "match": {
