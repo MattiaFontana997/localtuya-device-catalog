@@ -32,6 +32,7 @@ SOURCE_LICENSE = "MIT"
 SUPPORTED_PLATFORMS = {
     "binary_sensor",
     "climate",
+    "cover",
     "fan",
     "light",
     "number",
@@ -1842,9 +1843,260 @@ def _convert_climate(entity: dict[str, Any]) -> Converted:
     return {"platform": "climate", "config": config}, required, optional
 
 
+COVER_ACTION_SEMANTICS = {"opening", "closing", "opened", "closed"}
+COVER_COMMAND_SEMANTICS = {"open", "close", "stop"}
+COVER_OPEN_SEMANTICS = {"open", "closed"}
+
+
+def _cover_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError("cover_missing_dps")
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError("cover_missing_dp_name")
+        if name in result:
+            raise ConversionError(f"cover_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _cover_raw_scalar(value: Any, dp_type: str, reason: str) -> str | int | bool:
+    if dp_type == "string":
+        if not isinstance(value, str):
+            raise ConversionError(reason)
+        return value
+    if dp_type in {"integer", "bitfield"}:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _cover_static_values(
+    dp: dict[str, Any],
+    *,
+    reason: str,
+    allowed: set[str],
+    writable: bool,
+    identity_strings: bool = False,
+    direct_boolean: bool = False,
+) -> dict[str, str | int | bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    dp_type = _dp_type(dp)
+    if dp_type not in {"string", "integer", "boolean", "bitfield"}:
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    if not rules:
+        if identity_strings and dp_type == "string":
+            return {name: name for name in sorted(allowed)}
+        if direct_boolean and dp_type == "boolean" and allowed == COVER_OPEN_SEMANTICS:
+            return {"open": True, "closed": False}
+        raise ConversionError(f"{reason}_mapping")
+
+    result: dict[str, str | int | bool] = {}
+    raw_seen: list[str | int | bool] = []
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{reason}_mapping")
+        if "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(f"{reason}_mapping")
+        if writable and rule.get("hidden") is True:
+            # Hidden Tuya Local mappings are forward-only and must not become
+            # writable Home Assistant commands.
+            continue
+        friendly = rule["value"]
+        if not isinstance(friendly, str) or friendly not in allowed:
+            raise ConversionError(f"{reason}_friendly")
+        raw = _cover_raw_scalar(rule["dps_val"], dp_type, f"{reason}_mapping")
+        if friendly in result or any(raw == seen for seen in raw_seen):
+            raise ConversionError(f"{reason}_duplicate")
+        result[friendly] = raw
+        raw_seen.append(raw)
+
+    if not result:
+        raise ConversionError(f"{reason}_mapping")
+    return result
+
+
+def _cover_position_semantics(
+    dp: dict[str, Any], *, writable: bool, reason: str
+) -> tuple[float, float, float, bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    if _dp_type(dp) != "integer":
+        raise ConversionError(f"{reason}_type")
+
+    rules = _mapping_rules(dp)
+    rule: dict[str, Any] = {}
+    if rules:
+        if len(rules) != 1 or "dps_val" in rules[0]:
+            raise ConversionError(f"{reason}_mapping")
+        rule = rules[0]
+        if set(rule) - {"invert", "step"}:
+            raise ConversionError(f"{reason}_mapping")
+
+    raw_range = dp.get("range", {"min": 0, "max": 100})
+    if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
+        raise ConversionError(f"{reason}_range")
+    minimum = _range_value(raw_range["min"], 1.0, f"{reason}_range")
+    maximum = _range_value(raw_range["max"], 1.0, f"{reason}_range")
+    if maximum <= minimum:
+        raise ConversionError(f"{reason}_range")
+
+    step = _range_value(rule.get("step", dp.get("step", 1)), 1.0, f"{reason}_step")
+    if step <= 0:
+        raise ConversionError(f"{reason}_step")
+    inverted = rule.get("invert", False)
+    if not isinstance(inverted, bool):
+        raise ConversionError(f"{reason}_invert")
+    return minimum, maximum, step, inverted
+
+
+def _preserve_cover_extra(
+    name: str,
+    dp: dict[str, Any],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError(f"cover_extra_semantics:{name}")
+    if dp.get("readonly") not in (None, False, True):
+        raise ConversionError(f"cover_extra_semantics:{name}")
+    if _mapping_rules(dp):
+        raise ConversionError(f"cover_extra_mapping:{name}")
+    if _dp_type(dp) not in {"boolean", "integer", "string", "bitfield", "hex", "base64"}:
+        raise ConversionError(f"cover_extra_type:{name}")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "unit", "class", "category", "range", "step",
+    }
+    if set(dp) - allowed:
+        raise ConversionError(f"cover_extra_semantics:{name}")
+    if dp.get("hidden") is not True and name not in {"state", "available"}:
+        config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)
+    _merge_membership(required, optional, dp)
+
+
+def _convert_cover(entity: dict[str, Any]) -> Converted:
+    dps = _cover_dps(entity)
+    functional = {"control", "position", "current_position", "tilt_position", "action", "open"}
+    primary = next((dps[name] for name in ("control", "position", "current_position", "action", "open", "tilt_position") if name in dps), None)
+    if primary is None:
+        raise ConversionError("cover_missing_functional_dp")
+
+    config: dict[str, Any] = {
+        "id": _dp_id(primary),
+        "platform": "cover",
+        # Presence of this key is intentional. Empty means position-only cover
+        # and explicitly disables LocalTuya's legacy on/off/stop fallback.
+        "cover_command_values": {},
+        "positioning_mode": "none",
+    }
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+
+    control = dps.get("control")
+    if control is not None:
+        commands = _cover_static_values(
+            control,
+            reason="cover_control",
+            allowed=COVER_COMMAND_SEMANTICS,
+            writable=True,
+            identity_strings=True,
+        )
+        config["id"] = _dp_id(control)
+        config["cover_command_values"] = commands
+        _merge_membership(required, optional, control)
+
+    position = dps.get("position")
+    if position is not None:
+        minimum, maximum, step, inverted = _cover_position_semantics(
+            position, writable=True, reason="cover_position"
+        )
+        config.update({
+            "positioning_mode": "position",
+            "set_position_dp": _dp_id(position),
+            "set_position_min": minimum,
+            "set_position_max": maximum,
+            "set_position_step": step,
+            "set_position_inverted": inverted,
+        })
+        _merge_membership(required, optional, position)
+
+    current = dps.get("current_position")
+    if current is not None:
+        minimum, maximum, _, inverted = _cover_position_semantics(
+            current, writable=False, reason="cover_current_position"
+        )
+        config.update({
+            "positioning_mode": "position",
+            "current_position_dp": _dp_id(current),
+            "current_position_min": minimum,
+            "current_position_max": maximum,
+            "current_position_inverted": inverted,
+        })
+        _merge_membership(required, optional, current)
+
+    action = dps.get("action")
+    if action is not None:
+        config["cover_action_dp"] = _dp_id(action)
+        config["cover_action_values"] = _cover_static_values(
+            action,
+            reason="cover_action",
+            allowed=COVER_ACTION_SEMANTICS,
+            writable=False,
+            identity_strings=True,
+        )
+        _merge_membership(required, optional, action)
+
+    open_dp = dps.get("open")
+    if open_dp is not None:
+        config["cover_open_dp"] = _dp_id(open_dp)
+        config["cover_open_values"] = _cover_static_values(
+            open_dp,
+            reason="cover_open",
+            allowed=COVER_OPEN_SEMANTICS,
+            writable=False,
+            direct_boolean=True,
+        )
+        _merge_membership(required, optional, open_dp)
+
+    tilt = dps.get("tilt_position")
+    if tilt is not None:
+        minimum, maximum, step, inverted = _cover_position_semantics(
+            tilt, writable=True, reason="cover_tilt_position"
+        )
+        config.update({
+            "tilt_position_dp": _dp_id(tilt),
+            "tilt_position_min": minimum,
+            "tilt_position_max": maximum,
+            "tilt_position_step": step,
+            "tilt_position_inverted": inverted,
+        })
+        _merge_membership(required, optional, tilt)
+
+    for name, dp in dps.items():
+        if name in functional:
+            continue
+        _preserve_cover_extra(name, dp, config, required, optional)
+
+    return {"platform": "cover", "config": config}, required, optional
+
+
 _CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
     "climate": _convert_climate,
+    "cover": _convert_cover,
     "fan": _convert_fan,
     "light": _convert_light,
     "number": _convert_number,
