@@ -31,6 +31,7 @@ SOURCE_REPOSITORY = "make-all/tuya-local"
 SOURCE_LICENSE = "MIT"
 SUPPORTED_PLATFORMS = {
     "binary_sensor",
+    "fan",
     "light",
     "number",
     "select",
@@ -1265,8 +1266,266 @@ def _convert_light(
     return {"platform": "light", "config": config}, required, optional
 
 
+
+def _fan_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError("fan_missing_dps")
+
+    supported = {"switch", "preset_mode", "speed", "oscillate", "direction"}
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError("fan_missing_dp_name")
+        if name not in supported:
+            raise ConversionError(f"fan_unsupported_dp:{name}")
+        if name in result:
+            raise ConversionError(f"fan_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _fan_mapping_scalar(value: Any, dp_type: str, reason: str) -> str | int | bool:
+    if dp_type == "string":
+        if not isinstance(value, str) or not value:
+            raise ConversionError(reason)
+        return value
+    if dp_type == "integer":
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _fan_static_presets(dp: dict[str, Any]) -> dict[str, str]:
+    _check_common_dp_semantics(dp, writable=True)
+    if _dp_type(dp) != "string":
+        raise ConversionError("fan_preset_type")
+    if dp.get("optional") is True:
+        raise ConversionError("fan_preset_optional")
+
+    rules = _mapping_rules(dp)
+    if not rules:
+        raise ConversionError("fan_preset_mapping")
+
+    result: dict[str, str] = {}
+    raw_values: set[str] = set()
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError("fan_preset_mapping")
+        if rule.get("hidden") is True:
+            raise ConversionError("fan_preset_hidden")
+        raw = rule.get("dps_val")
+        friendly = rule.get("value")
+        if (
+            not isinstance(raw, str)
+            or not raw
+            or not isinstance(friendly, str)
+            or not friendly.strip()
+        ):
+            raise ConversionError("fan_preset_mapping")
+        friendly = friendly.strip()
+        if friendly in result or raw in raw_values:
+            raise ConversionError("fan_preset_duplicate")
+        result[friendly] = raw
+        raw_values.add(raw)
+    return result
+
+
+def _fan_boolean_values(dp: dict[str, Any], reason: str) -> tuple[Any, Any]:
+    _check_common_dp_semantics(dp, writable=True)
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+    if not rules:
+        if dp_type != "boolean":
+            raise ConversionError(reason)
+        return True, False
+
+    raw_true = raw_false = None
+    seen_true = seen_false = False
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(reason)
+        if rule.get("hidden") is True or "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(reason)
+        value = rule["value"]
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        raw = _fan_mapping_scalar(rule["dps_val"], dp_type, reason)
+        if value:
+            if seen_true:
+                raise ConversionError(reason)
+            seen_true = True
+            raw_true = raw
+        else:
+            if seen_false:
+                raise ConversionError(reason)
+            seen_false = True
+            raw_false = raw
+    if not seen_true or not seen_false or raw_true == raw_false:
+        raise ConversionError(reason)
+    return raw_true, raw_false
+
+
+def _fan_speed_config(dp: dict[str, Any], config: dict[str, Any]) -> None:
+    _check_common_dp_semantics(dp, writable=True)
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+    dp_id = _dp_id(dp)
+
+    if not rules:
+        if dp_type != "integer":
+            raise ConversionError("fan_speed_type")
+        minimum, maximum = _raw_integer_range(dp, "fan_speed")
+        if dp.get("step") not in (None, 1):
+            raise ConversionError("fan_speed_step")
+        active_minimum = max(1, minimum)
+        if active_minimum >= maximum:
+            raise ConversionError("fan_speed_range")
+        config.update({
+            "fan_speed_control": dp_id,
+            "fan_speed_min": active_minimum,
+            "fan_speed_max": maximum,
+            "fan_dps_type": "int",
+        })
+        return
+
+    if dp_type not in {"string", "integer"}:
+        raise ConversionError("fan_speed_type")
+
+    mapped: list[tuple[int, str | int]] = []
+    raw_seen: set[str | int] = set()
+    percentage_seen: set[int] = set()
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError("fan_speed_mapping")
+        if rule.get("hidden") is True or "dps_val" not in rule or "value" not in rule:
+            raise ConversionError("fan_speed_mapping")
+        raw = _fan_mapping_scalar(rule["dps_val"], dp_type, "fan_speed_mapping")
+        value = rule["value"]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConversionError("fan_speed_mapping")
+        if int(value) != value:
+            raise ConversionError("fan_speed_mapping")
+        percentage = int(value)
+        if not 1 <= percentage <= 100:
+            raise ConversionError("fan_speed_mapping")
+        if raw in raw_seen or percentage in percentage_seen:
+            raise ConversionError("fan_speed_duplicate")
+        raw_seen.add(raw)
+        percentage_seen.add(percentage)
+        mapped.append((percentage, raw))
+
+    mapped.sort(key=lambda item: item[0])
+    count = len(mapped)
+    if count < 2:
+        raise ConversionError("fan_speed_mapping")
+    expected = [round((index + 1) * 100 / count) for index in range(count)]
+    if [percentage for percentage, _ in mapped] != expected:
+        raise ConversionError("fan_speed_percentages")
+
+    raw_values = [str(raw) for _, raw in mapped]
+    if any(not raw or "," in raw for raw in raw_values):
+        raise ConversionError("fan_speed_raw_value")
+    config.update({
+        "fan_speed_control": dp_id,
+        "fan_speed_ordered_list": ",".join(raw_values),
+        "fan_dps_type": "int" if dp_type == "integer" else "str",
+    })
+
+
+def _fan_direction_config(dp: dict[str, Any], config: dict[str, Any]) -> None:
+    _check_common_dp_semantics(dp, writable=True)
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+    if not rules:
+        if dp_type != "string":
+            raise ConversionError("fan_direction_mapping")
+        forward, reverse = "forward", "reverse"
+    else:
+        values: dict[str, Any] = {}
+        raw_seen: set[Any] = set()
+        for rule in rules:
+            if set(rule) - {"dps_val", "value", "hidden"}:
+                raise ConversionError("fan_direction_mapping")
+            if rule.get("hidden") is True or "dps_val" not in rule or "value" not in rule:
+                raise ConversionError("fan_direction_mapping")
+            friendly = rule["value"]
+            if friendly not in {"forward", "reverse"} or friendly in values:
+                raise ConversionError("fan_direction_mapping")
+            raw = _fan_mapping_scalar(rule["dps_val"], dp_type, "fan_direction_mapping")
+            if raw in raw_seen:
+                raise ConversionError("fan_direction_mapping")
+            values[friendly] = raw
+            raw_seen.add(raw)
+        if set(values) != {"forward", "reverse"}:
+            raise ConversionError("fan_direction_mapping")
+        forward, reverse = values["forward"], values["reverse"]
+
+    config.update({
+        "fan_direction": _dp_id(dp),
+        "fan_direction_forward": forward,
+        "fan_direction_reverse": reverse,
+    })
+
+
+def _convert_fan(entity: dict[str, Any]) -> Converted:
+    if entity.get("class") is not None:
+        raise ConversionError("fan_device_class")
+    _entity_metadata(entity, {})
+    dps = _fan_dps(entity)
+
+    switch = dps.get("switch")
+    if switch is None:
+        raise ConversionError("fan_missing_switch")
+    _check_common_dp_semantics(switch, writable=True)
+    if _dp_type(switch) != "boolean":
+        raise ConversionError("fan_switch_type")
+    _identity_boolean_mapping(switch, "fan_switch_mapping")
+
+    config: dict[str, Any] = {"id": _dp_id(switch), "platform": "fan"}
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_membership(required, optional, switch)
+
+    speed = dps.get("speed")
+    if speed is not None:
+        _fan_speed_config(speed, config)
+        _merge_membership(required, optional, speed)
+
+    preset = dps.get("preset_mode")
+    if preset is not None:
+        config["fan_preset_dp"] = _dp_id(preset)
+        config["fan_preset_values"] = _fan_static_presets(preset)
+        _merge_membership(required, optional, preset)
+
+    oscillate = dps.get("oscillate")
+    if oscillate is not None:
+        raw_on, raw_off = _fan_boolean_values(oscillate, "fan_oscillate_mapping")
+        config["fan_oscillating_control"] = _dp_id(oscillate)
+        if _dp_type(oscillate) != "boolean" or raw_on is not True or raw_off is not False:
+            config["fan_oscillating_on"] = raw_on
+            config["fan_oscillating_off"] = raw_off
+        _merge_membership(required, optional, oscillate)
+
+    direction = dps.get("direction")
+    if direction is not None:
+        _fan_direction_config(direction, config)
+        _merge_membership(required, optional, direction)
+
+    return {"platform": "fan", "config": config}, required, optional
+
+
 _CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
+    "fan": _convert_fan,
     "light": _convert_light,
     "number": _convert_number,
     "select": _convert_select,

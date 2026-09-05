@@ -221,7 +221,7 @@ class TuyaLocalImporterTests(unittest.TestCase):
             )
 
     def test_profile_with_unsupported_entity_is_rejected_atomically(self):
-        with self.assertRaisesRegex(ConversionError, "unsupported_platform:fan"):
+        with self.assertRaisesRegex(ConversionError, "unsupported_platform:humidifier"):
             convert_profile(
                 {
                     "products": [{"id": "mixed"}],
@@ -233,7 +233,7 @@ class TuyaLocalImporterTests(unittest.TestCase):
                             ],
                         },
                         {
-                            "entity": "fan",
+                            "entity": "humidifier",
                             "dps": [
                                 {"id": 20, "type": "boolean", "name": "switch"}
                             ],
