@@ -39,6 +39,7 @@ SUPPORTED_PLATFORMS = {
     "select",
     "sensor",
     "switch",
+    "vacuum",
 }
 ADVANCED_MAPPING_KEYS = {
     "available",
@@ -2092,6 +2093,258 @@ def _convert_cover(entity: dict[str, Any]) -> Converted:
 
     return {"platform": "cover", "config": config}, required, optional
 
+VACUUM_STANDARD_COMMANDS = {"start", "pause", "return_to_base", "clean_spot", "stop"}
+
+
+def _vacuum_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError("vacuum_missing_dps")
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError("vacuum_missing_dp_name")
+        if name in result:
+            raise ConversionError(f"vacuum_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _vacuum_scalar(value: Any, dp_type: str, reason: str) -> str | int | bool:
+    if dp_type == "string":
+        if not isinstance(value, str):
+            raise ConversionError(reason)
+        return value
+    if dp_type in {"integer", "bitfield"}:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _vacuum_static_values(
+    dp: dict[str, Any],
+    *,
+    reason: str,
+    writable: bool,
+    friendly_strings: bool = True,
+) -> dict[str, str | int | bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    dp_type = _dp_type(dp)
+    if dp_type not in {"string", "integer", "boolean", "bitfield"}:
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    if not rules:
+        raise ConversionError(f"{reason}_mapping")
+
+    result: dict[str, str | int | bool] = {}
+    raw_seen: list[str | int | bool] = []
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{reason}_mapping")
+        if "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(f"{reason}_mapping")
+        if writable and rule.get("hidden") is True:
+            # Hidden mappings in Tuya Local are forward-only and are not valid
+            # reverse/write targets.
+            continue
+        friendly = rule["value"]
+        if friendly_strings:
+            if not isinstance(friendly, str) or not friendly:
+                raise ConversionError(f"{reason}_friendly")
+            key = friendly
+        else:
+            if not isinstance(friendly, bool):
+                raise ConversionError(f"{reason}_friendly")
+            key = "on" if friendly else "off"
+        raw = _vacuum_scalar(rule["dps_val"], dp_type, f"{reason}_mapping")
+        if key in result or any(raw == previous for previous in raw_seen):
+            raise ConversionError(f"{reason}_duplicate")
+        result[key] = raw
+        raw_seen.append(raw)
+
+    if not result:
+        raise ConversionError(f"{reason}_mapping")
+    return result
+
+
+def _vacuum_boolean_values(dp: dict[str, Any], reason: str) -> tuple[Any, Any]:
+    _check_common_dp_semantics(dp, writable=True)
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+    if not rules:
+        if dp_type != "boolean":
+            raise ConversionError(f"{reason}_type")
+        return True, False
+    values = _vacuum_static_values(dp, reason=reason, writable=True, friendly_strings=False)
+    if set(values) != {"on", "off"}:
+        raise ConversionError(f"{reason}_mapping")
+    return values["on"], values["off"]
+
+
+def _vacuum_trigger_value(dp: dict[str, Any], reason: str) -> Any:
+    _check_common_dp_semantics(dp, writable=True)
+    if _dp_type(dp) == "boolean" and not _mapping_rules(dp):
+        return True
+    rules = _mapping_rules(dp)
+    if len(rules) != 1:
+        raise ConversionError(f"{reason}_mapping")
+    rule = rules[0]
+    if set(rule) - {"dps_val", "value", "hidden"}:
+        raise ConversionError(f"{reason}_mapping")
+    if rule.get("hidden") is True or "dps_val" not in rule:
+        raise ConversionError(f"{reason}_mapping")
+    # Locate is a trigger. Tuya Local writes the logical True value; accept a
+    # mapped representation only when the friendly side is exactly true.
+    if rule.get("value") is not True:
+        raise ConversionError(f"{reason}_mapping")
+    return _vacuum_scalar(rule["dps_val"], _dp_type(dp), f"{reason}_mapping")
+
+
+def _preserve_vacuum_extra(
+    name: str,
+    dp: dict[str, Any],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError(f"vacuum_extra_semantics:{name}")
+    if dp.get("readonly") not in (None, False, True):
+        raise ConversionError(f"vacuum_extra_semantics:{name}")
+    if _mapping_rules(dp):
+        raise ConversionError(f"vacuum_extra_mapping:{name}")
+    if _dp_type(dp) not in {"boolean", "integer", "string", "bitfield", "hex", "base64"}:
+        raise ConversionError(f"vacuum_extra_type:{name}")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "unit", "class", "category", "range", "step",
+    }
+    if set(dp) - allowed:
+        raise ConversionError(f"vacuum_extra_semantics:{name}")
+    if dp.get("hidden") is not True and name not in {"state", "available"}:
+        config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)
+    _merge_membership(required, optional, dp)
+
+
+def _convert_vacuum(entity: dict[str, Any]) -> Converted:
+    dps = _vacuum_dps(entity)
+    status = dps.get("status")
+    if status is None:
+        raise ConversionError("vacuum_missing_status")
+    if status.get("optional") is True:
+        raise ConversionError("vacuum_optional_status")
+    status_values = _vacuum_static_values(
+        status, reason="vacuum_status", writable=False
+    )
+
+    config: dict[str, Any] = {
+        "id": _dp_id(status),
+        "platform": "vacuum",
+        "vacuum_status_dp": _dp_id(status),
+        "vacuum_status_values": status_values,
+    }
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_membership(required, optional, status)
+
+    consumed = {"status"}
+
+    command = dps.get("command")
+    if command is not None:
+        values = _vacuum_static_values(
+            command, reason="vacuum_command", writable=True
+        )
+        config["vacuum_command_dp"] = _dp_id(command)
+        config["vacuum_command_values"] = values
+        _merge_membership(required, optional, command)
+        consumed.add("command")
+
+    direction = dps.get("direction_control")
+    if direction is not None:
+        values = _vacuum_static_values(
+            direction, reason="vacuum_direction", writable=True
+        )
+        config["vacuum_direction_dp"] = _dp_id(direction)
+        config["vacuum_direction_values"] = values
+        _merge_membership(required, optional, direction)
+        consumed.add("direction_control")
+
+    fan = dps.get("fan_speed")
+    if fan is not None:
+        values = _vacuum_static_values(
+            fan, reason="vacuum_fan_speed", writable=True
+        )
+        config["fan_speed_dp"] = _dp_id(fan)
+        config["vacuum_fan_speed_values"] = values
+        _merge_membership(required, optional, fan)
+        consumed.add("fan_speed")
+
+    activate = dps.get("activate")
+    if activate is not None:
+        raw_on, raw_off = _vacuum_boolean_values(activate, "vacuum_activate")
+        config["vacuum_activate_dp"] = _dp_id(activate)
+        config["vacuum_activate_on"] = raw_on
+        config["vacuum_activate_off"] = raw_off
+        _merge_membership(required, optional, activate)
+        consumed.add("activate")
+
+    power = dps.get("power")
+    if power is not None:
+        raw_on, raw_off = _vacuum_boolean_values(power, "vacuum_power")
+        config["vacuum_power_dp"] = _dp_id(power)
+        config["vacuum_power_on"] = raw_on
+        config["vacuum_power_off"] = raw_off
+        _merge_membership(required, optional, power)
+        consumed.add("power")
+
+    locate = dps.get("locate")
+    if locate is not None:
+        config["locate_dp"] = _dp_id(locate)
+        config["vacuum_locate_on"] = _vacuum_trigger_value(locate, "vacuum_locate")
+        _merge_membership(required, optional, locate)
+        consumed.add("locate")
+
+    error = dps.get("error")
+    if error is not None:
+        # Tuya Local commonly marks the consumed vacuum error DP hidden.
+        # Hidden is safe here because this DP is internal entity state, not a
+        # writable option or an extra attribute.
+        if error.get("force") is True or error.get("persist") is False or error.get("sensitive") is True:
+            raise ConversionError("vacuum_error_semantics")
+        if error.get("readonly") not in (None, False, True):
+            raise ConversionError("vacuum_error_semantics")
+        allowed_error = {
+            "id", "type", "name", "optional", "readonly", "hidden", "force",
+            "persist", "sensitive", "unit", "class", "category",
+        }
+        if set(error) - allowed_error:
+            raise ConversionError("vacuum_error_semantics")
+        if _mapping_rules(error):
+            raise ConversionError("vacuum_error_mapping")
+        if _dp_type(error) not in {"bitfield", "integer", "boolean", "string"}:
+            raise ConversionError("vacuum_error_type")
+        config["fault_dp"] = _dp_id(error)
+        _merge_membership(required, optional, error)
+        consumed.add("error")
+
+    # Some Tuya Local profiles expose pause as a separate raw datapoint but the
+    # vacuum entity itself does not consume it; preserve it like _init_end().
+    for name, dp in dps.items():
+        if name in consumed:
+            continue
+        _preserve_vacuum_extra(name, dp, config, required, optional)
+
+    return {"platform": "vacuum", "config": config}, required, optional
+
 
 _CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
@@ -2103,6 +2356,7 @@ _CONVERTERS: dict[str, Converter] = {
     "select": _convert_select,
     "sensor": _convert_sensor,
     "switch": _convert_switch,
+    "vacuum": _convert_vacuum,
 }
 
 
