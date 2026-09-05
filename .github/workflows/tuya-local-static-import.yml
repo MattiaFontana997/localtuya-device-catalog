@@ -3,11 +3,10 @@ name: Tuya Local Static Import
 on:
   pull_request:
     branches:
-      - tuya-local-catalog-v2
       - main
     paths:
       - "tools/import_tuya_local.py"
-      - "tests/test_import_tuya_local.py"
+      - "tests/test_import_tuya_local*.py"
       - ".github/workflows/tuya-local-static-import.yml"
   workflow_dispatch:
 
@@ -32,7 +31,7 @@ jobs:
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
 
       - name: Run importer tests
-        run: python -m unittest tests.test_import_tuya_local -v
+        run: python -m unittest discover -s tests -p 'test_import_tuya_local*.py' -v
 
       - name: Checkout current Tuya Local
         uses: actions/checkout@v7
