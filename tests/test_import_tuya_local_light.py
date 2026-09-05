@@ -167,6 +167,104 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertNotIn("color_brightness_lower", config)
         self.assertNotIn("color_brightness_upper", config)
 
+    def test_extended_rgb_hsv_light_converts_exact_layout(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "extended-rgbhsv-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 3,
+                                "type": "integer",
+                                "name": "brightness",
+                                "range": {"min": 25, "max": 255},
+                            },
+                            {
+                                "id": 5,
+                                "type": "hex",
+                                "name": "rgbhsv",
+                                "format": [
+                                    {"name": "r", "bytes": 1},
+                                    {"name": "g", "bytes": 1},
+                                    {"name": "b", "bytes": 1},
+                                    {
+                                        "name": "h",
+                                        "bytes": 2,
+                                        "range": {"min": 0, "max": 360},
+                                    },
+                                    {
+                                        "name": "s",
+                                        "bytes": 1,
+                                        "range": {"min": 0, "max": 255},
+                                    },
+                                    {
+                                        "name": "v",
+                                        "bytes": 1,
+                                        "range": {"min": 0, "max": 255},
+                                    },
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="extended_rgbhsv_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["color"], 5)
+        self.assertTrue(config["color_rgb_encoding"])
+        self.assertEqual(config["brightness_lower"], 25)
+        self.assertEqual(config["brightness_upper"], 255)
+        self.assertNotIn("color_brightness_lower", config)
+        self.assertNotIn("color_brightness_upper", config)
+        self.assertEqual(mapping["match"]["required_dps"], [1, 3, 5])
+
+    def test_extended_rgb_hsv_rejects_non_8bit_sv_range(self):
+        with self.assertRaisesRegex(ConversionError, "light_rgbhsv_format"):
+            convert_profile(
+                {
+                    "products": [{"id": "bad-extended-rgbhsv"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 5,
+                                    "type": "hex",
+                                    "name": "rgbhsv",
+                                    "format": [
+                                        {"name": "r", "bytes": 1},
+                                        {"name": "g", "bytes": 1},
+                                        {"name": "b", "bytes": 1},
+                                        {
+                                            "name": "h",
+                                            "bytes": 2,
+                                            "range": {"min": 0, "max": 360},
+                                        },
+                                        {
+                                            "name": "s",
+                                            "bytes": 1,
+                                            "range": {"min": 0, "max": 1000},
+                                        },
+                                        {
+                                            "name": "v",
+                                            "bytes": 1,
+                                            "range": {"min": 0, "max": 255},
+                                        },
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="bad_extended_rgbhsv_light.yaml",
+            )
+
     def test_optional_light_capability_becomes_optional_dp(self):
         mapping = convert_profile(
             {
