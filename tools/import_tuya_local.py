@@ -530,7 +530,7 @@ def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
     if not isinstance(dps, list) or not dps:
         raise ConversionError("light_missing_dps")
 
-    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect", "work_mode"}
+    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect", "work_mode", "music_data"}
     result: dict[str, dict[str, Any]] = {}
     for dp in dps:
         if not isinstance(dp, dict):
@@ -772,6 +772,31 @@ def _convert_light(
             "work_mode"
         ] = _dp_id(work_mode)
         _merge_membership(required, optional, work_mode)
+
+    music_data = dps.get("music_data")
+    if music_data is not None:
+        _check_common_dp_semantics(music_data, writable=False)
+        if _dp_type(music_data) not in {"string", "hex", "base64"}:
+            raise ConversionError("light_music_data_type")
+        if _mapping_rules(music_data):
+            raise ConversionError("light_music_data_mapping")
+        allowed_music_data_keys = {
+            "id",
+            "type",
+            "name",
+            "optional",
+            "readonly",
+            "hidden",
+            "force",
+            "persist",
+            "sensitive",
+        }
+        if set(music_data) - allowed_music_data_keys:
+            raise ConversionError("light_music_data_semantics")
+        config.setdefault("extra_state_attributes_dps", {})[
+            "music_data"
+        ] = _dp_id(music_data)
+        _merge_membership(required, optional, music_data)
 
     effect = dps.get("effect")
     if effect is not None:

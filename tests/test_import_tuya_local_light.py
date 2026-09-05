@@ -338,6 +338,63 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="mapped_work_mode.yaml",
             )
 
+    def test_simple_music_data_is_preserved_as_extra_state_attribute(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "music-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 27,
+                                "type": "hex",
+                                "name": "music_data",
+                                "optional": True,
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="music_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {"music_data": 27},
+        )
+        self.assertEqual(mapping["match"]["required_dps"], [1])
+        self.assertEqual(mapping["match"]["optional_dps"], [27])
+
+    def test_mapped_music_data_remains_rejected(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_music_data_mapping"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "mapped-music-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 27,
+                                    "type": "string",
+                                    "name": "music_data",
+                                    "mapping": [
+                                        {"dps_val": "01", "value": "Music"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="mapped_music_light.yaml",
+            )
+
     def test_dedicated_effect_mapping_converts_exact_values(self):
         mapping = convert_profile(
             {
