@@ -1176,8 +1176,19 @@ def _convert_light(
         for rule in rules:
             if set(rule) - {"dps_val", "value", "hidden"}:
                 raise ConversionError("light_color_mode_mapping")
+
+            # Tuya Local permits hidden forward-only mappings that are excluded
+            # from reverse mapping/writes. Accept only the exact redundant
+            # fallback observed on RGBWW bulbs: null -> color_temp. The visible
+            # white -> color_temp mapping remains the writable LocalTuya mode.
             if rule.get("hidden") is True:
+                if (
+                    rule.get("dps_val") is None
+                    and rule.get("value") == "color_temp"
+                ):
+                    continue
                 raise ConversionError("light_color_mode_hidden")
+
             raw = rule.get("dps_val")
             value = rule.get("value")
             if not isinstance(raw, str) or not isinstance(value, str):

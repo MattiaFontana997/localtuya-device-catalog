@@ -265,6 +265,157 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="bad_extended_rgbhsv_light.yaml",
             )
 
+    def test_hidden_null_color_temp_mode_fallback_is_ignored(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "rgbww-hidden-fallback"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 2,
+                                "type": "string",
+                                "name": "color_mode",
+                                "optional": True,
+                                "mapping": [
+                                    {"dps_val": "white", "value": "color_temp"},
+                                    {"dps_val": "colour", "value": "hs"},
+                                    {
+                                        "dps_val": None,
+                                        "value": "color_temp",
+                                        "hidden": True,
+                                    },
+                                ],
+                            },
+                            {
+                                "id": 4,
+                                "type": "integer",
+                                "name": "color_temp",
+                                "optional": True,
+                                "range": {"min": 0, "max": 255},
+                                "mapping": [
+                                    {"target_range": {"min": 1800, "max": 2700}}
+                                ],
+                            },
+                            {
+                                "id": 5,
+                                "type": "hex",
+                                "name": "rgbhsv",
+                                "optional": True,
+                                "format": [
+                                    {"name": "r", "bytes": 1},
+                                    {"name": "g", "bytes": 1},
+                                    {"name": "b", "bytes": 1},
+                                    {
+                                        "name": "h",
+                                        "bytes": 2,
+                                        "range": {"min": 0, "max": 360},
+                                    },
+                                    {
+                                        "name": "s",
+                                        "bytes": 1,
+                                        "range": {"min": 0, "max": 255},
+                                    },
+                                    {
+                                        "name": "v",
+                                        "bytes": 1,
+                                        "range": {"min": 0, "max": 255},
+                                    },
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="rgbww_hidden_fallback.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["color_mode"], 2)
+        self.assertEqual(config["color_temp"], 4)
+        self.assertEqual(config["color"], 5)
+        self.assertTrue(config["color_rgb_encoding"])
+        self.assertEqual(mapping["match"]["required_dps"], [1])
+        self.assertEqual(mapping["match"]["optional_dps"], [2, 4, 5])
+
+    def test_hidden_non_null_color_mode_mapping_stays_rejected(self):
+        with self.assertRaisesRegex(ConversionError, "light_color_mode_hidden"):
+            convert_profile(
+                {
+                    "products": [{"id": "hidden-mode"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "colour", "value": "hs"},
+                                        {
+                                            "dps_val": "white",
+                                            "value": "color_temp",
+                                            "hidden": True,
+                                        },
+                                    ],
+                                },
+                                {
+                                    "id": 5,
+                                    "type": "hex",
+                                    "name": "rgbhsv",
+                                    "format": [
+                                        {"name": "h", "bytes": 2, "range": {"min": 0, "max": 360}},
+                                        {"name": "s", "bytes": 2, "range": {"min": 0, "max": 1000}},
+                                        {"name": "v", "bytes": 2, "range": {"min": 0, "max": 1000}},
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="hidden_non_null_mode.yaml",
+            )
+
+    def test_hidden_null_hs_mode_mapping_stays_rejected(self):
+        with self.assertRaisesRegex(ConversionError, "light_color_mode_hidden"):
+            convert_profile(
+                {
+                    "products": [{"id": "hidden-null-hs"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "colour", "value": "hs"},
+                                        {"dps_val": None, "value": "hs", "hidden": True},
+                                    ],
+                                },
+                                {
+                                    "id": 5,
+                                    "type": "hex",
+                                    "name": "rgbhsv",
+                                    "format": [
+                                        {"name": "h", "bytes": 2, "range": {"min": 0, "max": 360}},
+                                        {"name": "s", "bytes": 2, "range": {"min": 0, "max": 1000}},
+                                        {"name": "v", "bytes": 2, "range": {"min": 0, "max": 1000}},
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="hidden_null_hs_mode.yaml",
+            )
+
     def test_optional_light_capability_becomes_optional_dp(self):
         mapping = convert_profile(
             {
