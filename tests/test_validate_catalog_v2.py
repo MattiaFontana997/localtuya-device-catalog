@@ -105,6 +105,36 @@ class CatalogV2ValidationTests(unittest.TestCase):
             any("missing from required_dps/optional_dps" in error for error in errors)
         )
 
+    def test_extra_state_attribute_dp_must_be_declared(self):
+        payload = document(
+            required=[1],
+            optional=[],
+            config={
+                "id": 1,
+                "platform": "switch",
+                "extra_state_attributes_dps": {"work_mode": 2},
+            },
+        )
+        errors = self.validate(payload)
+        self.assertTrue(
+            any("missing from required_dps/optional_dps" in error for error in errors)
+        )
+
+    def test_reserved_raw_state_attribute_name_is_rejected(self):
+        payload = document(
+            required=[1, 2],
+            optional=[],
+            config={
+                "id": 1,
+                "platform": "switch",
+                "extra_state_attributes_dps": {"raw_state": 2},
+            },
+        )
+        errors = self.validate(payload)
+        self.assertTrue(
+            any("invalid extra state attribute name" in error for error in errors)
+        )
+
     def test_effect_dp_must_be_declared_required_or_optional(self):
         payload = document(
             required=[1],
