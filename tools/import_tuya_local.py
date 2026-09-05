@@ -1074,51 +1074,94 @@ def _convert_light(
                 raise ConversionError(f"light_rgbhsv_{unsupported}")
 
         fmt = rgbhsv.get("format")
-        if not isinstance(fmt, list) or len(fmt) != 3:
+        if not isinstance(fmt, list):
             raise ConversionError("light_rgbhsv_format")
-        expected = (("h", 0, 360), ("s", 0, 1000), ("v", None, None))
-        v_min = v_max = None
-        for item, (name, exact_min, exact_max) in zip(fmt, expected, strict=True):
-            if not isinstance(item, dict):
-                raise ConversionError("light_rgbhsv_format")
-            if set(item) != {"name", "bytes", "range"}:
-                raise ConversionError("light_rgbhsv_format")
-            if item.get("name") != name or item.get("bytes") != 2:
-                raise ConversionError("light_rgbhsv_format")
-            value_range = item.get("range")
-            if not isinstance(value_range, dict) or set(value_range) != {"min", "max"}:
-                raise ConversionError("light_rgbhsv_format")
-            minimum = value_range["min"]
-            maximum = value_range["max"]
-            if (
-                isinstance(minimum, bool)
-                or isinstance(maximum, bool)
-                or not isinstance(minimum, (int, float))
-                or not isinstance(maximum, (int, float))
-                or int(minimum) != minimum
-                or int(maximum) != maximum
-            ):
-                raise ConversionError("light_rgbhsv_format")
-            minimum = int(minimum)
-            maximum = int(maximum)
-            if name != "v":
-                if minimum != exact_min or maximum != exact_max:
-                    raise ConversionError("light_rgbhsv_format")
-            else:
-                if minimum < 0 or maximum <= minimum or maximum > 10000:
-                    raise ConversionError("light_rgbhsv_format")
-                v_min, v_max = minimum, maximum
 
-        assert v_min is not None and v_max is not None
-        _configure_light_scale(
-            config,
-            minimum=v_min,
-            maximum=v_max,
-            reason="light_rgbhsv",
-            require_lower=True,
-        )
-        config["color"] = _dp_id(rgbhsv)
-        _merge_membership(required, optional, rgbhsv)
+        if len(fmt) == 6:
+            # Tuya's legacy extended color payload is exactly:
+            # R(1), G(1), B(1), H(2), S(1), V(1) => 14 hex characters.
+            # LocalTuya runtime can encode/decode this losslessly when the
+            # catalog marks the RGB-prefixed layout explicitly.
+            expected_extended = (
+                ("r", 1, 0, 255, False),
+                ("g", 1, 0, 255, False),
+                ("b", 1, 0, 255, False),
+                ("h", 2, 0, 360, True),
+                ("s", 1, 0, 255, True),
+                ("v", 1, 0, 255, True),
+            )
+            for item, (name, byte_count, exact_min, exact_max, require_range) in zip(
+                fmt, expected_extended, strict=True
+            ):
+                if not isinstance(item, dict):
+                    raise ConversionError("light_rgbhsv_format")
+                allowed_keys = {"name", "bytes", "range"}
+                if set(item) - allowed_keys:
+                    raise ConversionError("light_rgbhsv_format")
+                if item.get("name") != name or item.get("bytes") != byte_count:
+                    raise ConversionError("light_rgbhsv_format")
+
+                value_range = item.get("range")
+                if value_range is None and not require_range:
+                    continue
+                if (
+                    not isinstance(value_range, dict)
+                    or set(value_range) != {"min", "max"}
+                    or value_range.get("min") != exact_min
+                    or value_range.get("max") != exact_max
+                ):
+                    raise ConversionError("light_rgbhsv_format")
+
+            config["color"] = _dp_id(rgbhsv)
+            config["color_rgb_encoding"] = True
+            _merge_membership(required, optional, rgbhsv)
+
+        elif len(fmt) == 3:
+            expected = (("h", 0, 360), ("s", 0, 1000), ("v", None, None))
+            v_min = v_max = None
+            for item, (name, exact_min, exact_max) in zip(fmt, expected, strict=True):
+                if not isinstance(item, dict):
+                    raise ConversionError("light_rgbhsv_format")
+                if set(item) != {"name", "bytes", "range"}:
+                    raise ConversionError("light_rgbhsv_format")
+                if item.get("name") != name or item.get("bytes") != 2:
+                    raise ConversionError("light_rgbhsv_format")
+                value_range = item.get("range")
+                if not isinstance(value_range, dict) or set(value_range) != {"min", "max"}:
+                    raise ConversionError("light_rgbhsv_format")
+                minimum = value_range["min"]
+                maximum = value_range["max"]
+                if (
+                    isinstance(minimum, bool)
+                    or isinstance(maximum, bool)
+                    or not isinstance(minimum, (int, float))
+                    or not isinstance(maximum, (int, float))
+                    or int(minimum) != minimum
+                    or int(maximum) != maximum
+                ):
+                    raise ConversionError("light_rgbhsv_format")
+                minimum = int(minimum)
+                maximum = int(maximum)
+                if name != "v":
+                    if minimum != exact_min or maximum != exact_max:
+                        raise ConversionError("light_rgbhsv_format")
+                else:
+                    if minimum < 0 or maximum <= minimum or maximum > 10000:
+                        raise ConversionError("light_rgbhsv_format")
+                    v_min, v_max = minimum, maximum
+
+            assert v_min is not None and v_max is not None
+            _configure_light_scale(
+                config,
+                minimum=v_min,
+                maximum=v_max,
+                reason="light_rgbhsv",
+                require_lower=True,
+            )
+            config["color"] = _dp_id(rgbhsv)
+            _merge_membership(required, optional, rgbhsv)
+        else:
+            raise ConversionError("light_rgbhsv_format")
 
     color_mode = dps.get("color_mode")
     if color_mode is not None:
