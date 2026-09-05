@@ -164,6 +164,8 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(config["color"], 24)
         self.assertEqual(config["brightness_lower"], 0)
         self.assertEqual(config["brightness_upper"], 1000)
+        self.assertNotIn("color_brightness_lower", config)
+        self.assertNotIn("color_brightness_upper", config)
 
     def test_optional_light_capability_becomes_optional_dp(self):
         mapping = convert_profile(
@@ -191,8 +193,8 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(mapping["match"]["required_dps"], [20])
         self.assertEqual(mapping["match"]["optional_dps"], [22])
 
-    def test_effect_modes_are_rejected(self):
-        with self.assertRaisesRegex(ConversionError, "light_color_mode_effects"):
+    def test_bare_scene_mode_requires_scene_data(self):
+        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):
             convert_profile(
                 {
                     "products": [{"id": "scene-light"}],
@@ -215,6 +217,67 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 },
                 source_file="scene_light.yaml",
             )
+
+    def test_mode_only_scenes_convert_to_scene_values(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "mode-scene-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "scene_1", "value": "Flash scene 1"},
+                                    {"dps_val": "scene_2", "value": "Flash scene 2"},
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="mode_scene_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(
+            config["scene_values"],
+            {
+                "Flash scene 1": "scene_1",
+                "Flash scene 2": "scene_2",
+            },
+        )
+        self.assertEqual(config["color_mode"], 21)
+
+    def test_simple_music_mode_is_preserved(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "music-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "music", "value": "Music"}
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="music_light.yaml",
+        )
+
+        self.assertTrue(mapping["entities"][0]["config"]["music_mode"])
 
     def test_unknown_light_attribute_is_rejected(self):
         with self.assertRaisesRegex(
@@ -241,60 +304,63 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="extra_light.yaml",
             )
 
-    def test_rgb_brightness_range_mismatch_is_rejected(self):
-        with self.assertRaisesRegex(
-            ConversionError, "light_rgbhsv_range_mismatch"
-        ):
-            convert_profile(
-                {
-                    "products": [{"id": "rgb-range-mismatch"}],
-                    "entities": [
-                        {
-                            "entity": "light",
-                            "dps": [
-                                {"id": 20, "type": "boolean", "name": "switch"},
-                                {
-                                    "id": 22,
-                                    "type": "integer",
-                                    "name": "brightness",
-                                    "range": {"min": 10, "max": 1000},
-                                },
-                                {
-                                    "id": 21,
-                                    "type": "string",
-                                    "name": "color_mode",
-                                    "mapping": [
-                                        {"dps_val": "colour", "value": "hs"}
-                                    ],
-                                },
-                                {
-                                    "id": 24,
-                                    "type": "hex",
-                                    "name": "rgbhsv",
-                                    "format": [
-                                        {
-                                            "name": "h",
-                                            "bytes": 2,
-                                            "range": {"min": 0, "max": 360},
-                                        },
-                                        {
-                                            "name": "s",
-                                            "bytes": 2,
-                                            "range": {"min": 0, "max": 1000},
-                                        },
-                                        {
-                                            "name": "v",
-                                            "bytes": 2,
-                                            "range": {"min": 0, "max": 1000},
-                                        },
-                                    ],
-                                },
-                            ],
-                        }
-                    ],
-                },
-                source_file="rgb_range_mismatch.yaml",
-            )
+    def test_rgb_brightness_range_mismatch_uses_independent_color_range(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "rgb-range-mismatch"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 22,
+                                "type": "integer",
+                                "name": "brightness",
+                                "range": {"min": 10, "max": 1000},
+                            },
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "colour", "value": "hs"}
+                                ],
+                            },
+                            {
+                                "id": 24,
+                                "type": "hex",
+                                "name": "rgbhsv",
+                                "format": [
+                                    {
+                                        "name": "h",
+                                        "bytes": 2,
+                                        "range": {"min": 0, "max": 360},
+                                    },
+                                    {
+                                        "name": "s",
+                                        "bytes": 2,
+                                        "range": {"min": 0, "max": 1000},
+                                    },
+                                    {
+                                        "name": "v",
+                                        "bytes": 2,
+                                        "range": {"min": 0, "max": 1000},
+                                    },
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="rgb_range_mismatch.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["brightness_lower"], 10)
+        self.assertEqual(config["brightness_upper"], 1000)
+        self.assertEqual(config["color_brightness_lower"], 0)
+        self.assertEqual(config["color_brightness_upper"], 1000)
 
 
 if __name__ == "__main__":
