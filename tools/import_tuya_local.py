@@ -31,6 +31,7 @@ SOURCE_REPOSITORY = "make-all/tuya-local"
 SOURCE_LICENSE = "MIT"
 SUPPORTED_PLATFORMS = {
     "binary_sensor",
+    "climate",
     "fan",
     "light",
     "number",
@@ -1523,8 +1524,327 @@ def _convert_fan(entity: dict[str, Any]) -> Converted:
     return {"platform": "fan", "config": config}, required, optional
 
 
+
+HVAC_MODE_VALUES = {"off", "heat", "cool", "auto", "dry", "fan_only", "heat_cool"}
+HVAC_ACTION_VALUES = {"off", "heating", "cooling", "drying", "fan", "idle"}
+TEMP_UNITS = {"celsius", "fahrenheit"}
+
+
+def _climate_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError("climate_missing_dps")
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError("climate_missing_dp_name")
+        if name in result:
+            raise ConversionError(f"climate_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _simple_scalar(value: Any, dp_type: str, reason: str) -> str | int | bool:
+    if dp_type == "string":
+        if not isinstance(value, str):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "integer":
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _climate_static_values(
+    dp: dict[str, Any],
+    *,
+    reason: str,
+    friendly_allowed: set[str] | None = None,
+    friendly_strings: bool = True,
+) -> dict[str, str | int | bool]:
+    _check_common_dp_semantics(dp, writable=True)
+    dp_type = _dp_type(dp)
+    if dp_type not in {"string", "integer", "boolean"}:
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    if not rules:
+        if dp_type == "boolean" and friendly_allowed == HVAC_MODE_VALUES:
+            return {"heat": True, "off": False}
+        raise ConversionError(f"{reason}_mapping")
+    result: dict[str, str | int | bool] = {}
+    raw_seen: list[str | int | bool] = []
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{reason}_mapping")
+        if rule.get("hidden") is True or "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(f"{reason}_mapping")
+        raw = _simple_scalar(rule["dps_val"], dp_type, f"{reason}_mapping")
+        friendly = rule["value"]
+        if friendly_strings:
+            if not isinstance(friendly, str) or not friendly.strip():
+                raise ConversionError(f"{reason}_mapping")
+            friendly = friendly.strip()
+        else:
+            friendly = str(friendly)
+        if friendly_allowed is not None and friendly not in friendly_allowed:
+            raise ConversionError(f"{reason}_friendly")
+        if friendly in result or any(raw == seen for seen in raw_seen):
+            raise ConversionError(f"{reason}_duplicate")
+        result[friendly] = raw
+        raw_seen.append(raw)
+    return result
+
+
+def _climate_numeric(
+    dp: dict[str, Any],
+    *,
+    writable: bool,
+    reason: str,
+    require_range: bool,
+) -> tuple[float, float | None, float | None, float]:
+    _check_common_dp_semantics(dp, writable=writable)
+    if _dp_type(dp) != "integer":
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    rule: dict[str, Any] = {}
+    if rules:
+        if len(rules) != 1 or "dps_val" in rules[0]:
+            raise ConversionError(f"{reason}_mapping")
+        rule = rules[0]
+        if set(rule) - {"scale", "step", "range"}:
+            raise ConversionError(f"{reason}_mapping")
+
+    divisor = rule.get("scale", 1)
+    if isinstance(divisor, bool):
+        raise ConversionError(f"{reason}_scale")
+    try:
+        divisor = float(divisor)
+    except (TypeError, ValueError) as err:
+        raise ConversionError(f"{reason}_scale") from err
+    if not math.isfinite(divisor) or divisor <= 0:
+        raise ConversionError(f"{reason}_scale")
+    precision = 1.0 / divisor
+
+    raw_range = rule.get("range", dp.get("range"))
+    minimum = maximum = None
+    if raw_range is not None:
+        if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
+            raise ConversionError(f"{reason}_range")
+        minimum = _range_value(raw_range["min"], precision, f"{reason}_range")
+        maximum = _range_value(raw_range["max"], precision, f"{reason}_range")
+        if maximum < minimum:
+            raise ConversionError(f"{reason}_range")
+    elif require_range:
+        raise ConversionError(f"{reason}_range")
+
+    raw_step = rule.get("step", dp.get("step", 1))
+    step = _range_value(raw_step, precision, f"{reason}_step")
+    if step <= 0:
+        raise ConversionError(f"{reason}_step")
+    return precision, minimum, maximum, step
+
+
+def _merge_climate_dp(required: set[int], optional: set[int], dp: dict[str, Any]) -> None:
+    _merge_membership(required, optional, dp)
+
+
+def _preserve_climate_extra(
+    name: str,
+    dp: dict[str, Any],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    # Hidden Tuya Local DPS affect matching/conditions but are not HA attributes.
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError(f"climate_extra_semantics:{name}")
+    if dp.get("readonly") not in (None, False, True):
+        raise ConversionError(f"climate_extra_semantics:{name}")
+    if _mapping_rules(dp):
+        raise ConversionError(f"climate_extra_mapping:{name}")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "unit", "class", "category",
+    }
+    if set(dp) - allowed:
+        raise ConversionError(f"climate_extra_semantics:{name}")
+    if dp.get("hidden") is not True and name not in {"state", "available"}:
+        config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)
+    _merge_climate_dp(required, optional, dp)
+
+
+def _convert_climate(entity: dict[str, Any]) -> Converted:
+    if entity.get("class") is not None:
+        raise ConversionError("climate_device_class")
+    _entity_metadata(entity, {})
+    dps = _climate_dps(entity)
+
+    hvac = dps.get("hvac_mode")
+    if hvac is None:
+        raise ConversionError("climate_missing_hvac_mode")
+    hvac_values = _climate_static_values(
+        hvac, reason="climate_hvac_mode", friendly_allowed=HVAC_MODE_VALUES
+    )
+    if "off" not in hvac_values:
+        raise ConversionError("climate_hvac_mode_missing_off")
+    if len(hvac_values) < 2:
+        raise ConversionError("climate_hvac_mode_no_active_mode")
+
+    config: dict[str, Any] = {
+        "id": _dp_id(hvac),
+        "platform": "climate",
+        "hvac_mode_dp": _dp_id(hvac),
+        "hvac_mode_values": hvac_values,
+    }
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_climate_dp(required, optional, hvac)
+
+    target = dps.get("temperature")
+    if target is not None:
+        precision, minimum, maximum, step = _climate_numeric(
+            target, writable=True, reason="climate_temperature", require_range=True
+        )
+        config["target_temperature_dp"] = _dp_id(target)
+        config["target_precision"] = precision
+        config["temperature_step"] = step
+        config["min_temperature_const"] = minimum
+        config["max_temperature_const"] = maximum
+        _merge_climate_dp(required, optional, target)
+
+    current = dps.get("current_temperature")
+    if current is not None:
+        precision, _, _, _ = _climate_numeric(
+            current, writable=False, reason="climate_current_temperature", require_range=False
+        )
+        config["current_temperature_dp"] = _dp_id(current)
+        config["precision"] = precision
+        _merge_climate_dp(required, optional, current)
+
+    low = dps.get("target_temp_low")
+    high = dps.get("target_temp_high")
+    if (low is None) != (high is None):
+        raise ConversionError("climate_target_range_incomplete")
+    if low is not None and high is not None:
+        low_precision, low_min, _, low_step = _climate_numeric(
+            low, writable=True, reason="climate_target_low", require_range=True
+        )
+        high_precision, _, high_max, high_step = _climate_numeric(
+            high, writable=True, reason="climate_target_high", require_range=True
+        )
+        if not math.isclose(low_step, high_step, rel_tol=0, abs_tol=1e-9):
+            raise ConversionError("climate_target_range_step")
+        config.update({
+            "target_temperature_low_dp": _dp_id(low),
+            "target_temperature_high_dp": _dp_id(high),
+            "target_temperature_low_precision": low_precision,
+            "target_temperature_high_precision": high_precision,
+            "temperature_step": low_step,
+        })
+        if target is None:
+            config["min_temperature_const"] = low_min
+            config["max_temperature_const"] = high_max
+        _merge_climate_dp(required, optional, low)
+        _merge_climate_dp(required, optional, high)
+
+    target_humidity = dps.get("humidity")
+    if target_humidity is not None:
+        precision, minimum, maximum, _ = _climate_numeric(
+            target_humidity, writable=True, reason="climate_humidity", require_range=True
+        )
+        config.update({
+            "target_humidity_dp": _dp_id(target_humidity),
+            "target_humidity_precision": precision,
+            "min_humidity_const": minimum,
+            "max_humidity_const": maximum,
+        })
+        _merge_climate_dp(required, optional, target_humidity)
+
+    current_humidity = dps.get("current_humidity")
+    if current_humidity is not None:
+        precision, _, _, _ = _climate_numeric(
+            current_humidity, writable=False, reason="climate_current_humidity", require_range=False
+        )
+        config.update({
+            "current_humidity_dp": _dp_id(current_humidity),
+            "current_humidity_precision": precision,
+        })
+        _merge_climate_dp(required, optional, current_humidity)
+
+    mapped = {
+        "preset_mode": ("preset_dp", "preset_values", "climate_preset", None),
+        "fan_mode": ("hvac_fan_mode_dp", "hvac_fan_mode_values", "climate_fan_mode", None),
+        "swing_mode": ("hvac_swing_mode_dp", "hvac_swing_mode_values", "climate_swing_mode", None),
+        "swing_horizontal_mode": (
+            "hvac_swing_horizontal_mode_dp", "hvac_swing_horizontal_mode_values",
+            "climate_swing_horizontal_mode", None,
+        ),
+        "hvac_action": ("hvac_action_dp", "hvac_action_values", "climate_hvac_action", HVAC_ACTION_VALUES),
+        "temperature_unit": ("temperature_unit_dp", "temperature_unit_values", "climate_temperature_unit", TEMP_UNITS),
+    }
+    consumed = {
+        "hvac_mode", "temperature", "current_temperature", "target_temp_low",
+        "target_temp_high", "humidity", "current_humidity",
+    }
+    for name, (dp_key, values_key, reason, allowed) in mapped.items():
+        dp = dps.get(name)
+        if dp is None:
+            continue
+        values = _climate_static_values(dp, reason=reason, friendly_allowed=allowed)
+        config[dp_key] = _dp_id(dp)
+        config[values_key] = values
+        _merge_climate_dp(required, optional, dp)
+        consumed.add(name)
+
+    # Device-reported min/max temperatures are preserved only when they are raw
+    # integers. Scaled or mapped variants require per-DP precision support.
+    for name, key in (("min_temperature", "min_temperature_dp"), ("max_temperature", "max_temperature_dp")):
+        dp = dps.get(name)
+        if dp is None:
+            continue
+        _check_common_dp_semantics(dp, writable=False)
+        if _dp_type(dp) != "integer" or _mapping_rules(dp):
+            raise ConversionError(f"climate_{name}_semantics")
+        config[key] = _dp_id(dp)
+        _merge_climate_dp(required, optional, dp)
+        consumed.add(name)
+
+    # Do not expose a dynamic unit DP and a fixed entity-level unit at once.
+    if "temperature_unit" not in consumed:
+        units = set()
+        for candidate in (target, current, low, high):
+            if candidate is not None and candidate.get("unit") is not None:
+                unit = candidate.get("unit")
+                if unit == "C":
+                    units.add("celsius")
+                elif unit == "F":
+                    units.add("fahrenheit")
+                else:
+                    raise ConversionError("climate_temperature_unit")
+        if len(units) > 1:
+            raise ConversionError("climate_temperature_unit_mismatch")
+        if units:
+            config["temperature_unit"] = next(iter(units))
+
+    for name, dp in dps.items():
+        if name in consumed:
+            continue
+        _preserve_climate_extra(name, dp, config, required, optional)
+
+    return {"platform": "climate", "config": config}, required, optional
+
+
 _CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
+    "climate": _convert_climate,
     "fan": _convert_fan,
     "light": _convert_light,
     "number": _convert_number,
