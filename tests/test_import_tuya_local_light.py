@@ -279,6 +279,65 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
 
         self.assertTrue(mapping["entities"][0]["config"]["music_mode"])
 
+    def test_simple_work_mode_is_preserved_as_extra_state_attribute(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "desk-lamp"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {"id": 2, "type": "string", "name": "work_mode"},
+                            {
+                                "id": 3,
+                                "type": "integer",
+                                "name": "brightness",
+                                "optional": True,
+                                "range": {"min": 25, "max": 255},
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="desk_lamp.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {"work_mode": 2},
+        )
+        self.assertEqual(mapping["match"]["required_dps"], [1, 2])
+        self.assertEqual(mapping["match"]["optional_dps"], [3])
+
+    def test_mapped_work_mode_remains_rejected(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_work_mode_mapping"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "mapped-work-mode"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 21,
+                                    "type": "string",
+                                    "name": "work_mode",
+                                    "mapping": [
+                                        {"dps_val": "white", "value": "white"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="mapped_work_mode.yaml",
+            )
+
     def test_dedicated_effect_mapping_converts_exact_values(self):
         mapping = convert_profile(
             {

@@ -530,7 +530,7 @@ def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
     if not isinstance(dps, list) or not dps:
         raise ConversionError("light_missing_dps")
 
-    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect"}
+    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect", "work_mode"}
     result: dict[str, dict[str, Any]] = {}
     for dp in dps:
         if not isinstance(dp, dict):
@@ -747,6 +747,31 @@ def _convert_light(
     required: set[int] = set()
     optional: set[int] = set()
     _merge_membership(required, optional, switch)
+
+    work_mode = dps.get("work_mode")
+    if work_mode is not None:
+        _check_common_dp_semantics(work_mode, writable=False)
+        if _dp_type(work_mode) != "string":
+            raise ConversionError("light_work_mode_type")
+        if _mapping_rules(work_mode):
+            raise ConversionError("light_work_mode_mapping")
+        allowed_work_mode_keys = {
+            "id",
+            "type",
+            "name",
+            "optional",
+            "readonly",
+            "hidden",
+            "force",
+            "persist",
+            "sensitive",
+        }
+        if set(work_mode) - allowed_work_mode_keys:
+            raise ConversionError("light_work_mode_semantics")
+        config.setdefault("extra_state_attributes_dps", {})[
+            "work_mode"
+        ] = _dp_id(work_mode)
+        _merge_membership(required, optional, work_mode)
 
     effect = dps.get("effect")
     if effect is not None:

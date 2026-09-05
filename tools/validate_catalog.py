@@ -88,6 +88,18 @@ def is_dp_reference_key(key: str) -> bool:
 def collect_config_dps(config: dict[str, Any]) -> set[int]:
     result: set[int] = set()
 
+    extra_attributes = config.get("extra_state_attributes_dps")
+    if isinstance(extra_attributes, dict):
+        for value in extra_attributes.values():
+            if isinstance(value, bool):
+                continue
+            try:
+                dp_id = int(value)
+            except (TypeError, ValueError):
+                continue
+            if dp_id > 0:
+                result.add(dp_id)
+
     for key, value in config.items():
         if not is_dp_reference_key(str(key)):
             continue
@@ -311,6 +323,54 @@ def validate_semantics(data: dict[str, Any], source: Path) -> list[str]:
                     f"{source}: mapping {mapping_id!r} entity platform mismatch: "
                     f"{platform!r} vs {config.get('platform')!r}"
                 )
+
+            extra_attributes = config.get("extra_state_attributes_dps")
+            if extra_attributes is not None:
+                if not isinstance(extra_attributes, dict) or not extra_attributes:
+                    errors.append(
+                        f"{source}: mapping {mapping_id!r} extra_state_attributes_dps "
+                        "must be a non-empty object"
+                    )
+                elif len(extra_attributes) > 32:
+                    errors.append(
+                        f"{source}: mapping {mapping_id!r} extra_state_attributes_dps "
+                        "cannot contain more than 32 attributes"
+                    )
+                else:
+                    normalized_names: set[str] = set()
+                    for raw_name, raw_dp in extra_attributes.items():
+                        if not isinstance(raw_name, str):
+                            errors.append(
+                                f"{source}: mapping {mapping_id!r} extra state "
+                                "attribute names must be strings"
+                            )
+                            continue
+                        name = raw_name.strip()
+                        if (
+                            not name
+                            or name in {"state", "raw_state"}
+                            or name in normalized_names
+                        ):
+                            errors.append(
+                                f"{source}: mapping {mapping_id!r} invalid extra "
+                                f"state attribute name {raw_name!r}"
+                            )
+                        normalized_names.add(name)
+                        if isinstance(raw_dp, bool):
+                            errors.append(
+                                f"{source}: mapping {mapping_id!r} extra state "
+                                f"attribute {raw_name!r} has invalid DP {raw_dp!r}"
+                            )
+                            continue
+                        try:
+                            dp_id = int(raw_dp)
+                        except (TypeError, ValueError):
+                            dp_id = 0
+                        if dp_id <= 0 or dp_id > 65535:
+                            errors.append(
+                                f"{source}: mapping {mapping_id!r} extra state "
+                                f"attribute {raw_name!r} has invalid DP {raw_dp!r}"
+                            )
 
             primary_dp = config["id"]
             entity_key = (platform, primary_dp)
