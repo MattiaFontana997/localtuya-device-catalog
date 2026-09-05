@@ -492,6 +492,66 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="named_color_light.yaml",
             )
 
+    def test_flash_scene_family_is_preserved_as_raw_extra_attributes(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "flash-scenes-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {"id": 7, "type": "hex", "name": "flash_scene1", "optional": True},
+                            {"id": 8, "type": "hex", "name": "flash_scene2", "optional": True},
+                            {"id": 9, "type": "hex", "name": "flash_scene3", "optional": True},
+                            {"id": 10, "type": "hex", "name": "flash_scene4", "optional": True},
+                        ],
+                    }
+                ],
+            },
+            source_file="flash_scenes_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {
+                "flash_scene1": 7,
+                "flash_scene2": 8,
+                "flash_scene3": 9,
+                "flash_scene4": 10,
+            },
+        )
+        self.assertEqual(mapping["match"]["required_dps"], [1])
+        self.assertEqual(mapping["match"]["optional_dps"], [7, 8, 9, 10])
+
+    def test_second_batch_mapped_extra_stays_fail_closed(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_extra_attribute_mapping:color_favorite"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "mapped-color-favorite"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 102,
+                                    "type": "string",
+                                    "name": "color_favorite",
+                                    "mapping": [
+                                        {"dps_val": "1", "value": "Favorite"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="mapped_color_favorite.yaml",
+            )
+
     def test_dedicated_effect_mapping_converts_exact_values(self):
         mapping = convert_profile(
             {
