@@ -1,0 +1,62 @@
+name: Tuya Local Compatibility
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/analyze_tuya_local.py"
+      - "tests/test_analyze_tuya_local.py"
+      - ".github/workflows/tuya-local-compat.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze current Tuya Local profiles
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout catalog tooling
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install analyzer dependency
+        run: python -m pip install "PyYAML>=6,<7"
+
+      - name: Checkout current Tuya Local
+        uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          path: upstream-tuya-local
+          fetch-depth: 1
+
+      - name: Analyze all Tuya Local device profiles
+        run: |
+          python tools/analyze_tuya_local.py upstream-tuya-local --json tuya-local-analysis.json | tee tuya-local-analysis.txt
+
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo "## Tuya Local compatibility report"
+            echo
+            echo '```text'
+            cat tuya-local-analysis.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full compatibility report
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuya-local-compatibility-report
+          path: |
+            tuya-local-analysis.json
+            tuya-local-analysis.txt
+          if-no-files-found: error
