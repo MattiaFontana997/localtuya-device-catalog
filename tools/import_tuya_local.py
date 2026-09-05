@@ -554,6 +554,133 @@ def _merge_membership(
     optional.update(dp_optional)
 
 
+def _light_has_bare_scene(entity: dict[str, Any]) -> bool:
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return False
+
+    for dp in dps:
+        if not isinstance(dp, dict) or dp.get("name") != "color_mode":
+            continue
+        mapping = dp.get("mapping")
+        if not isinstance(mapping, list):
+            return False
+        return any(
+            isinstance(rule, dict) and rule.get("dps_val") == "scene"
+            for rule in mapping
+        )
+
+    return False
+
+
+def _scene_select_values(
+    entity: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, str]] | None:
+    if (
+        entity.get("entity") != "select"
+        or entity.get("translation_key") != "scene"
+    ):
+        return None
+
+    try:
+        dp = _single_named_dp(entity, "option")
+        _check_common_dp_semantics(dp, writable=True)
+        if _dp_type(dp) != "string":
+            return None
+        rules = _mapping_rules(dp)
+    except ConversionError:
+        return None
+
+    if not rules:
+        return None
+
+    values: dict[str, str] = {}
+    raw_values: set[str] = set()
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            return None
+        if rule.get("hidden") is True:
+            return None
+        raw = rule.get("dps_val")
+        friendly = rule.get("value")
+        if (
+            not isinstance(raw, str)
+            or not raw
+            or not isinstance(friendly, str)
+            or not friendly.strip()
+        ):
+            return None
+        friendly = friendly.strip()
+        if raw in raw_values or friendly in values:
+            return None
+        raw_values.add(raw)
+        values[friendly] = raw
+
+    return dp, values
+
+
+def _hidden_scene_text_dp(
+    entity: dict[str, Any], scene_dp: dict[str, Any]
+) -> dict[str, Any] | None:
+    if (
+        entity.get("entity") != "text"
+        or entity.get("translation_key") != "scene"
+        or entity.get("hidden") is not True
+    ):
+        return None
+
+    try:
+        dp = _single_named_dp(entity, "value")
+        if _dp_id(dp) != _dp_id(scene_dp):
+            return None
+        if _dp_membership(dp) != _dp_membership(scene_dp):
+            return None
+    except ConversionError:
+        return None
+
+    return dp
+
+
+def _find_light_scene_context(
+    entities: list[Any],
+) -> tuple[int, dict[str, Any], dict[str, str], int] | None:
+    light_indexes = [
+        index
+        for index, entity in enumerate(entities)
+        if isinstance(entity, dict)
+        and entity.get("entity") == "light"
+        and _light_has_bare_scene(entity)
+    ]
+    if len(light_indexes) != 1:
+        return None
+
+    candidates: list[tuple[int, dict[str, Any], dict[str, str], int]] = []
+    for entity in entities:
+        if not isinstance(entity, dict):
+            continue
+        parsed = _scene_select_values(entity)
+        if parsed is None:
+            continue
+        scene_dp, scene_values = parsed
+
+        hidden_indexes = [
+            index
+            for index, hidden in enumerate(entities)
+            if isinstance(hidden, dict)
+            and _hidden_scene_text_dp(hidden, scene_dp) is not None
+        ]
+        if len(hidden_indexes) != 1:
+            continue
+
+        candidates.append(
+            (light_indexes[0], scene_dp, scene_values, hidden_indexes[0])
+        )
+
+    if len(candidates) != 1:
+        return None
+    return candidates[0]
+
+
 def _configure_light_scale(
     config: dict[str, Any],
     *,
@@ -590,7 +717,12 @@ def _configure_light_scale(
         config["brightness_lower"] = minimum if require_lower else 0
 
 
-def _convert_light(entity: dict[str, Any]) -> Converted:
+def _convert_light(
+    entity: dict[str, Any],
+    *,
+    scene_dp: dict[str, Any] | None = None,
+    scene_values: dict[str, str] | None = None,
+) -> Converted:
     if entity.get("class") is not None:
         raise ConversionError("light_device_class")
 
@@ -615,6 +747,14 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
     required: set[int] = set()
     optional: set[int] = set()
     _merge_membership(required, optional, switch)
+
+    configured_scene_values = dict(scene_values or {})
+    if scene_dp is not None:
+        _check_common_dp_semantics(scene_dp, writable=True)
+        if _dp_type(scene_dp) != "string" or not configured_scene_values:
+            raise ConversionError("light_scene_data_context")
+        config["scene"] = _dp_id(scene_dp)
+        _merge_membership(required, optional, scene_dp)
 
     brightness = dps.get("brightness")
     if brightness is not None:
@@ -761,7 +901,6 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
             raise ConversionError("light_color_mode_mapping")
 
         observed: dict[str, str] = {}
-        scene_values: dict[str, str] = {}
         for rule in rules:
             if set(rule) - {"dps_val", "value", "hidden"}:
                 raise ConversionError("light_color_mode_mapping")
@@ -784,9 +923,9 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
 
             if raw.startswith("scene_"):
                 friendly = value.strip()
-                if not friendly or friendly in scene_values:
+                if not friendly or friendly in configured_scene_values:
                     raise ConversionError("light_color_mode_duplicate")
-                scene_values[friendly] = raw
+                configured_scene_values[friendly] = raw
                 observed[raw] = value
                 continue
 
@@ -796,12 +935,15 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
                 continue
 
             if raw == "scene":
-                raise ConversionError("light_scene_data_required")
+                if scene_dp is None or not configured_scene_values:
+                    raise ConversionError("light_scene_data_required")
+                observed[raw] = value
+                continue
 
             raise ConversionError("light_color_mode_effects")
 
-        if scene_values:
-            config["scene_values"] = scene_values
+        if configured_scene_values:
+            config["scene_values"] = configured_scene_values
 
         if "colour" in observed and rgbhsv is None:
             raise ConversionError("light_color_mode_missing_rgbhsv")
@@ -868,14 +1010,34 @@ def convert_profile(
     required_dps: set[int] = set()
     optional_dps: set[int] = set()
 
-    for entity in entities:
+    scene_context = _find_light_scene_context(entities)
+    consumed_entities: set[int] = set()
+    if scene_context is not None:
+        consumed_entities.add(scene_context[3])
+
+    for index, entity in enumerate(entities):
+        if index in consumed_entities:
+            continue
         if not isinstance(entity, dict):
             raise ConversionError("invalid_entity")
         platform = entity.get("entity")
         if platform not in SUPPORTED_PLATFORMS:
             raise ConversionError(f"unsupported_platform:{platform}")
 
-        converted, entity_required, entity_optional = _CONVERTERS[platform](entity)
+        if (
+            platform == "light"
+            and scene_context is not None
+            and scene_context[0] == index
+        ):
+            converted, entity_required, entity_optional = _convert_light(
+                entity,
+                scene_dp=scene_context[1],
+                scene_values=scene_context[2],
+            )
+        else:
+            converted, entity_required, entity_optional = _CONVERTERS[platform](
+                entity
+            )
         converted_entities.append(converted)
         required_dps.update(entity_required)
         optional_dps.update(entity_optional)
