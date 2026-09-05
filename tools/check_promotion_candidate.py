@@ -25,29 +25,46 @@ def _load_json(path: Path) -> dict[str, Any]:
     return data
 
 
-def _selector(mapping: dict[str, Any]) -> tuple[str, str | None, tuple[int, ...]]:
+def _selector(
+    mapping: dict[str, Any],
+) -> tuple[tuple[str, ...], str | None, tuple[int, ...], tuple[int, ...]]:
     match = mapping.get("match")
     if not isinstance(match, dict):
         raise ValueError("Mapping is missing a valid match object")
 
-    product_id = match.get("product_id")
-    if not isinstance(product_id, str) or not product_id:
-        raise ValueError("Mapping is missing product_id")
+    product_ids = match.get("product_ids")
+    if not isinstance(product_ids, list) or not product_ids:
+        raise ValueError("Mapping is missing product_ids")
+
+    normalized_products: list[str] = []
+    for product_id in product_ids:
+        if not isinstance(product_id, str) or not product_id.strip():
+            raise ValueError("Mapping product_ids contains an invalid product ID")
+        normalized_products.append(product_id.strip())
 
     category = match.get("category")
     if category is not None and not isinstance(category, str):
         raise ValueError("Mapping category must be a string when present")
 
     required_dps = match.get("required_dps")
+    optional_dps = match.get("optional_dps")
     if not isinstance(required_dps, list):
         raise ValueError("Mapping required_dps must be a list")
+    if not isinstance(optional_dps, list):
+        raise ValueError("Mapping optional_dps must be a list")
 
     try:
-        normalized_dps = tuple(sorted({int(dp) for dp in required_dps}))
+        normalized_required = tuple(sorted({int(dp) for dp in required_dps}))
+        normalized_optional = tuple(sorted({int(dp) for dp in optional_dps}))
     except (TypeError, ValueError) as exc:
-        raise ValueError("Mapping required_dps contains an invalid DP") from exc
+        raise ValueError("Mapping DPS selector contains an invalid DP") from exc
 
-    return product_id, category, normalized_dps
+    return (
+        tuple(sorted(set(normalized_products))),
+        category,
+        normalized_required,
+        normalized_optional,
+    )
 
 
 def ensure_no_catalog_selector_duplicate(root: Path, mapping_id: str) -> None:
@@ -89,8 +106,9 @@ def ensure_no_catalog_selector_duplicate(root: Path, mapping_id: str) -> None:
         existing_confidence = existing.get("confidence", "<unknown>")
         raise ValueError(
             "Catalog already contains mapping "
-            f"{existing_id!r} with the same product/category/required_dps "
-            f"selector at confidence {existing_confidence!r}"
+            f"{existing_id!r} with the same "
+            "product_ids/category/required_dps/optional_dps selector "
+            f"at confidence {existing_confidence!r}"
         )
 
 
