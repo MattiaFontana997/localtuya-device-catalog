@@ -11,30 +11,30 @@ every newly supported product.
 
 The catalog is intentionally product-specific.
 
-A catalog entry must use a real Tuya product ID and should only be added when
-there is useful device-specific knowledge that the generic LocalTuya mapper
-cannot safely infer by itself.
+A catalog entry must use one or more real Tuya product IDs and should only be
+added when there is useful device-specific knowledge that the generic LocalTuya
+mapper cannot safely infer by itself.
 
 Generic Tuya switches, lights, covers, fans, thermostats, sensors, numbers and
 selects should remain handled by LocalTuya's built-in metadata mapper whenever
 possible.
 
-See
-[`docs/known-device-coverage.md`](docs/known-device-coverage.md)
-for the current product-specific inventory and generic LocalTuya coverage.
+See [`docs/known-device-coverage.md`](docs/known-device-coverage.md) for the
+current product-specific inventory and generic LocalTuya coverage.
 
 ## How LocalTuya uses the catalog
 
 LocalTuya first builds entities from its built-in generic mapper.
+Product-specific catalog mappings can then complete or refine that result.
 
-Product-specific catalog mappings can then complete or refine that result when
-the device matches the mapping requirements.
+Schema V2 matches a mapping against:
 
-A mapping is checked against:
-
-- Tuya product ID
+- one of the mapping's Tuya `product_ids`
 - Tuya category, when available
-- datapoints actually detected from the device over the LAN
+- all `required_dps` detected from the device over the LAN
+
+`optional_dps` may add entities or capabilities when present, but their absence
+does not reject an otherwise compatible mapping.
 
 LocalTuya can use:
 
@@ -45,34 +45,73 @@ LocalTuya can use:
 A remote mapping is never trusted only because its product ID matches.
 Required datapoints must also be present on the actual local device.
 
+## Schema V2
+
+Catalog V2 adds three features required for safely sharing mappings across
+firmware and product variants:
+
+### Product aliases
+
+A single mapping can describe several Tuya product IDs when they share the same
+behaviour:
+
+```json
+"product_ids": ["product-a", "product-b"]
+```
+
+Product IDs are sorted and deduplicated by repository tooling.
+
+### Required and optional datapoints
+
+`required_dps` are fingerprint anchors: every required DP must be observed for
+the mapping to match.
+
+`optional_dps` describe capabilities that may exist only on some firmware or
+product variants. Missing optional primary DPS cause only the affected entity
+to be skipped; missing optional secondary DPS remove only the capability backed
+by that DP.
+
+A DP cannot be both required and optional.
+
+### Provenance
+
+Mappings derived from another open-source device knowledge base can carry
+non-executable attribution metadata:
+
+```json
+"provenance": {
+  "source": "make-all/tuya-local",
+  "path": "custom_components/tuya_local/devices/example.yaml",
+  "revision": "<upstream commit>",
+  "license": "MIT"
+}
+```
+
+Provenance never changes runtime matching or trust. Imported mappings still
+start as `experimental`.
+
 ## Confidence levels
 
 Catalog entries use one of three confidence levels:
 
-- `experimental` — newly submitted mapping awaiting trusted promotion
+- `experimental` — newly submitted or imported mapping awaiting trusted review
 - `community` — reviewed mapping accepted into the published catalog
 - `verified` — community mapping additionally verified on real hardware
 
-The repository enforces the promotion order:
+The repository enforces:
 
 `experimental` → `community` → `verified`
 
 An experimental submission cannot be promoted directly to `verified`.
-
 Promotion to `community` moves the accepted mapping from `submissions/` into
-the published `catalog.json`.
+`catalog.json`. Promotion to `verified` is allowed only after the mapping is
+already `community` and requires an explicit physical verification note.
 
-Promotion to `verified` is allowed only after the mapping is already
-`community` and requires an explicit physical verification note.
-
-Do not mark a mapping as `verified` only because its JSON validates or its
-metadata looks correct. The entity behaviour must have been tested on the
-physical device.
+Do not mark a mapping as `verified` only because its JSON validates or because
+another project supports the same product. Entity behaviour must have been
+tested on physical hardware with LocalTuya.
 
 ## Current real product mappings
-
-The published catalog currently contains physically tested product-specific
-knowledge for real Tuya hardware.
 
 ### LSC Smart Connect RGB+CCT smart light (Action)
 
@@ -83,19 +122,10 @@ knowledge for real Tuya hardware.
 - Mapping ID: `r7sn2fda7l5hwzvx-0cc115f608`
 - Platform: `light`
 - Protocol physically tested: **Tuya 3.5**
-- Required DPS:
-  - DP 20 — power
-  - DP 21 — work/color mode
-  - DP 22 — brightness
-  - DP 23 — color temperature
-  - DP 24 — RGB/HSV color
+- Required DPS: 20, 21, 22, 23, 24
 
 Power, brightness, color temperature, color and spontaneous device/Tuya app
 state updates back to Home Assistant have been tested on real hardware.
-
-The exact Action retail article number is not recorded; matching is performed
-using the Tuya product ID and detected LAN datapoints rather than the retail
-SKU.
 
 ### EMOS GoSmart P56201 Wi-Fi Room Thermostat
 
@@ -106,7 +136,6 @@ SKU.
 - Mapping ID: `wxmbjwpt8yea7bag-ef945de926`
 - Main platform: `climate`
 - Additional entities: holiday temperature and holiday-day controls
-- Retail reference: Amazon ASIN `B0BS3TL7DC`
 - EMOS model: `P56201`
 - EAN: `8592920117767`
 
@@ -117,16 +146,14 @@ behaviour that cannot be safely inferred from generic Tuya metadata alone.
 
 ### Recommended: LocalTuya configuration flow
 
-Configure the device correctly in LocalTuya first.
-
-Then open the LocalTuya configuration menu and choose:
+Configure the device correctly in LocalTuya first. Then open the LocalTuya
+configuration menu and choose:
 
 `Prepare community contribution`
 
 Select the configured device and let LocalTuya generate the contribution
-package from the configuration that is already working in Home Assistant.
-
-Review the generated JSON before submitting it.
+package from the configuration already working in Home Assistant. Review the
+generated JSON before submitting it.
 
 ### Alternative: Home Assistant action/service
 
@@ -134,10 +161,8 @@ LocalTuya also provides:
 
 `localtuya.export_device_mapping`
 
-with the configured Tuya device ID as input.
-
-The device ID is used only to locate the configured device and must not be
-included in the exported mapping.
+with the configured Tuya device ID as input. The device ID is used only to
+locate the configured device and must not be included in the exported mapping.
 
 ## Privacy requirements
 
@@ -162,47 +187,62 @@ Place the exported JSON in:
 
 `submissions/<mapping-id>.json`
 
-Then open a pull request against this repository.
-
-GitHub Actions validates submissions automatically.
+Then open a pull request against this repository. GitHub Actions validates
+submissions automatically.
 
 A valid submission remains `experimental` until it is promoted through the
-trusted promotion workflow.
+trusted promotion workflow. Promotion to `community` publishes the mapping into
+`catalog.json`; a later promotion to `verified` records physical validation.
 
-Promotion to `community` publishes the mapping into `catalog.json`.
-A later promotion to `verified` records that the mapping has also been
-physically validated on real hardware.
+## Imported device knowledge
+
+Repository tooling may analyze or convert device definitions from compatible
+open-source projects. Importing source knowledge does **not** make a mapping
+trusted automatically.
+
+Imported mappings must:
+
+1. preserve upstream license attribution
+2. record source provenance when available
+3. be representable without silently dropping required behaviour
+4. enter as `experimental`
+5. follow the same review and physical-verification lifecycle as native
+   submissions
+
+The Tuya Local import tooling is intentionally fail-closed: unsupported or
+ambiguous profiles are skipped rather than partially published.
+
+See `THIRD_PARTY_NOTICES.md` for third-party attribution.
 
 ## Mapping requirements
 
 A useful product-specific mapping should contain, when known:
 
-1. Real Tuya product ID.
+1. Real Tuya product ID(s).
 2. Tuya category.
-3. Datapoints actually observed on the device.
-4. Entity configuration that has been tested.
-5. Appropriate confidence level.
+3. Required datapoints that safely fingerprint the device behaviour.
+4. Optional datapoints for firmware/product capabilities that may be absent.
+5. Entity configuration that can be represented by LocalTuya.
+6. Appropriate confidence level.
+7. Provenance when derived from third-party open-source device knowledge.
 
-Mappings should describe behaviour, not user-specific device identity.
-
-Do not invent missing datapoints or copy a generic test fixture into the
-catalog as if it were a real product.
+Mappings describe behaviour, not user-specific device identity. Do not invent
+missing datapoints or copy a generic test fixture into the catalog as if it were
+a real product.
 
 ## Remote catalog and bundled snapshot
 
 `catalog.json` is the current remote catalog consumed by LocalTuya.
-
-LocalTuya also ships a bundled snapshot:
+LocalTuya also ships a bundled snapshot at:
 
 `custom_components/localtuya/builtin_catalog.json`
 
 The bundled snapshot provides a known-good offline fallback when the remote
-catalog cannot be downloaded.
+catalog cannot be downloaded. Verified mappings may therefore also be
+synchronized into the LocalTuya repository when preparing a release.
 
-Verified mappings may therefore also be synchronized into the LocalTuya
-repository when preparing a release.
-
-The remote catalog remains independently updateable between LocalTuya releases.
+The remote catalog remains independently updateable between compatible
+LocalTuya releases.
 
 ## Refreshing the catalog in LocalTuya
 
@@ -215,12 +255,12 @@ integration.
 
 ## Security model
 
-This repository contains data only.
+This repository contains data only. Mappings cannot contain Python code,
+scripts or executable expressions.
 
-Mappings cannot contain Python code, scripts or executable expressions.
-
-LocalTuya validates catalog structure before accepting it and checks required
-datapoints against the datapoints actually detected from the local device.
+LocalTuya validates catalog structure before accepting it, checks required
+DPS against datapoints actually detected from the local device, and ignores
+optional capabilities that are not present.
 
 Credential, account and network identity fields are not valid catalog
 configuration.
@@ -229,7 +269,7 @@ configuration.
 
 Current schema version:
 
-`1`
+`2`
 
 The formal schema is available in:
 
