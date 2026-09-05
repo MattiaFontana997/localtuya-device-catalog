@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tools import import_tuya_local as importer
+import import_tuya_local as importer
 
 
 _original_configure_light_scale = importer._configure_light_scale
