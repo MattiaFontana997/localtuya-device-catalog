@@ -416,6 +416,162 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="hidden_null_hs_mode.yaml",
             )
 
+    def test_dedicated_rgbw_white_mode_converts(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "rgbw-white-mode"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 2,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "white", "value": "white"},
+                                    {"dps_val": "colour", "value": "hs"},
+                                ],
+                            },
+                            {
+                                "id": 3,
+                                "type": "integer",
+                                "name": "brightness",
+                                "range": {"min": 25, "max": 255},
+                            },
+                            {
+                                "id": 5,
+                                "type": "hex",
+                                "name": "rgbhsv",
+                                "format": [
+                                    {"name": "r", "bytes": 1},
+                                    {"name": "g", "bytes": 1},
+                                    {"name": "b", "bytes": 1},
+                                    {"name": "h", "bytes": 2, "range": {"min": 0, "max": 360}},
+                                    {"name": "s", "bytes": 1, "range": {"min": 0, "max": 255}},
+                                    {"name": "v", "bytes": 1, "range": {"min": 0, "max": 255}},
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="rgbw_white_mode.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertTrue(config["white_mode"])
+        self.assertEqual(config["color_mode"], 2)
+        self.assertEqual(config["brightness"], 3)
+        self.assertEqual(config["color"], 5)
+        self.assertTrue(config["color_rgb_encoding"])
+        self.assertNotIn("color_temp", config)
+        self.assertEqual(mapping["match"]["required_dps"], [1, 2, 3, 5])
+
+    def test_dedicated_white_mode_requires_brightness(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_color_mode_white_brightness"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "white-without-brightness"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "white", "value": "white"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="white_without_brightness.yaml",
+            )
+
+    def test_dedicated_white_mode_rejects_optional_brightness(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_color_mode_white_brightness"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "white-optional-brightness"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "white", "value": "white"}
+                                    ],
+                                },
+                                {
+                                    "id": 3,
+                                    "type": "integer",
+                                    "name": "brightness",
+                                    "optional": True,
+                                    "range": {"min": 25, "max": 255},
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="white_optional_brightness.yaml",
+            )
+
+    def test_dedicated_white_mode_is_not_cct(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_color_mode_white_with_cct"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "white-plus-cct"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "white", "value": "white"}
+                                    ],
+                                },
+                                {
+                                    "id": 3,
+                                    "type": "integer",
+                                    "name": "brightness",
+                                    "range": {"min": 25, "max": 255},
+                                },
+                                {
+                                    "id": 4,
+                                    "type": "integer",
+                                    "name": "color_temp",
+                                    "range": {"min": 0, "max": 255},
+                                    "mapping": [
+                                        {"target_range": {"min": 2700, "max": 6500}}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="white_plus_cct.yaml",
+            )
+
     def test_optional_light_capability_becomes_optional_dp(self):
         mapping = convert_profile(
             {
