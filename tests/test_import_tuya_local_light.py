@@ -362,6 +362,164 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(config["color_brightness_lower"], 0)
         self.assertEqual(config["color_brightness_upper"], 1000)
 
+    def test_scene_select_and_hidden_text_fold_into_light(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "scene-data-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "scene", "value": "Scene"}
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        "entity": "text",
+                        "translation_key": "scene",
+                        "hidden": True,
+                        "dps": [
+                            {"id": 25, "type": "hex", "name": "value"}
+                        ],
+                    },
+                    {
+                        "entity": "select",
+                        "translation_key": "scene",
+                        "dps": [
+                            {
+                                "id": 25,
+                                "type": "string",
+                                "name": "option",
+                                "mapping": [
+                                    {"dps_val": "0103e8", "value": "Palm"},
+                                    {"dps_val": "0403e8", "value": "Rainbow"},
+                                ],
+                            }
+                        ],
+                    },
+                ],
+            },
+            source_file="scene_data_light.yaml",
+        )
+
+        self.assertEqual(len(mapping["entities"]), 2)
+        light = mapping["entities"][0]["config"]
+        self.assertEqual(light["scene"], 25)
+        self.assertEqual(
+            light["scene_values"],
+            {"Palm": "0103e8", "Rainbow": "0403e8"},
+        )
+        self.assertEqual(mapping["entities"][1]["platform"], "select")
+        self.assertEqual(mapping["match"]["required_dps"], [20, 21, 25])
+
+    def test_optional_scene_transport_stays_optional(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "optional-scene-data"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [
+                                    {"dps_val": "scene", "value": "Scene"}
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        "entity": "text",
+                        "translation_key": "scene",
+                        "hidden": True,
+                        "dps": [
+                            {
+                                "id": 25,
+                                "type": "hex",
+                                "name": "value",
+                                "optional": True,
+                            }
+                        ],
+                    },
+                    {
+                        "entity": "select",
+                        "translation_key": "scene",
+                        "dps": [
+                            {
+                                "id": 25,
+                                "type": "string",
+                                "name": "option",
+                                "optional": True,
+                                "mapping": [
+                                    {"dps_val": "0103e8", "value": "Palm"}
+                                ],
+                            }
+                        ],
+                    },
+                ],
+            },
+            source_file="optional_scene_data.yaml",
+        )
+
+        self.assertEqual(mapping["match"]["optional_dps"], [25])
+
+    def test_scene_context_requires_matching_hidden_transport(self):
+        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):
+            convert_profile(
+                {
+                    "products": [{"id": "mismatched-scene-data"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 20, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 21,
+                                    "type": "string",
+                                    "name": "color_mode",
+                                    "mapping": [
+                                        {"dps_val": "scene", "value": "Scene"}
+                                    ],
+                                },
+                            ],
+                        },
+                        {
+                            "entity": "text",
+                            "translation_key": "scene",
+                            "hidden": True,
+                            "dps": [
+                                {"id": 51, "type": "string", "name": "value"}
+                            ],
+                        },
+                        {
+                            "entity": "select",
+                            "translation_key": "scene",
+                            "dps": [
+                                {
+                                    "id": 25,
+                                    "type": "string",
+                                    "name": "option",
+                                    "mapping": [
+                                        {"dps_val": "0103e8", "value": "Palm"}
+                                    ],
+                                }
+                            ],
+                        },
+                    ],
+                },
+                source_file="mismatched_scene_data.yaml",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
