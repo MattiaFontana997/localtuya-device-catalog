@@ -7,26 +7,26 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.check_promotion_candidate import (
-    ensure_no_catalog_selector_duplicate,
-)
+from tools.check_promotion_candidate import ensure_no_catalog_selector_duplicate
 
 
 def make_mapping(
     mapping_id: str,
     confidence: str,
     *,
-    product_id: str = "product123",
+    product_ids: list[str] | None = None,
     category: str = "wk",
     required_dps: list[int] | None = None,
+    optional_dps: list[int] | None = None,
 ) -> dict:
     return {
         "id": mapping_id,
         "confidence": confidence,
         "match": {
-            "product_id": product_id,
+            "product_ids": product_ids or ["product123"],
             "category": category,
             "required_dps": required_dps or [1],
+            "optional_dps": optional_dps or [],
         },
         "entities": [
             {
@@ -51,25 +51,23 @@ class PromotionCandidateTests(unittest.TestCase):
 
     def write_catalog(self, mappings: list[dict]) -> None:
         (self.root / "catalog.json").write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "mappings": mappings,
-                }
-            ),
+            json.dumps({"schema_version": 2, "mappings": mappings}),
             encoding="utf-8",
         )
 
     def write_submission(self, mapping: dict) -> None:
         mapping_id = mapping["id"]
+        match = mapping["match"]
+        observed = sorted(set(match["required_dps"]) | set(match["optional_dps"]))
         (self.root / "submissions" / f"{mapping_id}.json").write_text(
             json.dumps(
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
                     "mappings": [mapping],
                     "fingerprint": {
-                        "observed_dps": mapping["match"]["required_dps"],
-                        "required_dps": mapping["match"]["required_dps"],
+                        "observed_dps": observed,
+                        "required_dps": match["required_dps"],
+                        "optional_dps": match["optional_dps"],
                         "protocol_version": "3.3",
                         "entity_count": 1,
                     },
@@ -82,12 +80,16 @@ class PromotionCandidateTests(unittest.TestCase):
         existing = make_mapping(
             "product123-existing",
             "verified",
+            product_ids=["alias123", "product123"],
             required_dps=[1, 2, 16],
+            optional_dps=[18],
         )
         candidate = make_mapping(
             "product123-candidate",
             "experimental",
+            product_ids=["product123", "alias123"],
             required_dps=[16, 2, 1],
+            optional_dps=[18],
         )
 
         self.write_catalog([existing])
@@ -95,12 +97,9 @@ class PromotionCandidateTests(unittest.TestCase):
 
         with self.assertRaisesRegex(
             ValueError,
-            "same product/category/required_dps selector",
+            "same product_ids/category/required_dps/optional_dps selector",
         ):
-            ensure_no_catalog_selector_duplicate(
-                self.root,
-                candidate["id"],
-            )
+            ensure_no_catalog_selector_duplicate(self.root, candidate["id"])
 
     def test_different_required_dps_is_allowed(self):
         existing = make_mapping(
@@ -116,13 +115,25 @@ class PromotionCandidateTests(unittest.TestCase):
 
         self.write_catalog([existing])
         self.write_submission(candidate)
+        ensure_no_catalog_selector_duplicate(self.root, candidate["id"])
 
-        ensure_no_catalog_selector_duplicate(
-            self.root,
-            candidate["id"],
+    def test_different_optional_dps_is_allowed(self):
+        existing = make_mapping(
+            "product123-existing",
+            "verified",
+            optional_dps=[18],
+        )
+        candidate = make_mapping(
+            "product123-candidate",
+            "experimental",
+            optional_dps=[19],
         )
 
-    def test_different_product_is_allowed(self):
+        self.write_catalog([existing])
+        self.write_submission(candidate)
+        ensure_no_catalog_selector_duplicate(self.root, candidate["id"])
+
+    def test_different_product_set_is_allowed(self):
         existing = make_mapping(
             "product123-existing",
             "verified",
@@ -130,16 +141,12 @@ class PromotionCandidateTests(unittest.TestCase):
         candidate = make_mapping(
             "product456-candidate",
             "experimental",
-            product_id="product456",
+            product_ids=["product456"],
         )
 
         self.write_catalog([existing])
         self.write_submission(candidate)
-
-        ensure_no_catalog_selector_duplicate(
-            self.root,
-            candidate["id"],
-        )
+        ensure_no_catalog_selector_duplicate(self.root, candidate["id"])
 
 
 if __name__ == "__main__":
