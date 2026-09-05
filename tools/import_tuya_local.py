@@ -1204,6 +1204,20 @@ def _convert_light(
                 observed[raw] = value
                 continue
 
+            if raw == "white" and value == "white":
+                # Dedicated RGBW white mode is distinct from CCT: it uses the
+                # standalone brightness DP and has no color-temperature DP.
+                # Keep the first importer tranche deliberately strict so a
+                # missing optional brightness capability cannot expose a mode
+                # that LocalTuya cannot actually control.
+                if brightness is None or brightness.get("optional") is True:
+                    raise ConversionError("light_color_mode_white_brightness")
+                if color_temp is not None:
+                    raise ConversionError("light_color_mode_white_with_cct")
+                config["white_mode"] = True
+                observed[raw] = value
+                continue
+
             if raw.startswith("scene_"):
                 friendly = value.strip()
                 if not friendly or friendly in configured_scene_values:
@@ -1230,7 +1244,11 @@ def _convert_light(
 
         if "colour" in observed and rgbhsv is None:
             raise ConversionError("light_color_mode_missing_rgbhsv")
-        if "white" in observed and color_temp is None:
+        if (
+            "white" in observed
+            and color_temp is None
+            and not config.get("white_mode", False)
+        ):
             raise ConversionError("light_color_mode_missing_color_temp")
         if rgbhsv is not None and "colour" not in observed:
             raise ConversionError("light_color_mode_missing_hs")
