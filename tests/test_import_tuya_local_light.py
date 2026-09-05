@@ -395,6 +395,103 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                 source_file="mapped_music_light.yaml",
             )
 
+    def test_simple_scene_data_is_preserved_as_extra_state_attribute(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "scene-data-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 25,
+                                "type": "hex",
+                                "name": "scene_data",
+                                "optional": True,
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="scene_data_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {"scene_data": 25},
+        )
+        self.assertEqual(mapping["match"]["required_dps"], [1])
+        self.assertEqual(mapping["match"]["optional_dps"], [25])
+
+    def test_mapped_scene_data_remains_rejected(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_extra_attribute_mapping:scene_data"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "mapped-scene-data-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 25,
+                                    "type": "string",
+                                    "name": "scene_data",
+                                    "mapping": [
+                                        {"dps_val": "01", "value": "Scene 1"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="mapped_scene_data_light.yaml",
+            )
+
+    def test_integer_extra_attribute_stays_fail_closed(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_extra_attribute_type:length_cm"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "length-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {"id": 101, "type": "integer", "name": "length_cm"},
+                            ],
+                        }
+                    ],
+                },
+                source_file="length_light.yaml",
+            )
+
+    def test_named_color_remains_an_unsupported_light_control(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_unsupported_dp:named_color"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "named-color-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {"id": 5, "type": "string", "name": "named_color"},
+                            ],
+                        }
+                    ],
+                },
+                source_file="named_color_light.yaml",
+            )
+
     def test_dedicated_effect_mapping_converts_exact_values(self):
         mapping = convert_profile(
             {
@@ -468,7 +565,7 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
 
     def test_unknown_light_attribute_is_rejected(self):
         with self.assertRaisesRegex(
-            ConversionError, "light_unsupported_dp:control_data"
+            ConversionError, "light_unsupported_dp:future_light_control"
         ):
             convert_profile(
                 {
@@ -481,7 +578,7 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                                 {
                                     "id": 28,
                                     "type": "string",
-                                    "name": "control_data",
+                                    "name": "future_light_control",
                                     "optional": True,
                                 },
                             ],
