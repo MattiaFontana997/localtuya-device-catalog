@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "tools/import_tuya_local.py"
+      - "tools/analyze_light_color_range_gain.py"
       - "tests/test_import_tuya_local*.py"
       - ".github/workflows/tuya-local-static-import.yml"
   workflow_dispatch:
@@ -45,9 +46,9 @@ jobs:
         shell: bash
         run: echo "sha=$(git -C upstream-tuya-local rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Run conservative importer
+      - name: Run conservative importer with independent HSV range support
         run: |
-          python tools/import_tuya_local.py \
+          python tools/analyze_light_color_range_gain.py \
             upstream-tuya-local \
             --revision "${{ steps.upstream.outputs.sha }}" \
             --output-dir generated-tuya-local \
