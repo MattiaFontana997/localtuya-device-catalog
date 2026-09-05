@@ -563,10 +563,24 @@ def _configure_light_scale(
     require_lower: bool,
 ) -> None:
     existing_upper = config.get("brightness_upper")
+    existing_lower = config.get("brightness_lower")
+
+    if reason == "light_rgbhsv":
+        if existing_upper is None and existing_lower is None:
+            config["brightness_lower"] = minimum
+            config["brightness_upper"] = maximum
+            return
+
+        if existing_lower == minimum and existing_upper == maximum:
+            return
+
+        config["color_brightness_lower"] = minimum
+        config["color_brightness_upper"] = maximum
+        return
+
     if existing_upper is not None and existing_upper != maximum:
         raise ConversionError(f"{reason}_range_mismatch")
 
-    existing_lower = config.get("brightness_lower")
     if require_lower and existing_lower is not None and existing_lower != minimum:
         raise ConversionError(f"{reason}_range_mismatch")
 
@@ -747,6 +761,7 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
             raise ConversionError("light_color_mode_mapping")
 
         observed: dict[str, str] = {}
+        scene_values: dict[str, str] = {}
         for rule in rules:
             if set(rule) - {"dps_val", "value", "hidden"}:
                 raise ConversionError("light_color_mode_mapping")
@@ -756,16 +771,37 @@ def _convert_light(entity: dict[str, Any]) -> Converted:
             value = rule.get("value")
             if not isinstance(raw, str) or not isinstance(value, str):
                 raise ConversionError("light_color_mode_mapping")
-            if value not in {"hs", "color_temp"}:
-                # Scene/music/effect modes cannot be reproduced by the current
-                # LocalTuya light config without their dedicated data DPs.
-                raise ConversionError("light_color_mode_effects")
-            expected_raw = "colour" if value == "hs" else "white"
-            if raw != expected_raw:
-                raise ConversionError("light_color_mode_raw_value")
-            if value in observed.values() or raw in observed:
+
+            if raw in observed or value in observed.values():
                 raise ConversionError("light_color_mode_duplicate")
-            observed[raw] = value
+
+            if value in {"hs", "color_temp"}:
+                expected_raw = "colour" if value == "hs" else "white"
+                if raw != expected_raw:
+                    raise ConversionError("light_color_mode_raw_value")
+                observed[raw] = value
+                continue
+
+            if raw.startswith("scene_"):
+                friendly = value.strip()
+                if not friendly or friendly in scene_values:
+                    raise ConversionError("light_color_mode_duplicate")
+                scene_values[friendly] = raw
+                observed[raw] = value
+                continue
+
+            if raw == "music" and value.strip().casefold() == "music":
+                config["music_mode"] = True
+                observed[raw] = value
+                continue
+
+            if raw == "scene":
+                raise ConversionError("light_scene_data_required")
+
+            raise ConversionError("light_color_mode_effects")
+
+        if scene_values:
+            config["scene_values"] = scene_values
 
         if "colour" in observed and rgbhsv is None:
             raise ConversionError("light_color_mode_missing_rgbhsv")
