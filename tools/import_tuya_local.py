@@ -16,7 +16,7 @@ import math
 from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     import yaml
@@ -31,6 +31,7 @@ SOURCE_REPOSITORY = "make-all/tuya-local"
 SOURCE_LICENSE = "MIT"
 SUPPORTED_PLATFORMS = {
     "binary_sensor",
+    "light",
     "number",
     "select",
     "sensor",
@@ -67,6 +68,10 @@ class ImportResult:
     product_ids: tuple[str, ...]
     platforms: tuple[str, ...]
     reasons: tuple[str, ...]
+
+
+Converted = tuple[dict[str, Any], set[int], set[int]]
+Converter = Callable[[dict[str, Any]], Converted]
 
 
 def _devices_dir(source: Path) -> Path:
@@ -213,26 +218,47 @@ def _entity_metadata(entity: dict[str, Any], config: dict[str, Any]) -> None:
         raise ConversionError("entity_mode")
 
 
-def _convert_switch(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
+def _dp_membership(dp: dict[str, Any]) -> tuple[set[int], set[int]]:
+    dp_id = _dp_id(dp)
+    if bool(dp.get("optional")):
+        return set(), {dp_id}
+    return {dp_id}, set()
+
+
+def _finish_single_entity(
+    platform: str,
+    config: dict[str, Any],
+    dp: dict[str, Any],
+) -> Converted:
+    required, optional = _dp_membership(dp)
+    return {"platform": platform, "config": config}, required, optional
+
+
+def _identity_boolean_mapping(dp: dict[str, Any], reason: str) -> None:
+    rules = _mapping_rules(dp)
+    if not rules:
+        return
+
+    expected = {False: False, True: True}
+    observed: dict[bool, bool] = {}
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError(reason)
+        raw = rule["dps_val"]
+        value = rule["value"]
+        if not isinstance(raw, bool) or not isinstance(value, bool):
+            raise ConversionError(reason)
+        observed[raw] = value
+    if observed != expected:
+        raise ConversionError(reason)
+
+
+def _convert_switch(entity: dict[str, Any]) -> Converted:
     dp = _single_named_dp(entity, "switch")
     _check_common_dp_semantics(dp, writable=True)
     if _dp_type(dp) != "boolean":
         raise ConversionError("switch_non_boolean")
-
-    rules = _mapping_rules(dp)
-    if rules:
-        expected = {False: False, True: True}
-        observed: dict[bool, bool] = {}
-        for rule in rules:
-            if set(rule) != {"dps_val", "value"}:
-                raise ConversionError("switch_non_identity_mapping")
-            raw = rule["dps_val"]
-            value = rule["value"]
-            if not isinstance(raw, bool) or not isinstance(value, bool):
-                raise ConversionError("switch_non_identity_mapping")
-            observed[raw] = value
-        if observed != expected:
-            raise ConversionError("switch_non_identity_mapping")
+    _identity_boolean_mapping(dp, "switch_non_identity_mapping")
 
     dp_id = _dp_id(dp)
     config: dict[str, Any] = {
@@ -242,7 +268,7 @@ def _convert_switch(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
         "is_passive_entity": False,
     }
     _entity_metadata(entity, config)
-    return {"platform": "switch", "config": config}, dp_id, bool(dp.get("optional"))
+    return _finish_single_entity("switch", config, dp)
 
 
 def _binary_mapping(dp: dict[str, Any]) -> tuple[str, str]:
@@ -274,9 +300,7 @@ def _binary_mapping(dp: dict[str, Any]) -> tuple[str, str]:
     return str(raw_on), str(raw_off)
 
 
-def _convert_binary_sensor(
-    entity: dict[str, Any],
-) -> tuple[dict[str, Any], int, bool]:
+def _convert_binary_sensor(entity: dict[str, Any]) -> Converted:
     dp = _single_named_dp(entity, "sensor")
     _check_common_dp_semantics(dp, writable=False)
     if _dp_type(dp) not in {"boolean", "integer", "string"}:
@@ -291,11 +315,7 @@ def _convert_binary_sensor(
         "state_off": state_off,
     }
     _entity_metadata(entity, config)
-    return (
-        {"platform": "binary_sensor", "config": config},
-        dp_id,
-        bool(dp.get("optional")),
-    )
+    return _finish_single_entity("binary_sensor", config, dp)
 
 
 def _default_scale_rule(dp: dict[str, Any]) -> float:
@@ -324,7 +344,7 @@ def _default_scale_rule(dp: dict[str, Any]) -> float:
     return 1.0 / divisor
 
 
-def _convert_sensor(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
+def _convert_sensor(entity: dict[str, Any]) -> Converted:
     dp = _single_named_dp(entity, "sensor")
     _check_common_dp_semantics(dp, writable=False)
     if _dp_type(dp) not in {"boolean", "integer", "string"}:
@@ -354,7 +374,7 @@ def _convert_sensor(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
         config["state_class"] = state_class
 
     _entity_metadata(entity, config)
-    return {"platform": "sensor", "config": config}, dp_id, bool(dp.get("optional"))
+    return _finish_single_entity("sensor", config, dp)
 
 
 def _numeric_rule(dp: dict[str, Any]) -> tuple[float, dict[str, Any]]:
@@ -391,7 +411,7 @@ def _range_value(value: Any, scaling: float, reason: str) -> float:
     return result
 
 
-def _convert_number(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
+def _convert_number(entity: dict[str, Any]) -> Converted:
     dp = _single_named_dp(entity, "value")
     _check_common_dp_semantics(dp, writable=True)
     if _dp_type(dp) != "integer":
@@ -433,10 +453,10 @@ def _convert_number(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
         config["unit_of_measurement"] = unit
 
     _entity_metadata(entity, config)
-    return {"platform": "number", "config": config}, dp_id, bool(dp.get("optional"))
+    return _finish_single_entity("number", config, dp)
 
 
-def _convert_select(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
+def _convert_select(entity: dict[str, Any]) -> Converted:
     dp = _single_named_dp(entity, "option")
     _check_common_dp_semantics(dp, writable=True)
     if _dp_type(dp) != "string":
@@ -480,11 +500,295 @@ def _convert_select(entity: dict[str, Any]) -> tuple[dict[str, Any], int, bool]:
     if entity.get("class") is not None:
         raise ConversionError("select_device_class")
     _entity_metadata(entity, config)
-    return {"platform": "select", "config": config}, dp_id, bool(dp.get("optional"))
+    return _finish_single_entity("select", config, dp)
 
 
-_CONVERTERS = {
+def _raw_integer_range(dp: dict[str, Any], reason: str) -> tuple[int, int]:
+    raw_range = dp.get("range")
+    if not isinstance(raw_range, dict):
+        raise ConversionError(f"{reason}_missing_range")
+    if set(raw_range) != {"min", "max"}:
+        raise ConversionError(f"{reason}_invalid_range")
+
+    values: list[int] = []
+    for key in ("min", "max"):
+        value = raw_range[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConversionError(f"{reason}_invalid_range")
+        if not math.isfinite(float(value)) or int(value) != value:
+            raise ConversionError(f"{reason}_invalid_range")
+        values.append(int(value))
+
+    minimum, maximum = values
+    if minimum < 0 or maximum <= minimum or maximum > 10000:
+        raise ConversionError(f"{reason}_invalid_range")
+    return minimum, maximum
+
+
+def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError("light_missing_dps")
+
+    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv"}
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError("light_missing_dp_name")
+        if name not in supported:
+            raise ConversionError(f"light_unsupported_dp:{name}")
+        if name in result:
+            raise ConversionError(f"light_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _merge_membership(
+    required: set[int], optional: set[int], dp: dict[str, Any]
+) -> None:
+    dp_required, dp_optional = _dp_membership(dp)
+    required.update(dp_required)
+    optional.update(dp_optional)
+
+
+def _configure_light_scale(
+    config: dict[str, Any],
+    *,
+    minimum: int,
+    maximum: int,
+    reason: str,
+    require_lower: bool,
+) -> None:
+    existing_upper = config.get("brightness_upper")
+    if existing_upper is not None and existing_upper != maximum:
+        raise ConversionError(f"{reason}_range_mismatch")
+
+    existing_lower = config.get("brightness_lower")
+    if require_lower and existing_lower is not None and existing_lower != minimum:
+        raise ConversionError(f"{reason}_range_mismatch")
+
+    if existing_upper is None:
+        config["brightness_upper"] = maximum
+    if existing_lower is None:
+        config["brightness_lower"] = minimum if require_lower else 0
+
+
+def _convert_light(entity: dict[str, Any]) -> Converted:
+    if entity.get("class") is not None:
+        raise ConversionError("light_device_class")
+
+    # Validate entity-level hidden/mode semantics without adding a device_class.
+    _entity_metadata(entity, {})
+    dps = _light_dps(entity)
+
+    switch = dps.get("switch")
+    if switch is None:
+        # LocalTuya's light entity currently requires a writable primary power DP.
+        raise ConversionError("light_missing_switch")
+    _check_common_dp_semantics(switch, writable=True)
+    if _dp_type(switch) != "boolean":
+        raise ConversionError("light_switch_non_boolean")
+    _identity_boolean_mapping(switch, "light_switch_mapping")
+
+    config: dict[str, Any] = {
+        "id": _dp_id(switch),
+        "platform": "light",
+        "music_mode": False,
+    }
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_membership(required, optional, switch)
+
+    brightness = dps.get("brightness")
+    if brightness is not None:
+        _check_common_dp_semantics(brightness, writable=True)
+        if _dp_type(brightness) != "integer":
+            raise ConversionError("light_brightness_type")
+        if _mapping_rules(brightness):
+            raise ConversionError("light_brightness_mapping")
+        if brightness.get("step") not in (None, 1):
+            raise ConversionError("light_brightness_step")
+        minimum, maximum = _raw_integer_range(brightness, "light_brightness")
+        config.update(
+            {
+                "brightness": _dp_id(brightness),
+                "brightness_lower": minimum,
+                "brightness_upper": maximum,
+            }
+        )
+        _merge_membership(required, optional, brightness)
+
+    color_temp = dps.get("color_temp")
+    if color_temp is not None:
+        _check_common_dp_semantics(color_temp, writable=True)
+        if _dp_type(color_temp) != "integer":
+            raise ConversionError("light_color_temp_type")
+        raw_min, raw_max = _raw_integer_range(color_temp, "light_color_temp")
+        if raw_min != 0:
+            raise ConversionError("light_color_temp_nonzero_min")
+
+        rules = _mapping_rules(color_temp)
+        if len(rules) != 1:
+            raise ConversionError("light_color_temp_mapping")
+        rule = rules[0]
+        if set(rule) - {"target_range", "invert", "step"}:
+            raise ConversionError("light_color_temp_mapping")
+        if rule.get("step") not in (None, 1):
+            raise ConversionError("light_color_temp_step")
+        invert = rule.get("invert", False)
+        if not isinstance(invert, bool):
+            raise ConversionError("light_color_temp_invert")
+        target = rule.get("target_range")
+        if not isinstance(target, dict) or set(target) != {"min", "max"}:
+            raise ConversionError("light_color_temp_target_range")
+        target_min = target["min"]
+        target_max = target["max"]
+        if (
+            isinstance(target_min, bool)
+            or isinstance(target_max, bool)
+            or not isinstance(target_min, (int, float))
+            or not isinstance(target_max, (int, float))
+            or int(target_min) != target_min
+            or int(target_max) != target_max
+        ):
+            raise ConversionError("light_color_temp_target_range")
+        target_min = int(target_min)
+        target_max = int(target_max)
+        if not (1500 <= target_min < target_max <= 8000):
+            raise ConversionError("light_color_temp_target_range")
+
+        _configure_light_scale(
+            config,
+            minimum=0,
+            maximum=raw_max,
+            reason="light_color_temp",
+            require_lower=False,
+        )
+        config.update(
+            {
+                "color_temp": _dp_id(color_temp),
+                "color_temp_min_kelvin": target_min,
+                "color_temp_max_kelvin": target_max,
+                "color_temp_reverse": invert,
+            }
+        )
+        _merge_membership(required, optional, color_temp)
+
+    rgbhsv = dps.get("rgbhsv")
+    if rgbhsv is not None:
+        _check_common_dp_semantics(rgbhsv, writable=True)
+        if _dp_type(rgbhsv) != "hex":
+            raise ConversionError("light_rgbhsv_type")
+        if _mapping_rules(rgbhsv):
+            raise ConversionError("light_rgbhsv_mapping")
+        if rgbhsv.get("endianness") not in (None, "big"):
+            raise ConversionError("light_rgbhsv_endianness")
+        for unsupported in ("mask", "mask_signed", "precision", "step"):
+            if rgbhsv.get(unsupported) is not None:
+                raise ConversionError(f"light_rgbhsv_{unsupported}")
+
+        fmt = rgbhsv.get("format")
+        if not isinstance(fmt, list) or len(fmt) != 3:
+            raise ConversionError("light_rgbhsv_format")
+        expected = (("h", 0, 360), ("s", 0, 1000), ("v", None, None))
+        v_min = v_max = None
+        for item, (name, exact_min, exact_max) in zip(fmt, expected, strict=True):
+            if not isinstance(item, dict):
+                raise ConversionError("light_rgbhsv_format")
+            if set(item) != {"name", "bytes", "range"}:
+                raise ConversionError("light_rgbhsv_format")
+            if item.get("name") != name or item.get("bytes") != 2:
+                raise ConversionError("light_rgbhsv_format")
+            value_range = item.get("range")
+            if not isinstance(value_range, dict) or set(value_range) != {"min", "max"}:
+                raise ConversionError("light_rgbhsv_format")
+            minimum = value_range["min"]
+            maximum = value_range["max"]
+            if (
+                isinstance(minimum, bool)
+                or isinstance(maximum, bool)
+                or not isinstance(minimum, (int, float))
+                or not isinstance(maximum, (int, float))
+                or int(minimum) != minimum
+                or int(maximum) != maximum
+            ):
+                raise ConversionError("light_rgbhsv_format")
+            minimum = int(minimum)
+            maximum = int(maximum)
+            if name != "v":
+                if minimum != exact_min or maximum != exact_max:
+                    raise ConversionError("light_rgbhsv_format")
+            else:
+                if minimum < 0 or maximum <= minimum or maximum > 10000:
+                    raise ConversionError("light_rgbhsv_format")
+                v_min, v_max = minimum, maximum
+
+        assert v_min is not None and v_max is not None
+        _configure_light_scale(
+            config,
+            minimum=v_min,
+            maximum=v_max,
+            reason="light_rgbhsv",
+            require_lower=True,
+        )
+        config["color"] = _dp_id(rgbhsv)
+        _merge_membership(required, optional, rgbhsv)
+
+    color_mode = dps.get("color_mode")
+    if color_mode is not None:
+        _check_common_dp_semantics(color_mode, writable=True)
+        if _dp_type(color_mode) != "string":
+            raise ConversionError("light_color_mode_type")
+        rules = _mapping_rules(color_mode)
+        if not rules:
+            raise ConversionError("light_color_mode_mapping")
+
+        observed: dict[str, str] = {}
+        for rule in rules:
+            if set(rule) - {"dps_val", "value", "hidden"}:
+                raise ConversionError("light_color_mode_mapping")
+            if rule.get("hidden") is True:
+                raise ConversionError("light_color_mode_hidden")
+            raw = rule.get("dps_val")
+            value = rule.get("value")
+            if not isinstance(raw, str) or not isinstance(value, str):
+                raise ConversionError("light_color_mode_mapping")
+            if value not in {"hs", "color_temp"}:
+                # Scene/music/effect modes cannot be reproduced by the current
+                # LocalTuya light config without their dedicated data DPs.
+                raise ConversionError("light_color_mode_effects")
+            expected_raw = "colour" if value == "hs" else "white"
+            if raw != expected_raw:
+                raise ConversionError("light_color_mode_raw_value")
+            if value in observed.values() or raw in observed:
+                raise ConversionError("light_color_mode_duplicate")
+            observed[raw] = value
+
+        if "colour" in observed and rgbhsv is None:
+            raise ConversionError("light_color_mode_missing_rgbhsv")
+        if "white" in observed and color_temp is None:
+            raise ConversionError("light_color_mode_missing_color_temp")
+        if rgbhsv is not None and "colour" not in observed:
+            raise ConversionError("light_color_mode_missing_hs")
+        if color_temp is not None and "white" not in observed:
+            raise ConversionError("light_color_mode_missing_cct")
+
+        config["color_mode"] = _dp_id(color_mode)
+        _merge_membership(required, optional, color_mode)
+    elif rgbhsv is not None and color_temp is not None:
+        # With both capabilities present LocalTuya needs the raw work-mode DP to
+        # distinguish white/CCT from HS state and to switch modes on writes.
+        raise ConversionError("light_missing_color_mode")
+
+    return {"platform": "light", "config": config}, required, optional
+
+
+_CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
+    "light": _convert_light,
     "number": _convert_number,
     "select": _convert_select,
     "sensor": _convert_sensor,
@@ -535,12 +839,10 @@ def convert_profile(
         if platform not in SUPPORTED_PLATFORMS:
             raise ConversionError(f"unsupported_platform:{platform}")
 
-        converted, dp_id, optional = _CONVERTERS[platform](entity)
+        converted, entity_required, entity_optional = _CONVERTERS[platform](entity)
         converted_entities.append(converted)
-        if optional:
-            optional_dps.add(dp_id)
-        else:
-            required_dps.add(dp_id)
+        required_dps.update(entity_required)
+        optional_dps.update(entity_optional)
 
     if required_dps & optional_dps:
         raise ConversionError("required_optional_overlap")
