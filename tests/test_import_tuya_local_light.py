@@ -279,6 +279,77 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
 
         self.assertTrue(mapping["entities"][0]["config"]["music_mode"])
 
+    def test_dedicated_effect_mapping_converts_exact_values(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "effect-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 104,
+                                "type": "string",
+                                "name": "effect",
+                                "optional": True,
+                                "mapping": [
+                                    {"dps_val": "1", "value": "Combination"},
+                                    {"dps_val": "2", "value": "In Wave"},
+                                    {"dps_val": "8", "value": "Steady"},
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="effect_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["effect"], 104)
+        self.assertEqual(
+            config["effect_values"],
+            {
+                "Combination": "1",
+                "In Wave": "2",
+                "Steady": "8",
+            },
+        )
+        self.assertEqual(mapping["match"]["required_dps"], [1])
+        self.assertEqual(mapping["match"]["optional_dps"], [104])
+
+    def test_dedicated_effect_mapping_rejects_non_string_raw_value(self):
+        with self.assertRaisesRegex(
+            ConversionError, "light_effect_non_string_mapping"
+        ):
+            convert_profile(
+                {
+                    "products": [{"id": "bad-effect-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {
+                                    "id": 1,
+                                    "type": "boolean",
+                                    "name": "switch",
+                                },
+                                {
+                                    "id": 2,
+                                    "type": "string",
+                                    "name": "effect",
+                                    "mapping": [
+                                        {"dps_val": 1, "value": "Scene"}
+                                    ],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="bad_effect_light.yaml",
+            )
+
     def test_unknown_light_attribute_is_rejected(self):
         with self.assertRaisesRegex(
             ConversionError, "light_unsupported_dp:control_data"

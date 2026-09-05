@@ -44,6 +44,7 @@ DP_REFERENCE_KEYS = {
     "color_mode",
     "color",
     "scene",
+    "effect",
     "current",
     "current_consumption",
     "voltage",
