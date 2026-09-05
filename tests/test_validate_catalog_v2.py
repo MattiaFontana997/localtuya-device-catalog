@@ -105,6 +105,22 @@ class CatalogV2ValidationTests(unittest.TestCase):
             any("missing from required_dps/optional_dps" in error for error in errors)
         )
 
+    def test_effect_dp_must_be_declared_required_or_optional(self):
+        payload = document(
+            required=[1],
+            optional=[],
+            config={
+                "id": 1,
+                "platform": "switch",
+                "effect": 104,
+                "effect_values": {"Steady": "8"},
+            },
+        )
+        errors = self.validate(payload)
+        self.assertTrue(
+            any("missing from required_dps/optional_dps" in error for error in errors)
+        )
+
     def test_product_ids_are_deterministically_sorted(self):
         payload = document(products=["product-a", "alias-a"])
         errors = self.validate(payload)

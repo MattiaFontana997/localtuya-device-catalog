@@ -530,7 +530,7 @@ def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
     if not isinstance(dps, list) or not dps:
         raise ConversionError("light_missing_dps")
 
-    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv"}
+    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect"}
     result: dict[str, dict[str, Any]] = {}
     for dp in dps:
         if not isinstance(dp, dict):
@@ -747,6 +747,41 @@ def _convert_light(
     required: set[int] = set()
     optional: set[int] = set()
     _merge_membership(required, optional, switch)
+
+    effect = dps.get("effect")
+    if effect is not None:
+        _check_common_dp_semantics(effect, writable=True)
+        if _dp_type(effect) != "string":
+            raise ConversionError("light_effect_type")
+        rules = _mapping_rules(effect)
+        if not rules:
+            raise ConversionError("light_effect_missing_mapping")
+
+        effect_values: dict[str, str] = {}
+        raw_effects: set[str] = set()
+        for rule in rules:
+            if set(rule) - {"dps_val", "value", "hidden"}:
+                raise ConversionError("light_effect_mapping")
+            if rule.get("hidden") is True:
+                raise ConversionError("light_effect_hidden")
+            raw = rule.get("dps_val")
+            friendly = rule.get("value")
+            if (
+                not isinstance(raw, str)
+                or not raw
+                or not isinstance(friendly, str)
+                or not friendly.strip()
+            ):
+                raise ConversionError("light_effect_non_string_mapping")
+            friendly = friendly.strip()
+            if raw in raw_effects or friendly in effect_values:
+                raise ConversionError("light_effect_duplicate")
+            raw_effects.add(raw)
+            effect_values[friendly] = raw
+
+        config["effect"] = _dp_id(effect)
+        config["effect_values"] = effect_values
+        _merge_membership(required, optional, effect)
 
     configured_scene_values = dict(scene_values or {})
     if scene_dp is not None:
