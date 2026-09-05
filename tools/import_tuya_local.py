@@ -530,7 +530,37 @@ def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
     if not isinstance(dps, list) or not dps:
         raise ConversionError("light_missing_dps")
 
-    supported = {"switch", "brightness", "color_mode", "color_temp", "rgbhsv", "effect", "work_mode", "music_data"}
+    supported = {
+        "switch",
+        "brightness",
+        "color_mode",
+        "color_temp",
+        "rgbhsv",
+        "effect",
+        "work_mode",
+        "music_data",
+        "alt_brightness",
+        "app_mode",
+        "available",
+        "color_addressable",
+        "color_data_raw",
+        "color_temp_supported",
+        "control_data",
+        "dreamlight_scene",
+        "dreamlight_scene_mode",
+        "firmware_version",
+        "identity",
+        "length_cm",
+        "min_brightness",
+        "minimum_brightness",
+        "mix_rgbcw",
+        "power",
+        "scene",
+        "scene_brightness",
+        "scene_data",
+        "selected_scene_to_delete",
+        "std_switch",
+    }
     result: dict[str, dict[str, Any]] = {}
     for dp in dps:
         if not isinstance(dp, dict):
@@ -552,6 +582,69 @@ def _merge_membership(
     dp_required, dp_optional = _dp_membership(dp)
     required.update(dp_required)
     optional.update(dp_optional)
+
+
+LIGHT_RAW_EXTRA_DP_NAMES = {
+    "alt_brightness",
+    "app_mode",
+    "available",
+    "color_addressable",
+    "color_data_raw",
+    "color_temp_supported",
+    "control_data",
+    "dreamlight_scene",
+    "dreamlight_scene_mode",
+    "firmware_version",
+    "identity",
+    "length_cm",
+    "min_brightness",
+    "minimum_brightness",
+    "mix_rgbcw",
+    "power",
+    "scene",
+    "scene_brightness",
+    "scene_data",
+    "selected_scene_to_delete",
+    "std_switch",
+}
+
+
+def _preserve_simple_light_extra_attribute(
+    name: str,
+    dp: dict[str, Any],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    """Preserve one Tuya Local light DP that is only an extra state attribute."""
+    _check_common_dp_semantics(dp, writable=False)
+
+    # TuyaLocalEntity._init_end exposes these values through get_value(), which
+    # leaves plain string-like DPS unchanged when there is no mapping/mask.
+    if _dp_type(dp) not in {"string", "hex", "base64"}:
+        raise ConversionError(f"light_extra_attribute_type:{name}")
+    if _mapping_rules(dp):
+        raise ConversionError(f"light_extra_attribute_mapping:{name}")
+
+    allowed_keys = {
+        "id",
+        "type",
+        "name",
+        "optional",
+        "readonly",
+        "hidden",
+        "force",
+        "persist",
+        "sensitive",
+    }
+    if set(dp) - allowed_keys:
+        raise ConversionError(f"light_extra_attribute_semantics:{name}")
+
+    # Tuya Local explicitly blacklists these names from extra_state_attributes.
+    # Keep their DP membership for matching, but do not expose a new HA attr.
+    if name not in {"state", "available"}:
+        config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)
+    _merge_membership(required, optional, dp)
 
 
 def _light_has_bare_scene(entity: dict[str, Any]) -> bool:
@@ -797,6 +890,13 @@ def _convert_light(
             "music_data"
         ] = _dp_id(music_data)
         _merge_membership(required, optional, music_data)
+
+    for extra_name in sorted(LIGHT_RAW_EXTRA_DP_NAMES):
+        extra_dp = dps.get(extra_name)
+        if extra_dp is not None:
+            _preserve_simple_light_extra_attribute(
+                extra_name, extra_dp, config, required, optional
+            )
 
     effect = dps.get("effect")
     if effect is not None:
