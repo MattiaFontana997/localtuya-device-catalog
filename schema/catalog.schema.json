@@ -173,15 +173,20 @@
           "type": "string",
           "enum": [
             "binary_sensor",
+            "button",
             "climate",
             "cover",
             "fan",
+            "humidifier",
             "light",
+            "lock",
             "number",
             "select",
             "sensor",
             "switch",
-            "vacuum"
+            "text",
+            "vacuum",
+            "valve"
           ]
         },
         "config": {

@@ -31,15 +31,20 @@ SOURCE_REPOSITORY = "make-all/tuya-local"
 SOURCE_LICENSE = "MIT"
 SUPPORTED_PLATFORMS = {
     "binary_sensor",
+    "button",
     "climate",
     "cover",
     "fan",
+    "humidifier",
     "light",
+    "lock",
     "number",
     "select",
     "sensor",
     "switch",
+    "text",
     "vacuum",
+    "valve",
 }
 ADVANCED_MAPPING_KEYS = {
     "available",
@@ -2346,17 +2351,511 @@ def _convert_vacuum(entity: dict[str, Any]) -> Converted:
     return {"platform": "vacuum", "config": config}, required, optional
 
 
+CORE_PLATFORM_NAMES = {"button", "text", "valve", "lock", "humidifier"}
+
+
+def _core_named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or not dps:
+        raise ConversionError(f"{prefix}_missing_dps")
+    result: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError(f"{prefix}_missing_dp_name")
+        if name in result:
+            raise ConversionError(f"{prefix}_duplicate_dp:{name}")
+        result[name] = dp
+    return result
+
+
+def _core_scalar(value: Any, dp_type: str, reason: str) -> str | int | bool:
+    if dp_type in {"string", "hex", "base64"}:
+        if not isinstance(value, str):
+            raise ConversionError(reason)
+        return value
+    if dp_type in {"integer", "bitfield"}:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _core_boolean_values(
+    dp: dict[str, Any],
+    *,
+    reason: str,
+    writable: bool,
+) -> tuple[str | int | bool, str | int | bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+    if not rules:
+        if dp_type != "boolean":
+            raise ConversionError(f"{reason}_type")
+        return True, False
+
+    raw_true = None
+    raw_false = None
+    true_seen = False
+    false_seen = False
+    raw_seen: list[str | int | bool] = []
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{reason}_mapping")
+        if "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(f"{reason}_mapping")
+        if writable and rule.get("hidden") is True:
+            continue
+        friendly = rule["value"]
+        if not isinstance(friendly, bool):
+            raise ConversionError(f"{reason}_mapping")
+        raw = _core_scalar(rule["dps_val"], dp_type, f"{reason}_mapping")
+        if any(raw == previous for previous in raw_seen):
+            raise ConversionError(f"{reason}_duplicate")
+        raw_seen.append(raw)
+        if friendly:
+            if true_seen:
+                raise ConversionError(f"{reason}_duplicate")
+            raw_true = raw
+            true_seen = True
+        else:
+            if false_seen:
+                raise ConversionError(f"{reason}_duplicate")
+            raw_false = raw
+            false_seen = True
+
+    if not true_seen or not false_seen:
+        raise ConversionError(f"{reason}_mapping")
+    return raw_true, raw_false
+
+
+def _core_string_values(
+    dp: dict[str, Any],
+    *,
+    reason: str,
+    writable: bool,
+) -> dict[str, str | int | bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    dp_type = _dp_type(dp)
+    if dp_type not in {"string", "integer", "boolean", "bitfield"}:
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    if not rules:
+        raise ConversionError(f"{reason}_mapping")
+    result: dict[str, str | int | bool] = {}
+    raws: list[str | int | bool] = []
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{reason}_mapping")
+        if "dps_val" not in rule or "value" not in rule:
+            raise ConversionError(f"{reason}_mapping")
+        if writable and rule.get("hidden") is True:
+            continue
+        friendly = rule["value"]
+        if not isinstance(friendly, str) or not friendly:
+            raise ConversionError(f"{reason}_friendly")
+        raw = _core_scalar(rule["dps_val"], dp_type, f"{reason}_mapping")
+        if friendly in result or any(raw == previous for previous in raws):
+            raise ConversionError(f"{reason}_duplicate")
+        result[friendly] = raw
+        raws.append(raw)
+    if not result:
+        raise ConversionError(f"{reason}_mapping")
+    return result
+
+
+def _preserve_core_extra(
+    prefix: str,
+    name: str,
+    dp: dict[str, Any],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError(f"{prefix}_extra_semantics:{name}")
+    if dp.get("readonly") not in (None, False, True):
+        raise ConversionError(f"{prefix}_extra_semantics:{name}")
+    if _mapping_rules(dp):
+        raise ConversionError(f"{prefix}_extra_mapping:{name}")
+    if _dp_type(dp) not in {"boolean", "integer", "string", "bitfield", "hex", "base64"}:
+        raise ConversionError(f"{prefix}_extra_type:{name}")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "unit", "class", "category", "range", "step",
+    }
+    if set(dp) - allowed:
+        raise ConversionError(f"{prefix}_extra_semantics:{name}")
+    if dp.get("hidden") is not True and name not in {"state", "available"}:
+        config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)
+    _merge_membership(required, optional, dp)
+
+
+def _convert_button(entity: dict[str, Any]) -> Converted:
+    dps = _core_named_dps(entity, "button")
+    button = dps.get("button")
+    if button is None:
+        raise ConversionError("button_missing_button")
+    _check_common_dp_semantics(button, writable=True)
+    dp_type = _dp_type(button)
+    rules = _mapping_rules(button)
+    if not rules:
+        if dp_type != "boolean":
+            raise ConversionError("button_press_type")
+        press_value: str | int | bool = True
+    else:
+        candidates: list[str | int | bool] = []
+        for rule in rules:
+            if set(rule) - {"dps_val", "value", "hidden"}:
+                raise ConversionError("button_press_mapping")
+            if rule.get("hidden") is True:
+                continue
+            if rule.get("value") is True:
+                if "dps_val" not in rule:
+                    raise ConversionError("button_press_mapping")
+                candidates.append(
+                    _core_scalar(rule["dps_val"], dp_type, "button_press_mapping")
+                )
+        if len(candidates) != 1:
+            raise ConversionError("button_press_mapping")
+        press_value = candidates[0]
+
+    config: dict[str, Any] = {
+        "id": _dp_id(button),
+        "platform": "button",
+        "button_press_value": press_value,
+    }
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_membership(required, optional, button)
+    for name, dp in dps.items():
+        if name == "button":
+            continue
+        _preserve_core_extra("button", name, dp, config, required, optional)
+    return {"platform": "button", "config": config}, required, optional
+
+
+def _convert_text(entity: dict[str, Any]) -> Converted:
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or len(dps) != 1 or not isinstance(dps[0], dict):
+        raise ConversionError("text_requires_single_value_dp")
+    dp = dps[0]
+    if dp.get("name") != "value":
+        raise ConversionError("text_missing_value")
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError("text_sensitive_semantics")
+    if dp.get("readonly") is True:
+        raise ConversionError("text_readonly")
+    if dp.get("readonly") not in (None, False):
+        raise ConversionError("text_semantics")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "range",
+    }
+    if set(dp) - allowed:
+        raise ConversionError("text_semantics")
+    if _mapping_rules(dp):
+        raise ConversionError("text_mapping")
+    raw_type = _dp_type(dp)
+    if raw_type not in {"string", "hex", "base64"}:
+        raise ConversionError("text_type")
+
+    config: dict[str, Any] = {
+        "id": _dp_id(dp),
+        "platform": "text",
+        "text_mode": "password" if dp.get("hidden") is True else "text",
+    }
+    raw_range = dp.get("range")
+    if raw_range is not None:
+        if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
+            raise ConversionError("text_range")
+        minimum = _range_value(raw_range["min"], 1.0, "text_range")
+        maximum = _range_value(raw_range["max"], 1.0, "text_range")
+        if not minimum.is_integer() or not maximum.is_integer() or minimum < 0 or maximum < minimum:
+            raise ConversionError("text_range")
+        config["text_min"] = int(minimum)
+        config["text_max"] = int(maximum)
+    if raw_type == "hex":
+        config["text_pattern"] = "[0-9a-fA-F]*"
+    elif raw_type == "base64":
+        config["text_pattern"] = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+
+    _entity_metadata(entity, config)
+    required, optional = _dp_membership(dp)
+    return {"platform": "text", "config": config}, required, optional
+
+
+def _core_position_semantics(dp: dict[str, Any], *, reason: str, writable: bool) -> tuple[float, float, bool]:
+    _check_common_dp_semantics(dp, writable=writable)
+    if _dp_type(dp) != "integer":
+        raise ConversionError(f"{reason}_type")
+    rules = _mapping_rules(dp)
+    inverted = False
+    if rules:
+        if len(rules) != 1 or "dps_val" in rules[0]:
+            raise ConversionError(f"{reason}_mapping")
+        rule = rules[0]
+        if set(rule) - {"invert"}:
+            raise ConversionError(f"{reason}_mapping")
+        inverted = rule.get("invert", False)
+        if not isinstance(inverted, bool):
+            raise ConversionError(f"{reason}_mapping")
+    step = dp.get("step", 1)
+    if isinstance(step, bool) or not isinstance(step, (int, float)) or float(step) != 1.0:
+        raise ConversionError(f"{reason}_step")
+    raw_range = dp.get("range", {"min": 0, "max": 100})
+    if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
+        raise ConversionError(f"{reason}_range")
+    minimum = _range_value(raw_range["min"], 1.0, f"{reason}_range")
+    maximum = _range_value(raw_range["max"], 1.0, f"{reason}_range")
+    if maximum <= minimum:
+        raise ConversionError(f"{reason}_range")
+    return minimum, maximum, inverted
+
+
+def _convert_valve(entity: dict[str, Any]) -> Converted:
+    dps = _core_named_dps(entity, "valve")
+    valve = dps.get("valve")
+    if valve is None:
+        raise ConversionError("valve_missing_valve")
+    config: dict[str, Any] = {"id": _dp_id(valve), "platform": "valve"}
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+
+    if _dp_type(valve) == "integer":
+        minimum, maximum, inverted = _core_position_semantics(
+            valve, reason="valve_position", writable=True
+        )
+        config.update({
+            "valve_position_control": True,
+            "valve_position_min": minimum,
+            "valve_position_max": maximum,
+            "valve_position_inverted": inverted,
+        })
+    else:
+        raw_open, raw_closed = _core_boolean_values(
+            valve, reason="valve_state", writable=True
+        )
+        config["valve_open_value"] = raw_open
+        config["valve_closed_value"] = raw_closed
+    _merge_membership(required, optional, valve)
+
+    switch = dps.get("switch")
+    if switch is not None:
+        raw_on, raw_off = _core_boolean_values(
+            switch, reason="valve_switch", writable=True
+        )
+        config["valve_switch_dp"] = _dp_id(switch)
+        config["valve_switch_on"] = raw_on
+        config["valve_switch_off"] = raw_off
+        _merge_membership(required, optional, switch)
+
+    current = dps.get("current_position")
+    if current is not None:
+        if not config.get("valve_position_control"):
+            raise ConversionError("valve_current_position_without_position_control")
+        cur_min, cur_max, cur_inverted = _core_position_semantics(
+            current, reason="valve_current_position", writable=False
+        )
+        if (
+            cur_min != config["valve_position_min"]
+            or cur_max != config["valve_position_max"]
+            or cur_inverted != config["valve_position_inverted"]
+        ):
+            raise ConversionError("valve_current_position_semantics")
+        config["valve_current_position_dp"] = _dp_id(current)
+        _merge_membership(required, optional, current)
+
+    for name, dp in dps.items():
+        if name in {"valve", "switch", "current_position"}:
+            continue
+        _preserve_core_extra("valve", name, dp, config, required, optional)
+    return {"platform": "valve", "config": config}, required, optional
+
+
+LOCK_SPECIAL_DPS = {
+    "unlock_fingerprint", "unlock_password", "unlock_temp_pwd", "unlock_dynamic_pwd",
+    "unlock_offline_pwd", "unlock_card", "unlock_app", "unlock_key", "unlock_ble",
+    "unlock_voice", "unlock_face", "unlock_multi", "unlock_ibeacon", "request_unlock",
+    "approve_unlock", "code_unlock", "set_unlock_code", "request_intercom",
+    "approve_intercom",
+}
+
+
+def _convert_lock(entity: dict[str, Any]) -> Converted:
+    dps = _core_named_dps(entity, "lock")
+    lock = dps.get("lock")
+    if lock is None:
+        raise ConversionError("lock_direct_control_required")
+    raw_locked, raw_unlocked = _core_boolean_values(
+        lock, reason="lock_control", writable=True
+    )
+    config: dict[str, Any] = {
+        "id": _dp_id(lock),
+        "platform": "lock",
+        "lock_command_values": {"lock": raw_locked, "unlock": raw_unlocked},
+        "lock_state_values": {"locked": raw_locked, "unlocked": raw_unlocked},
+    }
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+    _merge_membership(required, optional, lock)
+
+    state = dps.get("lock_state")
+    if state is not None:
+        state_locked, state_unlocked = _core_boolean_values(
+            state, reason="lock_state", writable=False
+        )
+        config["lock_state_dp"] = _dp_id(state)
+        config["lock_state_values"] = {
+            "locked": state_locked,
+            "unlocked": state_unlocked,
+        }
+        _merge_membership(required, optional, state)
+
+    open_dp = dps.get("open")
+    if open_dp is not None:
+        writable_open = open_dp.get("readonly") is not True
+        raw_open, raw_closed = _core_boolean_values(
+            open_dp, reason="lock_open", writable=writable_open
+        )
+        config["lock_open_dp"] = _dp_id(open_dp)
+        config["lock_open_values"] = {"open": raw_open, "closed": raw_closed}
+        config["lock_open_writable"] = writable_open
+        _merge_membership(required, optional, open_dp)
+
+    jammed = dps.get("jammed")
+    if jammed is not None:
+        raw_jammed, raw_clear = _core_boolean_values(
+            jammed, reason="lock_jammed", writable=False
+        )
+        config["lock_jammed_dp"] = _dp_id(jammed)
+        config["lock_jammed_values"] = {"jammed": raw_jammed, "clear": raw_clear}
+        _merge_membership(required, optional, jammed)
+
+    for name, dp in dps.items():
+        if name in {"lock", "lock_state", "open", "jammed"}:
+            continue
+        if name in LOCK_SPECIAL_DPS:
+            raise ConversionError(f"lock_unsupported_dp:{name}")
+        _preserve_core_extra("lock", name, dp, config, required, optional)
+    return {"platform": "lock", "config": config}, required, optional
+
+
+def _convert_humidifier(entity: dict[str, Any]) -> Converted:
+    dps = _core_named_dps(entity, "humidifier")
+    functional = {"switch", "current_humidity", "humidity", "mode", "action"}
+    primary = next((dps[name] for name in ("switch", "humidity", "current_humidity", "mode", "action") if name in dps), None)
+    if primary is None:
+        raise ConversionError("humidifier_missing_functional_dp")
+
+    config: dict[str, Any] = {"id": _dp_id(primary), "platform": "humidifier"}
+    _entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+    humidity_scalings: list[float] = []
+
+    switch = dps.get("switch")
+    if switch is not None:
+        raw_on, raw_off = _core_boolean_values(
+            switch, reason="humidifier_switch", writable=True
+        )
+        config["id"] = _dp_id(switch)
+        config["humidifier_switch_dp"] = _dp_id(switch)
+        config["humidifier_switch_on"] = raw_on
+        config["humidifier_switch_off"] = raw_off
+        _merge_membership(required, optional, switch)
+
+    current = dps.get("current_humidity")
+    if current is not None:
+        _check_common_dp_semantics(current, writable=False)
+        if _dp_type(current) != "integer":
+            raise ConversionError("humidifier_current_humidity_type")
+        scaling = _default_scale_rule(current)
+        humidity_scalings.append(scaling)
+        config["humidifier_current_humidity_dp"] = _dp_id(current)
+        _merge_membership(required, optional, current)
+
+    target = dps.get("humidity")
+    if target is not None:
+        _check_common_dp_semantics(target, writable=True)
+        if _dp_type(target) != "integer":
+            raise ConversionError("humidifier_humidity_type")
+        scaling, rule = _numeric_rule(target)
+        humidity_scalings.append(scaling)
+        config["humidifier_target_humidity_dp"] = _dp_id(target)
+        raw_range = rule.get("range", target.get("range"))
+        if raw_range is not None:
+            if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
+                raise ConversionError("humidifier_humidity_range")
+            minimum = _range_value(raw_range["min"], scaling, "humidifier_humidity_range")
+            maximum = _range_value(raw_range["max"], scaling, "humidifier_humidity_range")
+            if maximum < minimum:
+                raise ConversionError("humidifier_humidity_range")
+            config["humidifier_humidity_min"] = minimum
+            config["humidifier_humidity_max"] = maximum
+        raw_step = rule.get("step", target.get("step", 1))
+        step = _range_value(raw_step, scaling, "humidifier_humidity_step")
+        if step <= 0:
+            raise ConversionError("humidifier_humidity_step")
+        config["humidifier_humidity_step"] = step
+        _merge_membership(required, optional, target)
+
+    if humidity_scalings:
+        first = humidity_scalings[0]
+        if any(abs(value - first) > 1e-12 for value in humidity_scalings[1:]):
+            raise ConversionError("humidifier_humidity_scaling_mismatch")
+        if first != 1.0:
+            config["humidifier_humidity_scaling"] = first
+
+    mode = dps.get("mode")
+    if mode is not None:
+        config["humidifier_mode_dp"] = _dp_id(mode)
+        config["humidifier_mode_values"] = _core_string_values(
+            mode, reason="humidifier_mode", writable=True
+        )
+        _merge_membership(required, optional, mode)
+
+    action = dps.get("action")
+    if action is not None:
+        config["humidifier_action_dp"] = _dp_id(action)
+        config["humidifier_action_values"] = _core_string_values(
+            action, reason="humidifier_action", writable=False
+        )
+        _merge_membership(required, optional, action)
+
+    for name, dp in dps.items():
+        if name in functional:
+            continue
+        _preserve_core_extra("humidifier", name, dp, config, required, optional)
+    return {"platform": "humidifier", "config": config}, required, optional
+
+
 _CONVERTERS: dict[str, Converter] = {
     "binary_sensor": _convert_binary_sensor,
+    "button": _convert_button,
     "climate": _convert_climate,
     "cover": _convert_cover,
     "fan": _convert_fan,
+    "humidifier": _convert_humidifier,
     "light": _convert_light,
+    "lock": _convert_lock,
     "number": _convert_number,
     "select": _convert_select,
     "sensor": _convert_sensor,
     "switch": _convert_switch,
+    "text": _convert_text,
     "vacuum": _convert_vacuum,
+    "valve": _convert_valve,
 }
 
 
@@ -2424,6 +2923,14 @@ def convert_profile(
             converted, entity_required, entity_optional = _CONVERTERS[platform](
                 entity
             )
+        if platform in CORE_PLATFORM_NAMES:
+            primary_key = (platform, int(converted["config"]["id"]))
+            if any(
+                existing["platform"] == primary_key[0]
+                and int(existing["config"]["id"]) == primary_key[1]
+                for existing in converted_entities
+            ):
+                raise ConversionError(f"{platform}_duplicate_primary_dp")
         converted_entities.append(converted)
         required_dps.update(entity_required)
         optional_dps.update(entity_optional)
