@@ -1,0 +1,68 @@
+name: Tuya Local Mapping Analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/analyze_tuya_local_mappings.py"
+      - "tests/test_analyze_tuya_local_mappings.py"
+      - ".github/workflows/tuya-local-mapping-analysis.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze Tuya Local mapping rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout catalog tooling
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install analyzer dependency
+        run: python -m pip install "PyYAML>=6,<7"
+
+      - name: Run unit tests
+        run: python -m unittest tests.test_analyze_tuya_local_mappings -v
+
+      - name: Checkout current Tuya Local
+        uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          path: upstream-tuya-local
+          fetch-depth: 1
+
+      - name: Analyze mapping-rule shapes
+        run: |
+          python tools/analyze_tuya_local_mappings.py \
+            upstream-tuya-local \
+            --json tuya-local-mapping-analysis.json \
+            | tee tuya-local-mapping-analysis.txt
+
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo "## Tuya Local mapping analysis"
+            echo
+            echo '```text'
+            cat tuya-local-mapping-analysis.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full mapping analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuya-local-mapping-analysis
+          path: |
+            tuya-local-mapping-analysis.json
+            tuya-local-mapping-analysis.txt
+          if-no-files-found: error
