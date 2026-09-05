@@ -1,0 +1,95 @@
+name: Tuya Local Static Import
+
+on:
+  pull_request:
+    branches:
+      - tuya-local-catalog-v2
+      - main
+    paths:
+      - "tools/import_tuya_local.py"
+      - "tests/test_import_tuya_local.py"
+      - ".github/workflows/tuya-local-static-import.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    name: Analyze lossless static imports
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout catalog tooling
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install tooling dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+
+      - name: Run importer tests
+        run: python -m unittest tests.test_import_tuya_local -v
+
+      - name: Checkout current Tuya Local
+        uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          path: upstream-tuya-local
+          fetch-depth: 1
+
+      - name: Capture upstream revision
+        id: upstream
+        shell: bash
+        run: echo "sha=$(git -C upstream-tuya-local rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Run conservative importer
+        run: |
+          python tools/import_tuya_local.py \
+            upstream-tuya-local \
+            --revision "${{ steps.upstream.outputs.sha }}" \
+            --output-dir generated-tuya-local \
+            --json tuya-local-static-import.json \
+            | tee tuya-local-static-import.txt
+
+      - name: Validate every generated V2 mapping
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from tools.validate_catalog import load_json, validate_document
+
+          schema = load_json(Path("schema/catalog.schema.json"))
+          files = sorted(Path("generated-tuya-local").glob("*.json"))
+          for path in files:
+              errors = validate_document(path, schema)
+              if errors:
+                  raise SystemExit("\n".join(errors))
+          print(f"Validated {len(files)} generated mapping(s)")
+          PY
+
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo "## Tuya Local static import report"
+            echo
+            echo "Upstream revision: \`${{ steps.upstream.outputs.sha }}\`"
+            echo
+            echo '```text'
+            cat tuya-local-static-import.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload import report and generated mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuya-local-static-import
+          path: |
+            tuya-local-static-import.json
+            tuya-local-static-import.txt
+            generated-tuya-local/*.json
+          if-no-files-found: error
