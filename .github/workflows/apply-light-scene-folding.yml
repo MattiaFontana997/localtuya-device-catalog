@@ -1,0 +1,107 @@
+name: Apply light scene-data folding
+
+on:
+  push:
+    branches:
+      - tuya-local-light-scene-data-folding
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: tuya-local-light-scene-data-folding
+
+      - name: Apply importer and test changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              if new in text:
+                  return
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one match in {path}, found {count}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
+
+          importer = Path("tools/import_tuya_local.py")
+
+          replace_once(
+              importer,
+              '''def _merge_membership(\n    required: set[int], optional: set[int], dp: dict[str, Any]\n) -> None:\n    dp_required, dp_optional = _dp_membership(dp)\n    required.update(dp_required)\n    optional.update(dp_optional)\n\n\ndef _configure_light_scale(\n''',
+              '''def _merge_membership(\n    required: set[int], optional: set[int], dp: dict[str, Any]\n) -> None:\n    dp_required, dp_optional = _dp_membership(dp)\n    required.update(dp_required)\n    optional.update(dp_optional)\n\n\ndef _light_has_bare_scene(entity: dict[str, Any]) -> bool:\n    dps = entity.get("dps")\n    if not isinstance(dps, list):\n        return False\n\n    for dp in dps:\n        if not isinstance(dp, dict) or dp.get("name") != "color_mode":\n            continue\n        mapping = dp.get("mapping")\n        if not isinstance(mapping, list):\n            return False\n        return any(\n            isinstance(rule, dict) and rule.get("dps_val") == "scene"\n            for rule in mapping\n        )\n\n    return False\n\n\ndef _scene_select_values(\n    entity: dict[str, Any],\n) -> tuple[dict[str, Any], dict[str, str]] | None:\n    if (\n        entity.get("entity") != "select"\n        or entity.get("translation_key") != "scene"\n    ):\n        return None\n\n    try:\n        dp = _single_named_dp(entity, "option")\n        _check_common_dp_semantics(dp, writable=True)\n        if _dp_type(dp) != "string":\n            return None\n        rules = _mapping_rules(dp)\n    except ConversionError:\n        return None\n\n    if not rules:\n        return None\n\n    values: dict[str, str] = {}\n    raw_values: set[str] = set()\n    for rule in rules:\n        if set(rule) - {"dps_val", "value", "hidden"}:\n            return None\n        if rule.get("hidden") is True:\n            return None\n        raw = rule.get("dps_val")\n        friendly = rule.get("value")\n        if (\n            not isinstance(raw, str)\n            or not raw\n            or not isinstance(friendly, str)\n            or not friendly.strip()\n        ):\n            return None\n        friendly = friendly.strip()\n        if raw in raw_values or friendly in values:\n            return None\n        raw_values.add(raw)\n        values[friendly] = raw\n\n    return dp, values\n\n\ndef _hidden_scene_text_dp(\n    entity: dict[str, Any], scene_dp: dict[str, Any]\n) -> dict[str, Any] | None:\n    if (\n        entity.get("entity") != "text"\n        or entity.get("translation_key") != "scene"\n        or entity.get("hidden") is not True\n    ):\n        return None\n\n    try:\n        dp = _single_named_dp(entity, "value")\n        if _dp_id(dp) != _dp_id(scene_dp):\n            return None\n        if _dp_membership(dp) != _dp_membership(scene_dp):\n            return None\n    except ConversionError:\n        return None\n\n    return dp\n\n\ndef _find_light_scene_context(\n    entities: list[Any],\n) -> tuple[int, dict[str, Any], dict[str, str], int] | None:\n    light_indexes = [\n        index\n        for index, entity in enumerate(entities)\n        if isinstance(entity, dict)\n        and entity.get("entity") == "light"\n        and _light_has_bare_scene(entity)\n    ]\n    if len(light_indexes) != 1:\n        return None\n\n    candidates: list[tuple[int, dict[str, Any], dict[str, str], int]] = []\n    for entity in entities:\n        if not isinstance(entity, dict):\n            continue\n        parsed = _scene_select_values(entity)\n        if parsed is None:\n            continue\n        scene_dp, scene_values = parsed\n\n        hidden_indexes = [\n            index\n            for index, hidden in enumerate(entities)\n            if isinstance(hidden, dict)\n            and _hidden_scene_text_dp(hidden, scene_dp) is not None\n        ]\n        if len(hidden_indexes) != 1:\n            continue\n\n        candidates.append(\n            (light_indexes[0], scene_dp, scene_values, hidden_indexes[0])\n        )\n\n    if len(candidates) != 1:\n        return None\n    return candidates[0]\n\n\ndef _configure_light_scale(\n''',
+          )
+
+          replace_once(
+              importer,
+              '''def _convert_light(entity: dict[str, Any]) -> Converted:\n''',
+              '''def _convert_light(\n    entity: dict[str, Any],\n    *,\n    scene_dp: dict[str, Any] | None = None,\n    scene_values: dict[str, str] | None = None,\n) -> Converted:\n''',
+          )
+
+          replace_once(
+              importer,
+              '''    required: set[int] = set()\n    optional: set[int] = set()\n    _merge_membership(required, optional, switch)\n\n    brightness = dps.get("brightness")\n''',
+              '''    required: set[int] = set()\n    optional: set[int] = set()\n    _merge_membership(required, optional, switch)\n\n    configured_scene_values = dict(scene_values or {})\n    if scene_dp is not None:\n        _check_common_dp_semantics(scene_dp, writable=True)\n        if _dp_type(scene_dp) != "string" or not configured_scene_values:\n            raise ConversionError("light_scene_data_context")\n        config["scene"] = _dp_id(scene_dp)\n        _merge_membership(required, optional, scene_dp)\n\n    brightness = dps.get("brightness")\n''',
+          )
+
+          replace_once(
+              importer,
+              '''        observed: dict[str, str] = {}\n        scene_values: dict[str, str] = {}\n        for rule in rules:\n''',
+              '''        observed: dict[str, str] = {}\n        for rule in rules:\n''',
+          )
+
+          replace_once(
+              importer,
+              '''            if raw.startswith("scene_"):\n                friendly = value.strip()\n                if not friendly or friendly in scene_values:\n                    raise ConversionError("light_color_mode_duplicate")\n                scene_values[friendly] = raw\n                observed[raw] = value\n                continue\n''',
+              '''            if raw.startswith("scene_"):\n                friendly = value.strip()\n                if not friendly or friendly in configured_scene_values:\n                    raise ConversionError("light_color_mode_duplicate")\n                configured_scene_values[friendly] = raw\n                observed[raw] = value\n                continue\n''',
+          )
+
+          replace_once(
+              importer,
+              '''            if raw == "scene":\n                raise ConversionError("light_scene_data_required")\n\n            raise ConversionError("light_color_mode_effects")\n\n        if scene_values:\n            config["scene_values"] = scene_values\n''',
+              '''            if raw == "scene":\n                if scene_dp is None or not configured_scene_values:\n                    raise ConversionError("light_scene_data_required")\n                observed[raw] = value\n                continue\n\n            raise ConversionError("light_color_mode_effects")\n\n        if configured_scene_values:\n            config["scene_values"] = configured_scene_values\n''',
+          )
+
+          replace_once(
+              importer,
+              '''    converted_entities: list[dict[str, Any]] = []\n    required_dps: set[int] = set()\n    optional_dps: set[int] = set()\n\n    for entity in entities:\n        if not isinstance(entity, dict):\n            raise ConversionError("invalid_entity")\n        platform = entity.get("entity")\n        if platform not in SUPPORTED_PLATFORMS:\n            raise ConversionError(f"unsupported_platform:{platform}")\n\n        converted, entity_required, entity_optional = _CONVERTERS[platform](entity)\n        converted_entities.append(converted)\n        required_dps.update(entity_required)\n        optional_dps.update(entity_optional)\n''',
+              '''    converted_entities: list[dict[str, Any]] = []\n    required_dps: set[int] = set()\n    optional_dps: set[int] = set()\n\n    scene_context = _find_light_scene_context(entities)\n    consumed_entities: set[int] = set()\n    if scene_context is not None:\n        consumed_entities.add(scene_context[3])\n\n    for index, entity in enumerate(entities):\n        if index in consumed_entities:\n            continue\n        if not isinstance(entity, dict):\n            raise ConversionError("invalid_entity")\n        platform = entity.get("entity")\n        if platform not in SUPPORTED_PLATFORMS:\n            raise ConversionError(f"unsupported_platform:{platform}")\n\n        if (\n            platform == "light"\n            and scene_context is not None\n            and scene_context[0] == index\n        ):\n            converted, entity_required, entity_optional = _convert_light(\n                entity,\n                scene_dp=scene_context[1],\n                scene_values=scene_context[2],\n            )\n        else:\n            converted, entity_required, entity_optional = _CONVERTERS[platform](\n                entity\n            )\n        converted_entities.append(converted)\n        required_dps.update(entity_required)\n        optional_dps.update(entity_optional)\n''',
+          )
+
+          tests = Path("tests/test_import_tuya_local_light.py")
+          marker = '\n\nif __name__ == "__main__":\n'
+          text = tests.read_text(encoding="utf-8")
+          addition = '''\n    def test_scene_select_and_hidden_text_fold_into_light(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "scene-data-light"}],\n                "entities": [\n                    {\n                        "entity": "light",\n                        "dps": [\n                            {"id": 20, "type": "boolean", "name": "switch"},\n                            {\n                                "id": 21,\n                                "type": "string",\n                                "name": "color_mode",\n                                "mapping": [\n                                    {"dps_val": "scene", "value": "Scene"}\n                                ],\n                            },\n                        ],\n                    },\n                    {\n                        "entity": "text",\n                        "translation_key": "scene",\n                        "hidden": True,\n                        "dps": [\n                            {"id": 25, "type": "hex", "name": "value"}\n                        ],\n                    },\n                    {\n                        "entity": "select",\n                        "translation_key": "scene",\n                        "dps": [\n                            {\n                                "id": 25,\n                                "type": "string",\n                                "name": "option",\n                                "mapping": [\n                                    {"dps_val": "0103e8", "value": "Palm"},\n                                    {"dps_val": "0403e8", "value": "Rainbow"},\n                                ],\n                            }\n                        ],\n                    },\n                ],\n            },\n            source_file="scene_data_light.yaml",\n        )\n\n        self.assertEqual(len(mapping["entities"]), 2)\n        light = mapping["entities"][0]["config"]\n        self.assertEqual(light["scene"], 25)\n        self.assertEqual(\n            light["scene_values"],\n            {"Palm": "0103e8", "Rainbow": "0403e8"},\n        )\n        self.assertEqual(mapping["entities"][1]["platform"], "select")\n        self.assertEqual(mapping["match"]["required_dps"], [20, 21, 25])\n\n    def test_optional_scene_transport_stays_optional(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "optional-scene-data"}],\n                "entities": [\n                    {\n                        "entity": "light",\n                        "dps": [\n                            {"id": 20, "type": "boolean", "name": "switch"},\n                            {\n                                "id": 21,\n                                "type": "string",\n                                "name": "color_mode",\n                                "mapping": [\n                                    {"dps_val": "scene", "value": "Scene"}\n                                ],\n                            },\n                        ],\n                    },\n                    {\n                        "entity": "text",\n                        "translation_key": "scene",\n                        "hidden": True,\n                        "dps": [\n                            {\n                                "id": 25,\n                                "type": "hex",\n                                "name": "value",\n                                "optional": True,\n                            }\n                        ],\n                    },\n                    {\n                        "entity": "select",\n                        "translation_key": "scene",\n                        "dps": [\n                            {\n                                "id": 25,\n                                "type": "string",\n                                "name": "option",\n                                "optional": True,\n                                "mapping": [\n                                    {"dps_val": "0103e8", "value": "Palm"}\n                                ],\n                            }\n                        ],\n                    },\n                ],\n            },\n            source_file="optional_scene_data.yaml",\n        )\n\n        self.assertEqual(mapping["match"]["optional_dps"], [25])\n\n    def test_scene_context_requires_matching_hidden_transport(self):\n        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):\n            convert_profile(\n                {\n                    "products": [{"id": "mismatched-scene-data"}],\n                    "entities": [\n                        {\n                            "entity": "light",\n                            "dps": [\n                                {"id": 20, "type": "boolean", "name": "switch"},\n                                {\n                                    "id": 21,\n                                    "type": "string",\n                                    "name": "color_mode",\n                                    "mapping": [\n                                        {"dps_val": "scene", "value": "Scene"}\n                                    ],\n                                },\n                            ],\n                        },\n                        {\n                            "entity": "text",\n                            "translation_key": "scene",\n                            "hidden": True,\n                            "dps": [\n                                {"id": 51, "type": "string", "name": "value"}\n                            ],\n                        },\n                        {\n                            "entity": "select",\n                            "translation_key": "scene",\n                            "dps": [\n                                {\n                                    "id": 25,\n                                    "type": "string",\n                                    "name": "option",\n                                    "mapping": [\n                                        {"dps_val": "0103e8", "value": "Palm"}\n                                    ],\n                                }\n                            ],\n                        },\n                    ],\n                },\n                source_file="mismatched_scene_data.yaml",\n            )\n'''
+          if "test_scene_select_and_hidden_text_fold_into_light" not in text:
+              if marker not in text:
+                  raise SystemExit("Test insertion marker not found")
+              tests.write_text(text.replace(marker, addition + marker), encoding="utf-8")
+          PY
+
+      - name: Check diff whitespace
+        run: git diff --check
+
+      - name: Run importer tests
+        run: python -m unittest discover -s tests -p 'test_import_tuya_local*.py' -v
+
+      - name: Commit code changes
+        shell: bash
+        run: |
+          if git diff --quiet -- tools/import_tuya_local.py tests/test_import_tuya_local_light.py; then
+            echo "Scene folding already applied"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/import_tuya_local.py tests/test_import_tuya_local_light.py
+          git commit -m "Fold Tuya Local scene data into light mappings"
+          git push origin HEAD:tuya-local-light-scene-data-folding
