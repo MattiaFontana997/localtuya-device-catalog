@@ -89,6 +89,20 @@
         1,
         2,
         4,
+        5,
+        6,
+        10,
+        17
+      ],
+      "best_matches": [],
+      "mapping_id": "fingerprint-eeese_anna_dehumidifier-971448d3fe",
+      "reason": "duplicate_entity_primary_dp"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        4,
         14,
         16,
         17,
@@ -524,8 +538,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 35,
-  "generated_candidates": 128,
+  "blocked_candidates": 36,
+  "generated_candidates": 134,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -536,7 +550,7 @@
     "fingerprint-avonflow_afd14h_radiator-943a51e261",
     "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
     "fingerprint-beok_tcb38_thermostat-66874d19b0",
-    "fingerprint-beok_tr8b_thermostat-e7c743c14c",
+    "fingerprint-beok_tr8b_thermostat-d6581ddf8a",
     "fingerprint-blitzwill_ceilingfanlight-36c798b498",
     "fingerprint-blitzwolf_bwshp6_smartplug-039ea1434c",
     "fingerprint-brizlabs_string_lights-29eaa9cea7",
@@ -544,6 +558,7 @@
     "fingerprint-comfortzone_cztf423s_towerfan-7e0f8a179e",
     "fingerprint-deta_fan-6d17ecc425",
     "fingerprint-devola_patio_heater-cc3ceed031",
+    "fingerprint-digma_disenseg1_gassensor-f8a2ab8b77",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
     "fingerprint-electriq_12wminv_heatpump-744a833331",
@@ -580,6 +595,7 @@
     "fingerprint-kogan_heater_fan-bc33e8eea6",
     "fingerprint-kogan_kahtp_heater-253f65cc7e",
     "fingerprint-konlen_wf96l_waterlevel_controller-fff9d72dc3",
+    "fingerprint-kyvol_e30_vacuum-532c47f711",
     "fingerprint-kyvol_ea200_humidifier-c561e79164",
     "fingerprint-logicom_powerstrip-c1fe992975",
     "fingerprint-m027_curtain-09d85a1ed9",
@@ -602,6 +618,7 @@
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rgb_nightlight_outlet-196a003dd8",
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
+    "fingerprint-salcar_t9w_thermostat-73b6559a28",
     "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
     "fingerprint-simple_rgbcw_lightbulb-e884ae361d",
@@ -619,7 +636,9 @@
     "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
+    "fingerprint-zemismart_spm01_d2tw_energymeter-9a02e5ac3f",
+    "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 93
+  "safe_candidates": 98
 }

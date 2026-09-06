@@ -1236,7 +1236,7 @@
       }
     },
     {
-      "id": "fingerprint-beok_tr8b_thermostat-e7c743c14c",
+      "id": "fingerprint-beok_tr8b_thermostat-d6581ddf8a",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -1330,6 +1330,13 @@
             "mapped_extra_state_attributes_dps": {
               "temperature_step": 102
             },
+            "mapped_extra_state_attribute_mappings": {
+              "temperature_step": [
+                {
+                  "scale": 10.0
+                }
+              ]
+            },
             "advanced_mapping_by_dp": {
               "1": [
                 {
@@ -1400,11 +1407,6 @@
                   "dps_val": "close",
                   "value": "idle"
                 }
-              ],
-              "102": [
-                {
-                  "scale": 10.0
-                }
               ]
             }
           }
@@ -1444,8 +1446,8 @@
             "mapped_extra_state_attributes_dps": {
               "unit": 23
             },
-            "advanced_mapping_by_dp": {
-              "23": [
+            "mapped_extra_state_attribute_mappings": {
+              "unit": [
                 {
                   "dps_val": "c",
                   "value": "C"
@@ -1473,8 +1475,8 @@
             "mapped_extra_state_attributes_dps": {
               "unit": 23
             },
-            "advanced_mapping_by_dp": {
-              "23": [
+            "mapped_extra_state_attribute_mappings": {
+              "unit": [
                 {
                   "dps_val": "c",
                   "value": "C"
@@ -1564,8 +1566,8 @@
               "unit": 23,
               "step": 108
             },
-            "advanced_mapping_by_dp": {
-              "23": [
+            "mapped_extra_state_attribute_mappings": {
+              "unit": [
                 {
                   "dps_val": "c",
                   "value": "C"
@@ -1575,7 +1577,7 @@
                   "value": "F"
                 }
               ],
-              "108": [
+              "step": [
                 {
                   "scale": 10.0
                 }
@@ -2369,6 +2371,204 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/devola_patio_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-digma_disenseg1_gassensor-f8a2ab8b77",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          2,
+          3,
+          5,
+          10,
+          45
+        ],
+        "optional_dps": [
+          1,
+          9,
+          14
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "device_class": "enum",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": null,
+                  "value": "unchecked"
+                },
+                {
+                  "dps_val": "checking",
+                  "value": "checking"
+                },
+                {
+                  "dps_val": "check_success",
+                  "value": "success"
+                },
+                {
+                  "dps_val": "check_failure",
+                  "value": "failure"
+                },
+                {
+                  "dps_val": "others",
+                  "value": "other"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 2,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": "alarm"
+              },
+              {
+                "value": false
+              }
+            ],
+            "device_class": "gas"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 3,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 60.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "s",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 5,
+            "platform": "sensor",
+            "unit_of_measurement": "ppm",
+            "state_class": "measurement",
+            "device_class": "volatile_organic_compounds_parts",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 9,
+            "platform": "button",
+            "button_press_value": true
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 10,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False",
+            "device_class": "cold"
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 14,
+            "platform": "button",
+            "button_press_value": true
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 45,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 45
+            },
+            "mapped_extra_state_attributes_dps": {
+              "description": 45
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "description": [
+                {
+                  "dps_val": 0,
+                  "value": "ok",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1,
+                  "value": "fault",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2,
+                  "value": "serious_fault",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4,
+                  "value": "sensor_fault",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8,
+                  "value": "probe_fault",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16,
+                  "value": "power_fault",
+                  "bitmask": true
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/digma_disenseg1_gassensor.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -6150,6 +6350,273 @@
       }
     },
     {
+      "id": "fingerprint-kyvol_e30_vacuum-532c47f711",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          17,
+          18,
+          101,
+          102,
+          104,
+          107
+        ],
+        "optional_dps": [
+          15,
+          16
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "vacuum",
+          "config": {
+            "id": 3,
+            "platform": "vacuum",
+            "vacuum_status_dp": 3,
+            "vacuum_status_values": {
+              "standby": "standby",
+              "random": "random",
+              "smart": "smart",
+              "wall_follow": "wall_follow",
+              "mop": "mop",
+              "clean_spot": "spiral",
+              "left_spiral": "left_spiral",
+              "right_spiral": "right_spiral",
+              "bow": "bow",
+              "left_bow": "left_bow",
+              "right_bow": "right_bow",
+              "partial_bow": "partial_bow",
+              "return_to_base": "chargego",
+              "single": "single",
+              "zone": "zone",
+              "pose": "pose",
+              "point": "point",
+              "part": "part",
+              "pick_zone": "pick_zone"
+            },
+            "vacuum_direction_dp": 4,
+            "vacuum_direction_values": {
+              "forward": "forward",
+              "reverse": "backward",
+              "left": "turn_left",
+              "right": "turn_right",
+              "stop": "stop"
+            },
+            "fan_speed_dp": 14,
+            "vacuum_fan_speed_values": {
+              "strong": "0",
+              "normal": "1",
+              "quiet": "2",
+              "gentle": "3",
+              "closed": "4"
+            },
+            "vacuum_activate_dp": 2,
+            "vacuum_activate_on": true,
+            "vacuum_activate_off": false,
+            "vacuum_power_dp": 1,
+            "vacuum_power_on": true,
+            "vacuum_power_off": false,
+            "locate_dp": 13,
+            "vacuum_locate_on": true,
+            "fault_dp": 18,
+            "extra_state_attributes_dps": {
+              "clean_record": 15,
+              "water_status": 101,
+              "model": 102,
+              "mode": 104,
+              "carpet_adaptive": 107
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 6,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "battery"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 17,
+            "platform": "sensor",
+            "unit_of_measurement": "min",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 16,
+            "platform": "sensor",
+            "unit_of_measurement": "m2",
+            "device_class": "area",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 10,
+            "platform": "button",
+            "button_press_value": true,
+            "device_class": "restart"
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 11,
+            "platform": "button",
+            "button_press_value": true,
+            "device_class": "restart"
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 12,
+            "platform": "button",
+            "button_press_value": true
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 7,
+            "platform": "sensor",
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 8,
+            "platform": "sensor",
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 9,
+            "platform": "sensor",
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 5,
+            "platform": "sensor"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 18,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 18
+            },
+            "mapped_extra_state_attributes_dps": {
+              "description": 18
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "description": [
+                {
+                  "dps_val": 0,
+                  "value": "ok",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1,
+                  "value": "edge_sweep",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2,
+                  "value": "middle_sweep",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4,
+                  "value": "left_wheel",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8,
+                  "value": "right_wheel",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16,
+                  "value": "garbage_box",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 32,
+                  "value": "land_check",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 64,
+                  "value": "collision",
+                  "bitmask": true
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/kyvol_e30_vacuum.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-kyvol_ea200_humidifier-c561e79164",
       "confidence": "experimental",
       "match": {
@@ -8884,6 +9351,248 @@
       }
     },
     {
+      "id": "fingerprint-salcar_t9w_thermostat-73b6559a28",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          10,
+          16,
+          19,
+          23,
+          24,
+          26,
+          31,
+          36,
+          40,
+          45
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "auto": "auto",
+              "heat": "heat"
+            },
+            "target_temperature_dp": 16,
+            "target_precision": 0.1,
+            "temperature_step": 0.5,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 1000.0,
+            "current_temperature_dp": 24,
+            "precision": 0.1,
+            "hvac_action_dp": 36,
+            "hvac_action_values": {
+              "heating": "open",
+              "idle": "close"
+            },
+            "temperature_unit_dp": 23,
+            "temperature_unit_values": {
+              "celsius": "c",
+              "fahrenheit": "f"
+            },
+            "min_temperature_dp": 26,
+            "max_temperature_dp": 19,
+            "max_temperature_precision": 0.1,
+            "min_temperature_precision": 0.1,
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 2,
+                  "conditions": [
+                    {
+                      "dps_val": "auto",
+                      "value": "auto"
+                    },
+                    {
+                      "dps_val": "manual",
+                      "value": "heat"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 10,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 19,
+            "platform": "number",
+            "min_value": 5.0,
+            "max_value": 1000.0,
+            "step_size": 0.5,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "mapped_extra_state_attributes_dps": {
+              "unit": 23
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "unit": [
+                {
+                  "dps_val": "c",
+                  "value": "C"
+                },
+                {
+                  "dps_val": "f",
+                  "value": "F"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 23,
+            "platform": "select",
+            "options": "c;f",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "celsius;fahrenheit"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 26,
+            "platform": "number",
+            "min_value": 50.0,
+            "max_value": 10000.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "mapped_extra_state_attributes_dps": {
+              "unit": 23
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "unit": [
+                {
+                  "dps_val": "c",
+                  "value": "C"
+                },
+                {
+                  "dps_val": "f",
+                  "value": "F"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 31,
+            "platform": "select",
+            "options": "5_2;6_1;7",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "5 day work week;6 day work week;Daily"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 40,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 45,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 45
+            },
+            "mapped_extra_state_attributes_dps": {
+              "description": 45
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "description": [
+                {
+                  "dps_val": 0,
+                  "value": "OK",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1,
+                  "value": "E1",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2,
+                  "value": "E2",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4,
+                  "value": "E3",
+                  "bitmask": true
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/salcar_t9w_thermostat.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-sendo_airconditioner_c-8515ed4a85",
       "confidence": "experimental",
       "match": {
@@ -10933,6 +11642,819 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/woox_r4028_powerstrip.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-zemismart_spm01_d2tw_energymeter-9a02e5ac3f",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          9,
+          23,
+          32,
+          50,
+          102,
+          103,
+          104
+        ],
+        "optional_dps": [
+          19
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            },
+            "extra_state_attributes_dps": {
+              "meter_id": 19
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 23,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 104,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 102,
+            "platform": "sensor",
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 103,
+            "platform": "sensor",
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 1000
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 32,
+            "platform": "sensor",
+            "unit_of_measurement": "Hz",
+            "state_class": "measurement",
+            "device_class": "frequency",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 50,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "power_factor"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 9,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 9
+            },
+            "mapped_extra_state_attributes_dps": {
+              "description": 9
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "description": [
+                {
+                  "dps_val": 0,
+                  "value": "ok",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1,
+                  "value": "short_circuit",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2,
+                  "value": "surge",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4,
+                  "value": "overload",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8,
+                  "value": "earth_leak",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16,
+                  "value": "temperature_difference",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 32,
+                  "value": "fire",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 64,
+                  "value": "high_power",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 128,
+                  "value": "self_test",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 256,
+                  "value": "over_current",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 512,
+                  "value": "unbalanced",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1024,
+                  "value": "over_voltage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2048,
+                  "value": "under_voltage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4096,
+                  "value": "miss_phase",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8192,
+                  "value": "outage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16384,
+                  "value": "magnetism",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 32768,
+                  "value": "credit_low",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 65536,
+                  "value": "credit_expired",
+                  "bitmask": true
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/zemismart_spm01_d2tw_energymeter.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          9,
+          12,
+          23,
+          29,
+          32,
+          50,
+          102,
+          103,
+          104,
+          105,
+          108,
+          109,
+          110,
+          112,
+          113,
+          114,
+          117,
+          118,
+          119,
+          121,
+          122,
+          123,
+          126,
+          127,
+          128,
+          130
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 23,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 29,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 105,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 114,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 123,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 103,
+            "platform": "sensor",
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 112,
+            "platform": "sensor",
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 121,
+            "platform": "sensor",
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 104,
+            "platform": "sensor",
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 1000
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 113,
+            "platform": "sensor",
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 1000
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 122,
+            "platform": "sensor",
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 1000
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 108,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "power_factor"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 117,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "power_factor"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 126,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "power_factor"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 50,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "power_factor"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 109,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 110,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 118,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 119,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 127,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 128,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 32,
+            "platform": "sensor",
+            "unit_of_measurement": "Hz",
+            "state_class": "measurement",
+            "device_class": "frequency",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 130,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 9,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 9
+            },
+            "mapped_extra_state_attributes_dps": {
+              "description": 9
+            },
+            "mapped_extra_state_attribute_mappings": {
+              "description": [
+                {
+                  "dps_val": 0,
+                  "value": "ok",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1,
+                  "value": "short_circuit",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2,
+                  "value": "surge",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4,
+                  "value": "overload",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8,
+                  "value": "earth_leak",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16,
+                  "value": "temperature_difference",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 32,
+                  "value": "fire",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 64,
+                  "value": "high_power",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 128,
+                  "value": "self_test",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 256,
+                  "value": "over_current",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 512,
+                  "value": "unbalanced",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 1024,
+                  "value": "over_voltage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 2048,
+                  "value": "under_voltage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 4096,
+                  "value": "miss_phase",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 8192,
+                  "value": "outage",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 16384,
+                  "value": "magnetism",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 32768,
+                  "value": "credit_low",
+                  "bitmask": true
+                },
+                {
+                  "dps_val": 65536,
+                  "value": "credit_expired",
+                  "bitmask": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 12,
+            "platform": "button",
+            "button_press_value": true,
+            "device_class": "restart"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 102,
+            "platform": "number",
+            "min_value": 5.0,
+            "max_value": 3600.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "s",
+            "device_class": "duration"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/zemismart_spm02d2tw_energymeter.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
