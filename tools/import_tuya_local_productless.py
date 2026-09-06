@@ -489,12 +489,26 @@ def _prepare_advanced_entity(
     raw_dps = entity.get("dps")
     if not isinstance(raw_dps, list) or not raw_dps:
         return entity, {}, set()
+    def needs_advanced(name: Any, rule: dict[str, Any]) -> bool:
+        if set(rule) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS):
+            return True
+        # Tuya Local hidden mappings still participate in forward/read mapping
+        # but are excluded from value lists and reverse writes. LocalTuya's
+        # advanced mapper has the same semantics. Batch N enables this only for
+        # Climate swing enums where hidden rules are forward-only fallbacks.
+        return (
+            platform == "climate"
+            and name in {"swing_mode", "swing_horizontal_mode"}
+            and rule.get("hidden") is True
+        )
+
     has_advanced = False
     for raw_dp in raw_dps:
         if not isinstance(raw_dp, dict):
             continue
+        name = raw_dp.get("name")
         for rule in _raw_mapping(raw_dp):
-            if set(rule) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS):
+            if needs_advanced(name, rule):
                 has_advanced = True
                 break
         if has_advanced:
@@ -510,10 +524,7 @@ def _prepare_advanced_entity(
 
     for name, original_dp in by_name.items():
         rules = _raw_mapping(original_dp)
-        if not any(
-            set(rule) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS)
-            for rule in rules
-        ):
+        if not any(needs_advanced(name, rule) for rule in rules):
             continue
         translated, references = _translate_advanced_mapping(original_dp, by_name, platform)
         if translated:
