@@ -291,6 +291,22 @@ def _validate_consumed_dependency(dp: dict[str, Any]) -> None:
 def _prepare_advanced_entity(
     entity: dict[str, Any], platform: str
 ) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], set[int]]:
+    raw_dps = entity.get("dps")
+    if not isinstance(raw_dps, list) or not raw_dps:
+        return entity, {}, set()
+    has_advanced = False
+    for raw_dp in raw_dps:
+        if not isinstance(raw_dp, dict):
+            continue
+        for rule in _raw_mapping(raw_dp):
+            if set(rule) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS):
+                has_advanced = True
+                break
+        if has_advanced:
+            break
+    if not has_advanced:
+        return entity, {}, set()
+
     by_name = _named_dps(entity, platform)
     advanced_by_dp: dict[str, list[dict[str, Any]]] = {}
     referenced_names: set[str] = set()
