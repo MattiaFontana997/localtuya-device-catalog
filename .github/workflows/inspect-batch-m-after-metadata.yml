@@ -1,0 +1,46 @@
+name: Inspect Batch M After Metadata
+
+on:
+  push:
+    branches: [develop]
+    paths: [".github/workflows/inspect-batch-m-after-metadata.yml"]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: tools
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install "jsonschema>=4.23,<5" "PyYAML>=6,<7"
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Run corpus and advanced gap counts
+        run: |
+          rm -rf /tmp/batch-m-generated
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/batch-m-generated \
+            --json /tmp/batch-m.json
+          python - <<'PY'
+          import json
+          from collections import Counter
+          r=json.load(open('/tmp/batch-m.json',encoding='utf-8'))
+          counts=Counter(x['status'] for x in r['results'])
+          reasons=Counter(y for x in r['results'] if x['status']=='skipped' for y in x['reasons'])
+          print('BATCH_M_COUNTS',dict(sorted(counts.items())))
+          for k,v in reasons.most_common(): print('GAP',k,v)
+          print('ADVANCED_PROFILES')
+          for x in r['results']:
+            adv=[y for y in x.get('reasons',[]) if y.startswith('advanced_mapping')]
+            if adv: print(x['file'],','.join(adv))
+          PY
