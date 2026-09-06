@@ -1,0 +1,76 @@
+name: Refresh Batch H Fingerprints on Develop
+
+on:
+  push:
+    branches: [develop]
+    paths: [".github/workflows/publish-batch-h-fingerprints-develop.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4,<5"
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Generate all current productless candidates
+        shell: bash
+        run: |
+          rm -rf /tmp/productless-fingerprints
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/productless-fingerprints \
+            --json /tmp/productless-import-report.json
+      - name: Build unique safe Catalog V3 snapshot
+        shell: bash
+        run: |
+          python tools/build_safe_fingerprint_catalog.py \
+            --catalog catalog.json \
+            --generated-dir /tmp/productless-fingerprints \
+            --output /tmp/catalog.json \
+            --report /tmp/productless-fingerprint-import-report.json
+          cp /tmp/catalog.json catalog.json
+          cp /tmp/productless-fingerprint-import-report.json docs/productless-fingerprint-import-report.json
+      - name: Validate generated catalog
+        run: python tools/validate_catalog.py catalog.json
+      - name: Show Batch H publication summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          catalog=json.load(open('catalog.json', encoding='utf-8'))
+          report=json.load(open('docs/productless-fingerprint-import-report.json', encoding='utf-8'))
+          productless=[m for m in catalog['mappings'] if m.get('match',{}).get('product_ids') == []]
+          products=[m for m in catalog['mappings'] if m.get('match',{}).get('product_ids')]
+          print('CATALOG_SCHEMA', catalog['schema_version'])
+          print('CATALOG_TOTAL', len(catalog['mappings']))
+          print('CATALOG_PRODUCT', len(products))
+          print('CATALOG_PRODUCTLESS', len(productless))
+          print('GENERATED', report['generated_candidates'])
+          print('SAFE', report['safe_candidates'])
+          print('BLOCKED', report['blocked_candidates'])
+          PY
+      - name: Commit generated Batch H catalog
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add catalog.json docs/productless-fingerprint-import-report.json
+          if git diff --cached --quiet; then
+            echo "Catalog already current"
+            exit 0
+          fi
+          git commit -m "Refresh safe fingerprints after Batch H"
+          git push origin HEAD:develop
