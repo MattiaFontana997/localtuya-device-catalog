@@ -1,0 +1,66 @@
+name: Run corrected Batch O importer
+
+on:
+  push:
+    paths:
+      - .github/workflows/run-batch-o-importer-fixed.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply corrected Batch O patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/patch-batch-o-importer.yml').read_text()
+          marker = "          python - <<'PY'\n"
+          start = workflow.index(marker) + len(marker)
+          end = workflow.index("\n          PY\n      - name: Install dependencies", start)
+          script = workflow[start:end]
+          script = "\n".join(
+              line[10:] if line.startswith("          ") else line
+              for line in script.splitlines()
+          )
+
+          bad_start = script.index('# Keep the old generic redirect regression fail-closed')
+          test_start = script.index("Path('tests/test_productless_batch_o.py').write_text", bad_start)
+          regression = '''regression_path = Path('tests/test_import_tuya_local_productless.py')
+text = regression_path.read_text()
+old = ''' + repr('                            "mapping": [{"scale": 10}],\n') + '''
+start = text.index('    def test_writable_redirect_with_target_mapping_stays_fail_closed')
+end = text.index('    def test_dynamic_condition_scale_stays_fail_closed', start)
+block = text[start:end]
+if old not in block:
+    raise SystemExit('redirect regression target mapping not found')
+block = block.replace(old, '                            "mapping": [{"dps_val": 32, "value": 10}],\\n', 1)
+text = text[:start] + block + text[end:]
+regression_path.write_text(text)
+
+'''
+          script = script[:bad_start] + regression + script[test_start:]
+          exec(compile(script, '<batch-o-importer-patch>', 'exec'), {})
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5" pytest
+      - name: Run targeted tests
+        run: python -m pytest -q tests/test_import_tuya_local_productless.py tests/test_productless_batch_o.py
+      - name: Commit importer changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py tests/test_productless_batch_o.py
+          git diff --cached --check
+          git commit -m "Import lossless Batch O advanced mappings"
+          git push origin HEAD:develop
