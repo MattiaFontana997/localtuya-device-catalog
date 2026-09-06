@@ -24,7 +24,7 @@ jobs:
           ref: 38347807cfc81ae8789974d98532eb928f42f174
           path: upstream-tuya-local
           fetch-depth: 1
-      - name: Inspect current Climate blockers after hidden swing support
+      - name: Inspect current Climate blockers after HVAC action support
         run: |
           rm -rf /tmp/batch-n-generated
           python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
