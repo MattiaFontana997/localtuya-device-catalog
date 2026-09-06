@@ -34,7 +34,7 @@ _platforms = base._platforms
 _ADVANCED_SOURCE_KEYS = {"conditions", "constraint", "invalid", "value_redirect"}
 _UNSUPPORTED_ADVANCED_KEYS = {"available", "mapping", "value_mirror"}
 _RUNTIME_RULE_BASE_KEYS = {"dps_val", "value", "hidden", "invalid"}
-_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect", "range", "step"}
+_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect", "range", "step", "scale"}
 _BASE_PROJECTION_DROP = {"conditions", "constraint", "invalid", "value_redirect"}
 _SIMPLE_PRIMARY_NAMES = {
     "binary_sensor": "sensor",
@@ -131,23 +131,97 @@ def _validate_constraint_dp(dp: dict[str, Any]) -> None:
         raise ConversionError("advanced_mapping_constraint_semantics")
 
 
-def _validate_redirect_target(dp: dict[str, Any], *, writable_source: bool) -> None:
+def _positive_transform(value: Any, reason: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ConversionError(reason)
+    value = float(value)
+    if not math.isfinite(value) or value <= 0:
+        raise ConversionError(reason)
+    return value
+
+
+def _redirect_target_support_rule(
+    source_rule: dict[str, Any], target_dp: dict[str, Any]
+) -> dict[str, Any]:
+    """Return the extra runtime transform needed after redirecting to target_dp.
+
+    The mature platform converter has already applied the source rule's static
+    scale to the logical value. A redirected target with the same scale therefore
+    needs no second scale; a different simple scale is represented as a bounded
+    ratio. Target step/range remain raw target-DP semantics and are enforced by
+    the runtime target mapping. Rich target mappings remain fail-closed.
+    """
+    target_rules = _raw_mapping(target_dp)
+    target_rule: dict[str, Any] = {}
+    if target_rules:
+        if len(target_rules) != 1 or set(target_rules[0]) - {"scale", "step"}:
+            raise ConversionError("advanced_mapping_redirect_target_mapping")
+        target_rule = target_rules[0]
+
+    source_scale = _positive_transform(
+        source_rule.get("scale", 1), "advanced_mapping_redirect_source_scale"
+    )
+    target_scale = _positive_transform(
+        target_rule.get("scale", 1), "advanced_mapping_redirect_target_scale"
+    )
+    support: dict[str, Any] = {}
+    ratio = target_scale / source_scale
+    if not math.isclose(ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):
+        support["scale"] = ratio
+
+    if "step" in target_rule:
+        support["step"] = _positive_transform(
+            target_rule["step"], "advanced_mapping_redirect_target_step"
+        )
+
+    target_range = target_dp.get("range")
+    if target_range is not None:
+        if (
+            not isinstance(target_range, dict)
+            or set(target_range) != {"min", "max"}
+            or any(
+                isinstance(target_range.get(key), bool)
+                or not isinstance(target_range.get(key), (int, float))
+                for key in ("min", "max")
+            )
+            or not math.isfinite(float(target_range["min"]))
+            or not math.isfinite(float(target_range["max"]))
+            or float(target_range["max"]) <= float(target_range["min"])
+        ):
+            raise ConversionError("advanced_mapping_redirect_target_range")
+        support["range"] = {
+            "min": target_range["min"],
+            "max": target_range["max"],
+        }
+    return support
+
+
+def _validate_redirect_target(
+    dp: dict[str, Any],
+    *,
+    source_rule: dict[str, Any],
+    redirect_support: dict[str, list[dict[str, Any]]],
+) -> None:
     if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
         raise ConversionError("advanced_mapping_redirect_semantics")
     if set(dp) & {"mask", "mask_signed", "format", "endianness"}:
         raise ConversionError("advanced_mapping_redirect_encoding")
-    # Reads recurse through LocalTuya mappings, but writes intentionally redirect
-    # to the target raw DP in one step. Tuya Local recursively applies the target
-    # DP's write mapping, so a writable redirect is lossless only when the target
-    # itself has no mapping transformation.
-    if writable_source and _raw_mapping(dp):
-        raise ConversionError("advanced_mapping_redirect_target_mapping")
+    support = _redirect_target_support_rule(source_rule, dp)
+    if not support:
+        return
+    key = str(base._dp_id(dp))
+    value = [support]
+    previous = redirect_support.get(key)
+    if previous is not None and previous != value:
+        raise ConversionError("advanced_mapping_redirect_target_conflict")
+    redirect_support[key] = value
 
 
 def _translate_advanced_mapping(
     dp: dict[str, Any],
     by_name: dict[str, dict[str, Any]],
     platform: str,
+    redirect_support: dict[str, list[dict[str, Any]]] | None = None,
 ) -> tuple[list[dict[str, Any]], set[str]]:
     rules = _raw_mapping(dp)
     if not rules:
@@ -159,7 +233,8 @@ def _translate_advanced_mapping(
 
     translated: list[dict[str, Any]] = []
     references: set[str] = set()
-    writable_source = dp.get("readonly") is not True
+    if redirect_support is None:
+        redirect_support = {}
     transform_keys = {"scale", "invert", "step", "range", "target_range"}
 
     for source in rules:
@@ -204,7 +279,9 @@ def _translate_advanced_mapping(
             redirect_id, redirect_dp = _dependency_dp(
                 redirect, by_name, reason="advanced_mapping_redirect_missing"
             )
-            _validate_redirect_target(redirect_dp, writable_source=writable_source)
+            _validate_redirect_target(
+                redirect_dp, source_rule=source, redirect_support=redirect_support
+            )
             references.add(redirect)
             rule["value_redirect_dp"] = redirect_id
 
@@ -236,8 +313,11 @@ def _translate_advanced_mapping(
                     )
                 if set(condition) - _RUNTIME_CONDITION_KEYS:
                     raise ConversionError("advanced_mapping_condition_semantics")
-                dynamic_metadata = set(condition) & {"range", "step"}
-                if dynamic_metadata and platform not in {"climate", "number"}:
+                if "range" in condition and platform not in {"climate", "number", "water_heater"}:
+                    raise ConversionError("advanced_mapping_condition_semantics")
+                if "step" in condition and platform not in {"climate", "number", "water_heater", "fan"}:
+                    raise ConversionError("advanced_mapping_condition_semantics")
+                if "scale" in condition and platform not in {"climate", "number", "water_heater"}:
                     raise ConversionError("advanced_mapping_condition_semantics")
                 if "dps_val" not in condition:
                     raise ConversionError("advanced_mapping_condition_missing_dps_val")
@@ -254,6 +334,16 @@ def _translate_advanced_mapping(
                         if not isinstance(condition[key], bool):
                             raise ConversionError("advanced_mapping_condition_boolean")
                         out[key] = condition[key]
+                if "scale" in condition:
+                    condition_scale = _positive_transform(
+                        condition["scale"], "advanced_mapping_condition_scale"
+                    )
+                    source_scale = _positive_transform(
+                        source.get("scale", 1), "advanced_mapping_source_scale"
+                    )
+                    ratio = condition_scale / source_scale
+                    if not math.isclose(ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):
+                        out["scale"] = ratio
                 if "range" in condition:
                     value_range = condition["range"]
                     if (
@@ -277,7 +367,9 @@ def _translate_advanced_mapping(
                         reason="advanced_mapping_redirect_missing",
                     )
                     _validate_redirect_target(
-                        redirect_dp, writable_source=writable_source
+                        redirect_dp,
+                        source_rule=source,
+                        redirect_support=redirect_support,
                     )
                     references.add(condition_redirect)
                     out["value_redirect_dp"] = redirect_id
@@ -621,6 +713,7 @@ def _prepare_advanced_entity(
 
     by_name = _named_dps(entity, platform)
     advanced_by_dp: dict[str, list[dict[str, Any]]] = {}
+    redirect_support: dict[str, list[dict[str, Any]]] = {}
     referenced_names: set[str] = set()
     transformed = copy.deepcopy(entity)
     transformed_by_name = _named_dps(transformed, platform)
@@ -629,12 +722,20 @@ def _prepare_advanced_entity(
         rules = _raw_mapping(original_dp)
         if not dp_needs_advanced(name, rules):
             continue
-        translated, references = _translate_advanced_mapping(original_dp, by_name, platform)
+        translated, references = _translate_advanced_mapping(
+            original_dp, by_name, platform, redirect_support
+        )
         if translated:
             advanced_by_dp[str(base._dp_id(original_dp))] = translated
             referenced_names.update(references)
             transformed_by_name[name].clear()
             transformed_by_name[name].update(_project_mapping_for_base(original_dp, platform, name))
+
+    for dp_id, support in redirect_support.items():
+        previous = advanced_by_dp.get(dp_id)
+        if previous is not None and previous != support:
+            raise ConversionError("advanced_mapping_redirect_target_conflict")
+        advanced_by_dp[dp_id] = support
 
     if not advanced_by_dp:
         return entity, {}, set()

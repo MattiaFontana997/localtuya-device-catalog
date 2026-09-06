@@ -266,7 +266,7 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
                             "type": "integer",
                             "hidden": True,
                             "range": {"min": 32, "max": 212},
-                            "mapping": [{"scale": 10}],
+                            "mapping": [{"dps_val": 32, "value": 10}],
                         },
                     ],
                 }
