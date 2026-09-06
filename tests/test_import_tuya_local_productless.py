@@ -467,17 +467,21 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
                 }
             ])
 
-    def test_multidp_extra_force_stays_fail_closed(self):
-        with self.assertRaisesRegex(ConversionError, "sensor_extra_semantics:calibration"):
-            self._convert([
-                {
-                    "entity": "sensor",
-                    "dps": [
-                        {"id": 1, "name": "sensor", "type": "integer"},
-                        {"id": 2, "name": "calibration", "type": "integer", "force": True},
-                    ],
-                }
-            ])
+    def test_multidp_extra_force_is_preserved_as_requested_attribute(self):
+        result = self._convert([
+            {
+                "entity": "sensor",
+                "dps": [
+                    {"id": 1, "name": "sensor", "type": "integer"},
+                    {"id": 2, "name": "calibration", "type": "integer", "force": True},
+                ],
+            }
+        ])
+        self.assertEqual(
+            result["entities"][0]["config"]["extra_state_attributes_dps"],
+            {"calibration": 2},
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 2])
 
     def test_multidp_duplicate_raw_dp_alias_is_preserved(self):
         result = self._convert([
