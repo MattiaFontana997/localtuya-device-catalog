@@ -13,8 +13,20 @@ from typing import Any
 from jsonschema import Draft202012Validator
 try:
     from .sensor_mapping import validate_sensor_value_mapping
+    from .fan_mapping import (
+        RAW_TYPES as FAN_RAW_TYPES,
+        coerce_fan_raw,
+        validate_fan_oscillation_mapping,
+        validate_fan_speed_mapping,
+    )
 except ImportError:  # Direct script execution.
     from sensor_mapping import validate_sensor_value_mapping
+    from fan_mapping import (
+        RAW_TYPES as FAN_RAW_TYPES,
+        coerce_fan_raw,
+        validate_fan_oscillation_mapping,
+        validate_fan_speed_mapping,
+    )
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -303,6 +315,29 @@ def validate_semantics(data: dict[str, Any], source: Path) -> list[str]:
                 if (platform != "sensor" or validate_sensor_value_mapping(config["sensor_value_mapping"]) is None
                         or any(key in config for key in ("scaling", "advanced_mapping", "advanced_mapping_by_dp"))):
                     errors.append(f"{source}: mapping {mapping_id!r} invalid sensor value mapping")
+            if "fan_speed_mapping" in config:
+                if platform != "fan" or "fan_speed_control" not in config or validate_fan_speed_mapping(config["fan_speed_mapping"]) is None:
+                    errors.append(f"{source}: mapping {mapping_id!r} invalid fan speed mapping")
+            if "fan_oscillating_mapping" in config:
+                if platform != "fan" or "fan_oscillating_control" not in config or validate_fan_oscillation_mapping(config["fan_oscillating_mapping"]) is None:
+                    errors.append(f"{source}: mapping {mapping_id!r} invalid fan oscillation mapping")
+            if "fan_preset_raw_type" in config:
+                raw_type = config["fan_preset_raw_type"]
+                values = config.get("fan_preset_values")
+                if platform != "fan" or raw_type not in FAN_RAW_TYPES or "fan_preset_dp" not in config or not isinstance(values, dict) or not values:
+                    errors.append(f"{source}: mapping {mapping_id!r} invalid fan preset raw type")
+                else:
+                    seen_raw = []
+                    for raw in values.values():
+                        try:
+                            normalized = coerce_fan_raw(raw, raw_type)
+                        except ValueError:
+                            errors.append(f"{source}: mapping {mapping_id!r} invalid fan preset raw value")
+                            break
+                        if any(normalized == previous for previous in seen_raw):
+                            errors.append(f"{source}: mapping {mapping_id!r} duplicate fan preset raw value")
+                            break
+                        seen_raw.append(normalized)
             override_keys = entity.get("override_keys", [])
 
             for override_key in override_keys:
