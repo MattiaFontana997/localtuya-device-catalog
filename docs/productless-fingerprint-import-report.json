@@ -147,6 +147,44 @@
     },
     {
       "available_dps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        19,
+        22,
+        101,
+        102
+      ],
+      "best_matches": [
+        "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
+        "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2"
+      ],
+      "mapping_id": "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        19,
+        22,
+        101,
+        102
+      ],
+      "best_matches": [
+        "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
+        "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2"
+      ],
+      "mapping_id": "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
         20,
         21,
         24
@@ -438,8 +476,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 31,
-  "generated_candidates": 118,
+  "blocked_candidates": 33,
+  "generated_candidates": 124,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -450,12 +488,14 @@
     "fingerprint-avonflow_afd14h_radiator-943a51e261",
     "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
     "fingerprint-beok_tcb38_thermostat-66874d19b0",
+    "fingerprint-beok_tr8b_thermostat-e7c743c14c",
     "fingerprint-blitzwill_ceilingfanlight-36c798b498",
     "fingerprint-blitzwolf_bwshp6_smartplug-039ea1434c",
     "fingerprint-brizlabs_string_lights-29eaa9cea7",
     "fingerprint-catit_pet_feeder-bb92e37192",
     "fingerprint-comfortzone_cztf423s_towerfan-7e0f8a179e",
     "fingerprint-deta_fan-6d17ecc425",
+    "fingerprint-devola_patio_heater-cc3ceed031",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
     "fingerprint-electriq_12wminv_heatpump-744a833331",
@@ -496,6 +536,7 @@
     "fingerprint-m027_curtain-09d85a1ed9",
     "fingerprint-makegood_double_power_point_with_energy-96f4bff3fc",
     "fingerprint-mantra_fan-d520778154",
+    "fingerprint-me80_thermostat-1c7cae21c3",
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
@@ -505,6 +546,7 @@
     "fingerprint-orion_ptc2000_heater-1d6c159639",
     "fingerprint-pgst_climate_sensor-ce4b9c73f8",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
+    "fingerprint-princess_panel_heater-e5d132a5f1",
     "fingerprint-prosto_ptc2000_heater-2106dd93c1",
     "fingerprint-purline_m100_heater-7591ca90d2",
     "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
@@ -529,5 +571,5 @@
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 87
+  "safe_candidates": 91
 }

@@ -1236,6 +1236,362 @@
       }
     },
     {
+      "id": "fingerprint-beok_tr8b_thermostat-e7c743c14c",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          10,
+          16,
+          19,
+          23,
+          24,
+          26,
+          28,
+          30,
+          31,
+          36,
+          40,
+          45,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "cool": "cool",
+              "fan_only": "fan_only",
+              "heat": "heat"
+            },
+            "target_temperature_dp": 16,
+            "target_precision": 0.1,
+            "temperature_step": 0.5,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 200.0,
+            "current_temperature_dp": 24,
+            "precision": 0.1,
+            "preset_dp": 2,
+            "preset_values": {
+              "cool": "cool",
+              "fan_only": "ventil",
+              "heat": "heat",
+              "floor_cool": "floor",
+              "floor_heat": "floor_heat"
+            },
+            "hvac_fan_mode_dp": 28,
+            "hvac_fan_mode_values": {
+              "auto": "auto",
+              "low": "low",
+              "medium": "middle",
+              "high": "high"
+            },
+            "hvac_action_dp": 36,
+            "hvac_action_values": {
+              "idle": "idle",
+              "cooling": "cooling",
+              "heating": "heating"
+            },
+            "temperature_unit_dp": 23,
+            "temperature_unit_values": {
+              "celsius": "c",
+              "fahrenheit": "f"
+            },
+            "min_temperature_dp": 26,
+            "max_temperature_dp": 19,
+            "extra_state_attributes_dps": {
+              "features": 101,
+              "valid_modes": 104,
+              "model": 105,
+              "light_mode": 106
+            },
+            "max_temperature_precision": 0.1,
+            "min_temperature_precision": 0.1,
+            "mapped_extra_state_attributes_dps": {
+              "temperature_step": 102
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 2,
+                  "conditions": [
+                    {
+                      "dps_val": "cool",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "ventil",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "heat",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "floor",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "floor_heat",
+                      "value": "heat"
+                    }
+                  ]
+                }
+              ],
+              "16": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "step": 10
+                    }
+                  ]
+                }
+              ],
+              "36": [
+                {
+                  "dps_val": "open",
+                  "value": "idle",
+                  "constraint_dp": 2,
+                  "conditions": [
+                    {
+                      "dps_val": [
+                        "cool",
+                        "floor"
+                      ],
+                      "value": "cooling"
+                    },
+                    {
+                      "dps_val": [
+                        "heat",
+                        "floor_heat"
+                      ],
+                      "value": "heating"
+                    }
+                  ]
+                },
+                {
+                  "dps_val": "close",
+                  "value": "idle"
+                }
+              ],
+              "102": [
+                {
+                  "scale": 10.0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 10,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 23,
+            "platform": "select",
+            "options": "c;f",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "celsius;fahrenheit"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 19,
+            "platform": "number",
+            "min_value": 5.0,
+            "max_value": 200.0,
+            "step_size": 1.0,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "mapped_extra_state_attributes_dps": {
+              "unit": 23
+            },
+            "advanced_mapping_by_dp": {
+              "23": [
+                {
+                  "dps_val": "c",
+                  "value": "C"
+                },
+                {
+                  "dps_val": "f",
+                  "value": "F"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 26,
+            "platform": "number",
+            "min_value": 5.0,
+            "max_value": 200.0,
+            "step_size": 1.0,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "mapped_extra_state_attributes_dps": {
+              "unit": 23
+            },
+            "advanced_mapping_by_dp": {
+              "23": [
+                {
+                  "dps_val": "c",
+                  "value": "C"
+                },
+                {
+                  "dps_val": "f",
+                  "value": "F"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 31,
+            "platform": "select",
+            "options": "5_2;6_1;7",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "Weekdays+weekend;Mon-Sat+Sun;Daily",
+            "extra_state_attributes_dps": {
+              "week_program": 30,
+              "schedule": 103
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 40,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 45,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 45
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 107,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "battery"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 109,
+            "platform": "number",
+            "min_value": -9.9,
+            "max_value": 9.9,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature_delta",
+            "mapped_extra_state_attributes_dps": {
+              "unit": 23,
+              "step": 108
+            },
+            "advanced_mapping_by_dp": {
+              "23": [
+                {
+                  "dps_val": "c",
+                  "value": "C"
+                },
+                {
+                  "dps_val": "f",
+                  "value": "F"
+                }
+              ],
+              "108": [
+                {
+                  "scale": 10.0
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/beok_tr8b_thermostat.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-blitzwill_ceilingfanlight-36c798b498",
       "confidence": "experimental",
       "match": {
@@ -1858,6 +2214,161 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/deta_fan.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-devola_patio_heater-cc3ceed031",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          12,
+          14,
+          19,
+          20,
+          21
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 45.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 6,
+            "preset_values": {
+              "eco": true,
+              "comfort": false
+            },
+            "hvac_action_dp": 14,
+            "hvac_action_values": {
+              "heating": "heating",
+              "idle": "warming"
+            },
+            "temperature_unit_dp": 19,
+            "temperature_unit_values": {
+              "celsius": "c",
+              "fahrenheit": "f"
+            },
+            "advanced_mapping_by_dp": {
+              "2": [
+                {
+                  "constraint_dp": 19,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 44,
+                        "max": 99
+                      },
+                      "value_redirect_dp": 20
+                    }
+                  ]
+                }
+              ],
+              "3": [
+                {
+                  "constraint_dp": 19,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 21
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 5,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "1",
+                  "value": 25
+                },
+                {
+                  "dps_val": "2",
+                  "value": 50
+                },
+                {
+                  "dps_val": "3",
+                  "value": 75
+                },
+                {
+                  "dps_val": "4",
+                  "value": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 4,
+            "platform": "sensor"
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_minute_dp": 12,
+            "id": 12
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/devola_patio_heater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -6126,6 +6637,385 @@
       }
     },
     {
+      "id": "fingerprint-me80_thermostat-1c7cae21c3",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          16,
+          19,
+          23,
+          24,
+          26,
+          27,
+          36,
+          40,
+          43,
+          45,
+          101,
+          103,
+          104,
+          106
+        ],
+        "optional_dps": [
+          17,
+          18,
+          20,
+          29,
+          39,
+          102,
+          105,
+          107
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "auto": "auto",
+              "heat": "heat",
+              "off": "off"
+            },
+            "target_temperature_dp": 16,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 95.0,
+            "current_temperature_dp": 24,
+            "precision": 1.0,
+            "preset_dp": 2,
+            "preset_values": {
+              "program": "auto",
+              "manual": "manual"
+            },
+            "hvac_action_dp": 36,
+            "hvac_action_values": {
+              "idle": "close",
+              "heating": "open"
+            },
+            "temperature_unit_dp": 23,
+            "temperature_unit_values": {
+              "celsius": "c",
+              "fahrenheit": "f"
+            },
+            "min_temperature_dp": 26,
+            "max_temperature_dp": 19,
+            "extra_state_attributes_dps": {
+              "program": 104
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": true,
+                  "constraint_dp": 2,
+                  "conditions": [
+                    {
+                      "dps_val": "auto",
+                      "value": "auto"
+                    },
+                    {
+                      "dps_val": "manual",
+                      "value": "heat"
+                    }
+                  ]
+                },
+                {
+                  "dps_val": false,
+                  "value": "off"
+                }
+              ],
+              "16": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 41,
+                        "max": 203
+                      },
+                      "value_redirect_dp": 17
+                    }
+                  ]
+                }
+              ],
+              "19": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 18
+                    }
+                  ]
+                }
+              ],
+              "24": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 29
+                    }
+                  ]
+                }
+              ],
+              "26": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 20
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 19,
+            "platform": "number",
+            "min_value": 30.0,
+            "max_value": 95.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "advanced_mapping_by_dp": {
+              "19": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 86,
+                        "max": 203
+                      },
+                      "value_redirect_dp": 18
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 26,
+            "platform": "number",
+            "min_value": 5.0,
+            "max_value": 20.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature",
+            "advanced_mapping_by_dp": {
+              "26": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 41,
+                        "max": 68
+                      },
+                      "value_redirect_dp": 20
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 23,
+            "platform": "select",
+            "options": "c;f",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "celsius;fahrenheit"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 27,
+            "platform": "number",
+            "min_value": -9.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature_delta",
+            "advanced_mapping_by_dp": {
+              "27": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": -16,
+                        "max": 16
+                      },
+                      "value_redirect_dp": 105
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 40,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 43,
+            "platform": "select",
+            "options": "in;out;both",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "Internal;External;Both"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 45,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 45
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "state_class": "measurement",
+            "device_class": "temperature",
+            "advanced_mapping_by_dp": {
+              "101": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 102
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 103,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 106,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 5.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "temperature_delta",
+            "advanced_mapping_by_dp": {
+              "106": [
+                {
+                  "constraint_dp": 23,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 1,
+                        "max": 9
+                      },
+                      "value_redirect_dp": 107
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 39,
+            "platform": "button",
+            "button_press_value": true,
+            "entity_registry_enabled_default": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/me80_thermostat.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
       "confidence": "experimental",
       "match": {
@@ -7057,6 +7947,97 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/powerstrip_4outlet_usbs.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-princess_panel_heater-e5d132a5f1",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          13,
+          14,
+          15
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 0.0,
+            "max_temperature_const": 37.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "temperature_unit_dp": 13,
+            "temperature_unit_values": {
+              "celsius": "c",
+              "fahrenheit": "f"
+            },
+            "advanced_mapping_by_dp": {
+              "2": [
+                {
+                  "constraint_dp": 13,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "range": {
+                        "min": 32,
+                        "max": 99
+                      },
+                      "value_redirect_dp": 14
+                    }
+                  ]
+                }
+              ],
+              "3": [
+                {
+                  "constraint_dp": 13,
+                  "conditions": [
+                    {
+                      "dps_val": "f",
+                      "value_redirect_dp": 15
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 13,
+            "platform": "select",
+            "options": "c;f",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "celsius;fahrenheit"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/princess_panel_heater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
