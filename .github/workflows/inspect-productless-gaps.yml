@@ -9,6 +9,7 @@ on:
       - "tools/import_tuya_local_fingerprints.py"
       - "tools/import_tuya_local_productless.py"
       - "tests/test_import_tuya_local_productless.py"
+      - "tests/test_import_tuya_local_productless_binary_sensor.py"
 
 permissions:
   contents: read
@@ -23,7 +24,7 @@ jobs:
           python-version: "3.14"
       - run: python -m pip install "PyYAML>=6,<7"
       - name: Test extended productless converters
-        run: python -m unittest tests.test_import_tuya_local_productless -v
+        run: python -m unittest tests.test_import_tuya_local_productless tests.test_import_tuya_local_productless_binary_sensor -v
       - uses: actions/checkout@v7
         with:
           repository: make-all/tuya-local
@@ -98,5 +99,5 @@ jobs:
           for shape,count in sorted(shapes.items(), key=lambda item:(-item[1],item[0])):
               print(f"ADVSHAPE {count} {shape}: " + ', '.join(files[shape]))
           PY
-      - name: Batch G marker
-        run: echo "Batch G final corpus analysis"
+      - name: Batch H marker
+        run: echo "Batch H final corpus analysis"
