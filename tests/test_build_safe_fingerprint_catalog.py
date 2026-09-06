@@ -59,7 +59,6 @@ class SafeFingerprintBuilderTests(unittest.TestCase):
         self.assertEqual({item.mapping_id for item in blocked}, {"base", "variant"})
 
     def test_shadowed_candidate_is_blocked(self):
-        # Candidate "weak" permits [1, 2], where the stronger profile wins.
         safe, blocked = classify_fingerprints([
             fp("weak", [1], [2]),
             fp("strong", [1, 2]),
@@ -67,6 +66,16 @@ class SafeFingerprintBuilderTests(unittest.TestCase):
         self.assertEqual([item["id"] for item in safe], ["strong"])
         weak = next(item for item in blocked if item.mapping_id == "weak")
         self.assertEqual(weak.reason, "ambiguous")
+
+    def test_duplicate_platform_primary_dp_is_blocked_before_scoring(self):
+        bad = fp("bad", [1, 2])
+        bad["entities"].append(
+            {"platform": "switch", "config": {"id": 1, "platform": "switch"}}
+        )
+        safe, blocked = classify_fingerprints([bad, fp("good", [3])])
+        self.assertEqual([item["id"] for item in safe], ["good"])
+        failure = next(item for item in blocked if item.mapping_id == "bad")
+        self.assertEqual(failure.reason, "duplicate_entity_primary_dp")
 
     def test_build_replaces_previous_imported_productless_entries(self):
         existing_old = fp("old", [9])
