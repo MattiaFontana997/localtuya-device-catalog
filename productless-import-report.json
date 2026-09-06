@@ -29,9 +29,8 @@
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
     "multi_dp_mapped_extra:unit": 1,
-    "select_complex_mapping": 5,
+    "select_complex_mapping": 6,
     "select_device_class": 1,
-    "select_non_string_mapping": 2,
     "sensor_dp_type": 2,
     "sensor_value_mapping_semantics": 2,
     "switch_non_boolean": 3,
@@ -5745,7 +5744,7 @@
     },
     {
       "file": "djive_arc_fan.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-djive_arc_fan-5800a1e21c",
       "name": "Humidifying fan",
       "platforms": [
         "fan",
@@ -5754,10 +5753,8 @@
         "switch",
         "sensor"
       ],
-      "reasons": [
-        "select_non_string_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "djive_arc_portable_fan.yaml",
@@ -10212,7 +10209,7 @@
         "time"
       ],
       "reasons": [
-        "select_non_string_mapping"
+        "select_complex_mapping"
       ],
       "status": "skipped"
     },
@@ -26948,9 +26945,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 151,
+    "convertible_fingerprint": 152,
     "not_productless": 1526,
-    "skipped": 60
+    "skipped": 59
   },
   "target_schema": 3
 }
