@@ -1,0 +1,59 @@
+name: Rebuild productless diagnostics
+
+on:
+  push:
+    paths:
+      - .github/workflows/rebuild-productless-diagnostics.yml
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Fetch pinned Tuya Local snapshot
+        run: |
+          git clone https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout 38347807cfc81ae8789974d98532eb928f42f174
+      - name: Rebuild productless candidates
+        run: |
+          rm -rf /tmp/productless-generated
+          mkdir -p /tmp/productless-generated
+          python tools/import_tuya_local_fingerprints.py /tmp/tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/productless-generated \
+            --json productless-import-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('productless-import-report.json').read_text())
+          productless = sum(
+              count for status, count in report['status_counts'].items()
+              if status != 'not_productless'
+          )
+          if productless != 211:
+              raise SystemExit(f'expected 211 productless profiles, found {productless}')
+          PY
+          python tools/build_safe_fingerprint_catalog.py \
+            --catalog catalog.json \
+            --generated-dir /tmp/productless-generated \
+            --output /tmp/productless-catalog.json \
+            --report productless-safe-report.json
+      - name: Commit diagnostic reports
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add productless-import-report.json productless-safe-report.json
+          git diff --cached --check
+          git commit -m "Capture current productless rebuild diagnostics"
+          git push origin HEAD:develop
