@@ -54,4 +54,4 @@ jobs:
                       if isinstance(dp,dict) and (dp.get('mapping') or dp.get('name') in {'temperature','current_temperature','value','temperature_unit'}):
                           print('  DP', json.dumps(dp, sort_keys=True))
           PY
-# created
+# triggered
