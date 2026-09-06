@@ -539,7 +539,7 @@
     }
   ],
   "blocked_candidates": 36,
-  "generated_candidates": 134,
+  "generated_candidates": 138,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -548,6 +548,8 @@
     "fingerprint-arlec_lve160ha_balllights-c9d4994e3a",
     "fingerprint-avatto_curtain_switch-84c1f88992",
     "fingerprint-avonflow_afd14h_radiator-943a51e261",
+    "fingerprint-awow_th213_thermostat-ac7a06e2ee",
+    "fingerprint-awow_th213v2_thermostat-a1ecff6cb7",
     "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
     "fingerprint-beok_tcb38_thermostat-66874d19b0",
     "fingerprint-beok_tr8b_thermostat-d6581ddf8a",
@@ -561,6 +563,8 @@
     "fingerprint-digma_disenseg1_gassensor-f8a2ab8b77",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
+    "fingerprint-eberg_cooly_c35hd-7d80fadd0b",
+    "fingerprint-ecostrad_accentiq_heater-2165e760f6",
     "fingerprint-electriq_12wminv_heatpump-744a833331",
     "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
     "fingerprint-electriq_cd25pro_dehumidifier-6adcf48dbb",
@@ -640,5 +644,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 98
+  "safe_candidates": 102
 }

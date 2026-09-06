@@ -727,6 +727,351 @@
       }
     },
     {
+      "id": "fingerprint-awow_th213_thermostat-ac7a06e2ee",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          12,
+          101,
+          102,
+          103,
+          104,
+          105,
+          107,
+          108,
+          110
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "heat": true,
+              "off": false
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 30.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "home": 1,
+              "away": 2,
+              "activity": 3,
+              "sleep": 4
+            },
+            "hvac_action_dp": 105,
+            "hvac_action_values": {
+              "heating": true,
+              "idle": false
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_107": 107,
+              "unknown_108": 108,
+              "unknown_110": 110
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 6,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 102,
+            "platform": "select",
+            "options": "Internal;External;Both",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "advanced_mapping_by_dp": {
+              "102": [
+                {
+                  "dps_val": 0,
+                  "value": "Internal"
+                },
+                {
+                  "dps_val": 1,
+                  "value": "External"
+                },
+                {
+                  "dps_val": 2,
+                  "value": "Both"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 103,
+            "platform": "number",
+            "min_value": -9.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature_delta"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 104,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature_delta"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 12,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 12
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/awow_th213_thermostat.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-awow_th213v2_thermostat-a1ecff6cb7",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          12,
+          101,
+          102,
+          103,
+          104,
+          105,
+          116
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "heat": true,
+              "off": false
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 30.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "home": 1,
+              "away": 2,
+              "activity": 3,
+              "sleep": 4
+            },
+            "hvac_action_dp": 105,
+            "hvac_action_values": {
+              "heating": true,
+              "idle": false
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_116": 116
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 6,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 102,
+            "platform": "select",
+            "options": "Internal;External;Both",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "advanced_mapping_by_dp": {
+              "102": [
+                {
+                  "dps_val": 0,
+                  "value": "Internal"
+                },
+                {
+                  "dps_val": 1,
+                  "value": "External"
+                },
+                {
+                  "dps_val": 2,
+                  "value": "Both"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 103,
+            "platform": "number",
+            "min_value": -9.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature_delta"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 104,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 12,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 12
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/awow_th213v2_thermostat.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
       "confidence": "experimental",
       "match": {
@@ -2804,6 +3149,255 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/dual_power_monitor_smartplug.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-eberg_cooly_c35hd-7d80fadd0b",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          4,
+          5,
+          6,
+          8,
+          10,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19
+        ],
+        "optional_dps": [
+          18
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "heat": "heat",
+              "dry": "dry",
+              "cool": "cool",
+              "fan_only": "fan_only"
+            },
+            "target_temperature_dp": 6,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 13.0,
+            "max_temperature_const": 32.0,
+            "hvac_fan_mode_dp": 8,
+            "hvac_fan_mode_values": {
+              "auto": "0",
+              "low": "1",
+              "medium": "2",
+              "high": "3"
+            },
+            "hvac_swing_mode_dp": 16,
+            "hvac_swing_mode_values": {
+              "vertical": true,
+              "off": false
+            },
+            "temperature_unit_dp": 10,
+            "temperature_unit_values": {
+              "celsius": false,
+              "fahrenheit": true
+            },
+            "extra_state_attributes_dps": {
+              "unknown_4": 4,
+              "unknown_13": 13,
+              "unknown_14": 14,
+              "unknown_15": 15,
+              "unknown_17": 17,
+              "unknown_19": 19
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "1",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "2",
+                      "value": "dry"
+                    },
+                    {
+                      "dps_val": "3",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "4",
+                      "value": "fan_only"
+                    }
+                  ]
+                }
+              ],
+              "6": [
+                {
+                  "constraint_dp": 10,
+                  "conditions": [
+                    {
+                      "dps_val": true,
+                      "range": {
+                        "min": 55,
+                        "max": 90
+                      },
+                      "value_redirect_dp": 18
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 10,
+            "platform": "select",
+            "options": "fahrenheit;celsius",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "advanced_mapping_by_dp": {
+              "10": [
+                {
+                  "dps_val": true,
+                  "value": "fahrenheit"
+                },
+                {
+                  "dps_val": false,
+                  "value": "celsius"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/eberg_cooly_c35hd.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-ecostrad_accentiq_heater-2165e760f6",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          10,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "heat": true,
+              "off": false
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 0.1,
+            "temperature_step": 0.5,
+            "min_temperature_const": 0.0,
+            "max_temperature_const": 45.0,
+            "current_temperature_dp": 3,
+            "precision": 0.1,
+            "temperature_unit_dp": 101,
+            "temperature_unit_values": {
+              "celsius": true,
+              "fahrenheit": false
+            },
+            "advanced_mapping_by_dp": {
+              "2": [
+                {
+                  "constraint_dp": 101,
+                  "conditions": [
+                    {
+                      "dps_val": false,
+                      "range": {
+                        "min": 32,
+                        "max": 113
+                      },
+                      "step": 10
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 10,
+            "platform": "select",
+            "options": "0;1;2;3;4;5;6;7;8;9;10;11;12",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "cancel;1h;2h;3h;4h;5h;6h;7h;8h;9h;10h;11h;12h"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 101,
+            "platform": "select",
+            "options": "celsius;fahrenheit",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "advanced_mapping_by_dp": {
+              "101": [
+                {
+                  "dps_val": true,
+                  "value": "celsius"
+                },
+                {
+                  "dps_val": false,
+                  "value": "fahrenheit"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/ecostrad_accentiq_heater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
