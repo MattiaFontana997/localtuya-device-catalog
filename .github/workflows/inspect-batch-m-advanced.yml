@@ -1,0 +1,77 @@
+name: Inspect Batch M Advanced Mapping
+
+on:
+  push:
+    branches: [develop]
+    paths: [".github/workflows/inspect-batch-m-advanced.yml"]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install "jsonschema>=4.23,<5" "PyYAML>=6,<7"
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Inspect exact advanced blockers
+        shell: bash
+        run: |
+          rm -rf /tmp/batch-m-generated
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/batch-m-generated \
+            --json /tmp/batch-m.json >/tmp/batch-m-summary.txt
+          python - <<'PY'
+          import json, pathlib, yaml
+          report=json.load(open('/tmp/batch-m.json',encoding='utf-8'))
+          wanted={'advanced_mapping_condition_semantics','advanced_mapping_rule_transform_semantics','advanced_mapping_empty_projection','advanced_mapping_redirect_target_mapping'}
+          root=pathlib.Path('upstream-tuya-local/custom_components/tuya_local/devices')
+          selected=[]
+          for item in report['results']:
+              reasons=set(item.get('reasons',[]))
+              hit=sorted(reasons&wanted)
+              if not hit: continue
+              path=item.get('path') or item.get('file') or item.get('source')
+              selected.append((item,hit,path))
+          print('ADVANCED_BLOCKED_PROFILES',len(selected))
+          for item,hit,path in selected:
+              print('\n===',item.get('profile') or item.get('name') or path,'===')
+              print('REASONS',hit)
+              print('ITEM',json.dumps(item,sort_keys=True))
+              candidates=[]
+              if path:
+                  p=pathlib.Path(path)
+                  candidates += [p, root/p.name]
+              name=item.get('profile') or item.get('name')
+              if isinstance(name,str):
+                  candidates += [root/(name if name.endswith('.yaml') else name+'.yaml')]
+              f=next((p for p in candidates if p.exists()),None)
+              if f is None:
+                  key=str(path or name or '')
+                  matches=list(root.glob('*.yaml'))
+                  f=next((p for p in matches if p.stem==key or p.name==key),None)
+              if f is None:
+                  print('YAML_NOT_FOUND')
+                  continue
+              data=yaml.safe_load(f.read_text(encoding='utf-8'))
+              print('FILE',f.name)
+              for ent in data.get('entities',[]):
+                  hits=[]
+                  for dp in ent.get('dps',[]) or []:
+                      for rule in dp.get('mapping',[]) or []:
+                          if isinstance(rule,dict) and (set(rule)&{'conditions','constraint','value_redirect','scale','invert','step','range','target_range'}):
+                              hits.append(dp)
+                              break
+                  if hits:
+                      print('ENTITY',ent.get('entity'))
+                      print(yaml.safe_dump({'entity':ent.get('entity'),'dps':hits},sort_keys=False).rstrip())
+          PY
