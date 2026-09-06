@@ -1,0 +1,56 @@
+name: Patch select duration class
+
+on:
+  push:
+    paths:
+      - .github/workflows/patch-select-duration-class.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply metadata-only Select duration class support
+        run: |
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+
+          helper = base64.b64decode('ZGVmIF9wcmVwYXJlX3Byb2R1Y3RsZXNzX3NlbGVjdF9kZXZpY2VfY2xhc3MoZW50aXR5OiBkaWN0W3N0ciwgQW55XSkgLT4gZGljdFtzdHIsIEFueV06CiAgICAiIiJEcm9wIG1ldGFkYXRhLW9ubHkgZHVyYXRpb24gY2xhc3MgZnJvbSBzYWZlbHkgbmFtZWQgU2VsZWN0IGVudGl0aWVzLgoKICAgIFR1eWEgTG9jYWwncyBTZWxlY3QgcGxhdGZvcm0gZG9lcyBub3QgYnJhbmNoIG9uIGRldmljZSBjbGFzcy4gQSBkdXJhdGlvbgogICAgY2xhc3MgY2FuIHN0aWxsIGluZmx1ZW5jZSBuYW1pbmcgdGhyb3VnaCBjb21tb24gZW50aXR5IG1ldGFkYXRhLCBzbyBvbmx5CiAgICBjb25zdW1lIGl0IHdoZW4gdGhlIGVudGl0eSBhbHJlYWR5IGhhcyBhbiBleHBsaWNpdCBuYW1lIG9yIHRyYW5zbGF0aW9uIGtleS4KICAgIE90aGVyIGNsYXNzZXMgYW5kIHVubmFtZWQgZHVyYXRpb24gc2VsZWN0cyByZW1haW4gZmFpbC1jbG9zZWQuCiAgICAiIiIKICAgIGlmIGVudGl0eS5nZXQoImVudGl0eSIpICE9ICJzZWxlY3QiIG9yIGVudGl0eS5nZXQoImNsYXNzIikgIT0gImR1cmF0aW9uIjoKICAgICAgICByZXR1cm4gZW50aXR5CiAgICBoYXNfZXhwbGljaXRfbmFtZSA9IGFueSgKICAgICAgICBpc2luc3RhbmNlKGVudGl0eS5nZXQoa2V5KSwgc3RyKSBhbmQgZW50aXR5W2tleV0uc3RyaXAoKQogICAgICAgIGZvciBrZXkgaW4gKCJuYW1lIiwgInRyYW5zbGF0aW9uX2tleSIsICJ0cmFuc2xhdGlvbl9vbmx5X2tleSIpCiAgICApCiAgICBpZiBub3QgaGFzX2V4cGxpY2l0X25hbWU6CiAgICAgICAgcmV0dXJuIGVudGl0eQogICAgdHJhbnNmb3JtZWQgPSBjb3B5LmRlZXBjb3B5KGVudGl0eSkKICAgIHRyYW5zZm9ybWVkLnBvcCgiY2xhc3MiLCBOb25lKQogICAgcmV0dXJuIHRyYW5zZm9ybWVkCgoK').decode()
+          test_text = base64.b64decode('IiIiUHJvZHVjdGxlc3MgU2VsZWN0IGRldmljZS1jbGFzcyBtZXRhZGF0YSByZWdyZXNzaW9ucy4iIiIKCmltcG9ydCBzeXMKaW1wb3J0IHVuaXR0ZXN0CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKc3lzLnBhdGguaW5zZXJ0KDAsIHN0cihQYXRoKF9fZmlsZV9fKS5yZXNvbHZlKCkucGFyZW50c1sxXSAvICJ0b29scyIpKQoKaW1wb3J0IGltcG9ydF90dXlhX2xvY2FsIGFzIGJhc2UKaW1wb3J0IGltcG9ydF90dXlhX2xvY2FsX3Byb2R1Y3RsZXNzIGFzIHByb2R1Y3RsZXNzCgpjb252ZXJ0X3NlbGVjdCA9IHByb2R1Y3RsZXNzLl9hZHZhbmNlZF93cmFwcGVyKCJzZWxlY3QiLCBiYXNlLl9jb252ZXJ0X3NlbGVjdCkKCgpjbGFzcyBQcm9kdWN0bGVzc1NlbGVjdERldmljZUNsYXNzVGVzdHModW5pdHRlc3QuVGVzdENhc2UpOgogICAgZGVmIHRlc3RfZHVyYXRpb25fY2xhc3Nfd2l0aF90cmFuc2xhdGlvbl9rZXlfaXNfbWV0YWRhdGFfb25seShzZWxmKToKICAgICAgICBlbnRpdHkgPSB7CiAgICAgICAgICAgICJlbnRpdHkiOiAic2VsZWN0IiwKICAgICAgICAgICAgInRyYW5zbGF0aW9uX2tleSI6ICJ0aW1lciIsCiAgICAgICAgICAgICJjbGFzcyI6ICJkdXJhdGlvbiIsCiAgICAgICAgICAgICJjYXRlZ29yeSI6ICJjb25maWciLAogICAgICAgICAgICAiZHBzIjogW3sKICAgICAgICAgICAgICAgICJpZCI6IDE5LAogICAgICAgICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICAgICAgICJuYW1lIjogIm9wdGlvbiIsCiAgICAgICAgICAgICAgICAibWFwcGluZyI6IFsKICAgICAgICAgICAgICAgICAgICB7ImRwc192YWwiOiAiMGgiLCAidmFsdWUiOiAiY2FuY2VsIn0sCiAgICAgICAgICAgICAgICAgICAgeyJkcHNfdmFsIjogIjFoIiwgInZhbHVlIjogIjFoIn0sCiAgICAgICAgICAgICAgICAgICAgeyJkcHNfdmFsIjogIjI0aCIsICJ2YWx1ZSI6ICIyNGgifSwKICAgICAgICAgICAgICAgIF0sCiAgICAgICAgICAgIH1dLAogICAgICAgIH0KICAgICAgICBjb252ZXJ0ZWQsIHJlcXVpcmVkLCBvcHRpb25hbCA9IGNvbnZlcnRfc2VsZWN0KGVudGl0eSkKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKGNvbnZlcnRlZFsiY29uZmlnIl1bIm9wdGlvbnMiXSwgIjBoOzFoOzI0aCIpCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChjb252ZXJ0ZWRbImNvbmZpZyJdWyJvcHRpb25zX2ZyaWVuZGx5Il0sICJjYW5jZWw7MWg7MjRoIikKICAgICAgICBzZWxmLmFzc2VydEVxdWFsKGNvbnZlcnRlZFsiY29uZmlnIl1bImVudGl0eV9jYXRlZ29yeSJdLCAiY29uZmlnIikKICAgICAgICBzZWxmLmFzc2VydE5vdEluKCJkZXZpY2VfY2xhc3MiLCBjb252ZXJ0ZWRbImNvbmZpZyJdKQogICAgICAgIHNlbGYuYXNzZXJ0RXF1YWwocmVxdWlyZWQsIHsxOX0pCiAgICAgICAgc2VsZi5hc3NlcnRFcXVhbChvcHRpb25hbCwgc2V0KCkpCgogICAgZGVmIHRlc3Rfb3RoZXJfc2VsZWN0X2NsYXNzX3JlbWFpbnNfZmFpbF9jbG9zZWQoc2VsZik6CiAgICAgICAgZW50aXR5ID0gewogICAgICAgICAgICAiZW50aXR5IjogInNlbGVjdCIsCiAgICAgICAgICAgICJ0cmFuc2xhdGlvbl9rZXkiOiAidGltZXIiLAogICAgICAgICAgICAiY2xhc3MiOiAibW9kZSIsCiAgICAgICAgICAgICJkcHMiOiBbewogICAgICAgICAgICAgICAgImlkIjogMSwKICAgICAgICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAgICAgICAibmFtZSI6ICJvcHRpb24iLAogICAgICAgICAgICAgICAgIm1hcHBpbmciOiBbeyJkcHNfdmFsIjogImEiLCAidmFsdWUiOiAiYSJ9XSwKICAgICAgICAgICAgfV0sCiAgICAgICAgfQogICAgICAgIHdpdGggc2VsZi5hc3NlcnRSYWlzZXNSZWdleChiYXNlLkNvbnZlcnNpb25FcnJvciwgInNlbGVjdF9kZXZpY2VfY2xhc3MiKToKICAgICAgICAgICAgY29udmVydF9zZWxlY3QoZW50aXR5KQoKICAgIGRlZiB0ZXN0X3VubmFtZWRfZHVyYXRpb25fc2VsZWN0X3JlbWFpbnNfZmFpbF9jbG9zZWQoc2VsZik6CiAgICAgICAgZW50aXR5ID0gewogICAgICAgICAgICAiZW50aXR5IjogInNlbGVjdCIsCiAgICAgICAgICAgICJjbGFzcyI6ICJkdXJhdGlvbiIsCiAgICAgICAgICAgICJkcHMiOiBbewogICAgICAgICAgICAgICAgImlkIjogMSwKICAgICAgICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAgICAgICAibmFtZSI6ICJvcHRpb24iLAogICAgICAgICAgICAgICAgIm1hcHBpbmciOiBbeyJkcHNfdmFsIjogImEiLCAidmFsdWUiOiAiYSJ9XSwKICAgICAgICAgICAgfV0sCiAgICAgICAgfQogICAgICAgIHdpdGggc2VsZi5hc3NlcnRSYWlzZXNSZWdleChiYXNlLkNvbnZlcnNpb25FcnJvciwgInNlbGVjdF9kZXZpY2VfY2xhc3MiKToKICAgICAgICAgICAgY29udmVydF9zZWxlY3QoZW50aXR5KQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICB1bml0dGVzdC5tYWluKCkK').decode()
+
+          path = Path('tools/import_tuya_local_productless.py')
+          text = path.read_text()
+          anchor = 'def _normalize_string_select_raw_mapping(entity: dict[str, Any]) -> dict[str, Any]:\n'
+          if text.count(anchor) != 1:
+              raise SystemExit(f'expected one string Select normalization anchor, found {text.count(anchor)}')
+          text = text.replace(anchor, helper + anchor, 1)
+          old = '        elif platform == "select":\n            flagged = _normalize_string_select_raw_mapping(flagged)\n'
+          new = '        elif platform == "select":\n            flagged = _prepare_productless_select_device_class(flagged)\n            flagged = _normalize_string_select_raw_mapping(flagged)\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one Select wrapper block, found {text.count(old)}')
+          text = text.replace(old, new, 1)
+          path.write_text(text)
+          Path('tests/test_productless_select_device_class.py').write_text(test_text)
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5" pytest
+      - name: Run targeted tests
+        run: python -m pytest -q tests/test_productless_select_device_class.py tests/test_productless_select_string_mapping.py tests/test_import_tuya_local_productless.py
+      - name: Commit importer changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_productless_select_device_class.py
+          git diff --cached --check
+          git commit -m "Handle metadata-only duration Select class"
+          git push origin HEAD:develop
