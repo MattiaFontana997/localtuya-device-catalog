@@ -1,0 +1,23 @@
+from pathlib import Path
+
+path = Path('tools/import_tuya_local_productless.py')
+text = path.read_text()
+helper = '''def _normalize_climate_temperature_unit_default(entity: dict[str, Any]) -> dict[str, Any]:\n    """Make Tuya Local string temperature-unit default mapping explicit.\n\n    For a string DP, a default rule ``value: C`` is written back as the string\n    ``C`` by Tuya Local's type coercion. On reads, any unmatched raw value maps\n    to C. LocalTuya Climate already has the same unmatched->C fallback, so an\n    explicit C->C writable entry preserves both directions exactly.\n    """\n    if entity.get("entity") != "climate":\n        return entity\n    dps = entity.get("dps")\n    if not isinstance(dps, list):\n        return entity\n    unit = next((dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "temperature_unit"), None)\n    if unit is None or base._dp_type(unit) != "string":\n        return entity\n    rules = _raw_mapping(unit)\n    if len(rules) != 2:\n        return entity\n    explicit = [rule for rule in rules if "dps_val" in rule]\n    defaults = [rule for rule in rules if "dps_val" not in rule]\n    if len(explicit) != 1 or len(defaults) != 1:\n        return entity\n    if set(explicit[0]) != {"dps_val", "value"} or set(defaults[0]) != {"value"}:\n        return entity\n    raw = explicit[0]["dps_val"]\n    explicit_value = explicit[0]["value"]\n    default_value = defaults[0]["value"]\n    if not isinstance(raw, str) or {explicit_value, default_value} != {"C", "F"}:\n        return entity\n    if raw == default_value:\n        raise ConversionError("climate_temperature_unit_mapping")\n    transformed = copy.deepcopy(entity)\n    transformed_unit = next(dp for dp in transformed["dps"] if isinstance(dp, dict) and dp.get("name") == "temperature_unit")\n    transformed_unit["mapping"] = [\n        copy.deepcopy(explicit[0]),\n        {"dps_val": default_value, "value": default_value},\n    ]\n    return transformed\n\n\n'''
+anchor = 'def _prepare_climate_limit_precisions('
+if text.count(anchor) != 1:
+    raise SystemExit(f'climate unit helper anchor count={text.count(anchor)}')
+text = text.replace(anchor, helper + anchor, 1)
+old = '''        elif platform == "climate":
+            flagged = _normalize_climate_temperature_unit(flagged)
+            flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
+'''
+new = '''        elif platform == "climate":
+            flagged = _normalize_climate_temperature_unit(flagged)
+            flagged = _normalize_climate_temperature_unit_default(flagged)
+            flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
+'''
+if text.count(old) != 1:
+    raise SystemExit(f'climate wrapper unit anchor count={text.count(old)}')
+path.write_text(text.replace(old, new, 1))
+
+Path('tests/test_productless_climate_unit_default.py').write_text('''"""Productless Climate default temperature-unit mapping regressions."""\n\nimport sys\nimport unittest\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))\n\nimport import_tuya_local as base\nimport import_tuya_local_productless as productless\n\nconvert_climate = productless.base._CONVERTERS["climate"]\n\n\nclass ClimateUnitDefaultTests(unittest.TestCase):\n    def test_f_explicit_c_default_becomes_exact_runtime_unit_map(self):\n        entity = {"entity": "climate", "dps": [\n            {"id": 1, "type": "boolean", "name": "hvac_mode", "mapping": [\n                {"dps_val": False, "value": "off"}, {"dps_val": True, "value": "heat"}\n            ]},\n            {"id": 13, "type": "string", "name": "temperature_unit", "mapping": [\n                {"dps_val": "f", "value": "F"}, {"value": "C"}\n            ]},\n        ]}\n        converted, required, optional = convert_climate(entity)\n        cfg = converted["config"]\n        self.assertEqual(cfg["temperature_unit_values"], {"F": "f", "C": "C"})\n        self.assertEqual(required, {1, 13})\n        self.assertEqual(optional, set())\n\n    def test_non_unit_default_shape_stays_fail_closed(self):\n        entity = {"entity": "climate", "dps": [\n            {"id": 1, "type": "boolean", "name": "hvac_mode", "mapping": [\n                {"dps_val": False, "value": "off"}, {"dps_val": True, "value": "heat"}\n            ]},\n            {"id": 13, "type": "string", "name": "temperature_unit", "mapping": [\n                {"dps_val": "x", "value": "F"}, {"value": "C", "hidden": True}\n            ]},\n        ]}\n        with self.assertRaisesRegex(base.ConversionError, "climate_temperature_unit_mapping"):\n            convert_climate(entity)\n\n\nif __name__ == "__main__":\n    unittest.main()\n''')
