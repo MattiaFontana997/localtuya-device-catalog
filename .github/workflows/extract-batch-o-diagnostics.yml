@@ -1,4 +1,4 @@
-name: Extract Batch O diagnostics
+name: Extract residual diagnostics
 
 on:
   push:
@@ -12,26 +12,42 @@ jobs:
   extract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: develop
-      - name: Extract advanced mapping blockers
+      - name: Extract current skipped productless profiles
         run: |
           python - <<'PY'
           import json
+          from collections import defaultdict
           from pathlib import Path
           report = json.loads(Path('productless-import-report.json').read_text())
           items = [
-              item for item in report['results']
-              if any(reason.startswith('advanced_mapping_') for reason in item.get('reasons', []))
+              {
+                  'file': item['file'],
+                  'name': item.get('name'),
+                  'platforms': item.get('platforms', []),
+                  'reasons': item.get('reasons', []),
+              }
+              for item in report['results']
+              if item.get('status') == 'skipped'
           ]
-          Path('batch-o-diagnostics.json').write_text(json.dumps(items, indent=2) + '\n')
+          by_reason = defaultdict(list)
+          for item in items:
+              for reason in item['reasons']:
+                  by_reason[reason].append(item['file'])
+          payload = {
+              'skipped_count': len(items),
+              'by_reason': {key: sorted(value) for key, value in sorted(by_reason.items())},
+              'items': items,
+          }
+          Path('residual-diagnostics.json').write_text(json.dumps(payload, indent=2) + '\n')
           PY
       - name: Commit diagnostics
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add batch-o-diagnostics.json
+          git add residual-diagnostics.json
           git diff --cached --check
-          git commit -m "Capture Batch O advanced mapping blockers"
+          git commit -m "Capture current residual productless blockers"
           git push origin HEAD:develop
