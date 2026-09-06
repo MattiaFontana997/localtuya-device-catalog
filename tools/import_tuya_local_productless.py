@@ -336,13 +336,13 @@ def _prepare_advanced_entity(
 
 
 def _advanced_wrapper(
-    platform: str, converter: Callable[[dict[str, Any]], base.Converted]
-) -> Callable[[dict[str, Any]], base.Converted]:
-    def wrapped(entity: dict[str, Any]) -> base.Converted:
+    platform: str, converter: Callable[..., base.Converted]
+) -> Callable[..., base.Converted]:
+    def wrapped(entity: dict[str, Any], *args, **kwargs) -> base.Converted:
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             entity, platform
         )
-        converted, required, optional = converter(prepared)
+        converted, required, optional = converter(prepared, *args, **kwargs)
         if not advanced_by_dp:
             return converted, required, optional
 
