@@ -1,0 +1,1000 @@
+{
+  "skipped_count": 60,
+  "by_reason": {
+    "advanced_mapping_empty_rule": [
+      "ampbolt_portable_evcharger.yaml"
+    ],
+    "advanced_mapping_redirect_target_mapping": [
+      "qlima_d820a_dehumidifier.yaml"
+    ],
+    "advanced_mapping_rule_semantics": [
+      "saswell_t29utk_thermostat.yaml"
+    ],
+    "advanced_mapping_rule_transform_semantics": [
+      "prestige_m3_ceilingfanlight.yaml"
+    ],
+    "binary_sensor_duplicate_dp_id": [
+      "fairland_rmic06_heatpump.yaml"
+    ],
+    "button_duplicate_primary_dp": [
+      "klarstein_amazonia_dishwasher.yaml"
+    ],
+    "climate_duplicate_dp_id": [
+      "goldair_gpph_heater.yaml",
+      "nulite_nlb245_heatpump.yaml",
+      "t5e_wf_thermostat.yaml",
+      "woods_cortina_airconditioner.yaml"
+    ],
+    "climate_hvac_action_mapping": [
+      "bht002_galw_thermostat.yaml"
+    ],
+    "climate_hvac_mode_mapping": [
+      "madimack_heatpump.yaml"
+    ],
+    "climate_hvac_mode_missing_off": [
+      "electriq_sc16hpw_aircon.yaml",
+      "miheat_th11wf_thermostat.yaml"
+    ],
+    "climate_preset_mapping": [
+      "beok_tol47_thermostat.yaml",
+      "vtaplus_axial_fanheater.yaml"
+    ],
+    "climate_temperature_unit_mapping": [
+      "nashone_mts700wb_thermostat.yaml",
+      "steinbach_silent_mini_heatpump.yaml"
+    ],
+    "cover_action_friendly": [
+      "aosd_garagedoorwithlight.yaml"
+    ],
+    "dp_readonly": [
+      "aquatech_x6_water_heater.yaml"
+    ],
+    "entity_hidden_unavailable": [
+      "hiniso_dehumidifier.yaml",
+      "rgbcw_lightbulb_xld_cl002.yaml",
+      "windcalm_fan.yaml"
+    ],
+    "entity_mode": [
+      "dekala_lumos_alarm_clock.yaml"
+    ],
+    "event_duplicate_dp_id": [
+      "wlrtcz05z_presencesensor.yaml"
+    ],
+    "fan_direction_mapping": [
+      "aspen_asp200_fan.yaml"
+    ],
+    "fan_missing_switch": [
+      "airwoods_av_htpf_fresh_air_heat_pump.yaml"
+    ],
+    "fan_preset_hidden": [
+      "webber_apg7800_airpurifier.yaml"
+    ],
+    "humidifier_mode_mapping": [
+      "probreeze_pb20.yaml"
+    ],
+    "humidifier_switch_type": [
+      "inventor_atmospherexl_dehumidifier.yaml"
+    ],
+    "light_unsupported_dp:effects_disabled": [
+      "advancedfires_1500_fireplace.yaml"
+    ],
+    "light_unsupported_dp:main_switch": [
+      "orison_jst_fanrgbwlight.yaml"
+    ],
+    "light_unsupported_dp:named_color": [
+      "blitzwolf_bwsh2_humidifier.yaml"
+    ],
+    "lock_direct_control_required": [
+      "orion_smart_lock.yaml"
+    ],
+    "multi_dp_mapped_extra:unit": [
+      "inkbird_iaqm129w_airqualitymonitor.yaml"
+    ],
+    "select_complex_mapping": [
+      "dr_heater_dr008_thermostat.yaml",
+      "ecostrad_iq_heating_element.yaml",
+      "ecostrad_iqceramic_radiator.yaml",
+      "essentials_purifier.yaml",
+      "jiahong_et44w_thermostat.yaml"
+    ],
+    "select_device_class": [
+      "wetair_wch750_heater.yaml"
+    ],
+    "select_non_string_mapping": [
+      "djive_arc_fan.yaml",
+      "hdmi_sync_light.yaml"
+    ],
+    "sensor_dp_type": [
+      "asip_0622_planter.yaml",
+      "inkbird_int12bw_thermometer.yaml"
+    ],
+    "sensor_value_mapping_semantics": [
+      "wdyk_3phase_energymonitor.yaml",
+      "wdyk_4p100a_energymeter.yaml"
+    ],
+    "switch_non_boolean": [
+      "fujicool_yuzu_heatpump.yaml",
+      "starlight_heatpump.yaml",
+      "wouej_evcharger.yaml"
+    ],
+    "switch_non_identity_mapping": [
+      "goldair_gpoc2415_oilheater.yaml",
+      "pv28aw_co2detector.yaml",
+      "space_dog_music_lamp.yaml"
+    ],
+    "unsupported_platform:alarm_control_panel": [
+      "aixishs_big_siren.yaml"
+    ],
+    "unsupported_platform:media_player": [
+      "ekaza_minipad_controlpanel.yaml"
+    ],
+    "unsupported_platform:siren": [
+      "sirena_ws902plus_siren.yaml"
+    ],
+    "vacuum_activate_mapping": [
+      "rowenta_xplorer75s_vacuum.yaml"
+    ],
+    "vacuum_optional_status": [
+      "parkside_ppwd30a1_vacuum.yaml"
+    ],
+    "valve_position_mapping": [
+      "qoto_03_sprinkler.yaml"
+    ],
+    "water_heater_temperature_unit": [
+      "fiesta_dk1g_kettle.yaml"
+    ]
+  },
+  "items": [
+    {
+      "file": "advancedfires_1500_fireplace.yaml",
+      "name": "Electric fireplace",
+      "platforms": [
+        "climate",
+        "select",
+        "light",
+        "switch"
+      ],
+      "reasons": [
+        "light_unsupported_dp:effects_disabled"
+      ]
+    },
+    {
+      "file": "airwoods_av_htpf_fresh_air_heat_pump.yaml",
+      "name": "Fresh air heat pump",
+      "platforms": [
+        "climate",
+        "fan",
+        "number",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "fan_missing_switch"
+      ]
+    },
+    {
+      "file": "aixishs_big_siren.yaml",
+      "name": "Alarm siren",
+      "platforms": [
+        "alarm_control_panel",
+        "number",
+        "switch",
+        "binary_sensor",
+        "select",
+        "event",
+        "button",
+        "text"
+      ],
+      "reasons": [
+        "unsupported_platform:alarm_control_panel"
+      ]
+    },
+    {
+      "file": "ampbolt_portable_evcharger.yaml",
+      "name": "EV charger",
+      "platforms": [
+        "sensor",
+        "number",
+        "binary_sensor",
+        "text",
+        "select",
+        "switch"
+      ],
+      "reasons": [
+        "advanced_mapping_empty_rule"
+      ]
+    },
+    {
+      "file": "aosd_garagedoorwithlight.yaml",
+      "name": "Garage door with light",
+      "platforms": [
+        "cover",
+        "light"
+      ],
+      "reasons": [
+        "cover_action_friendly"
+      ]
+    },
+    {
+      "file": "aquatech_x6_water_heater.yaml",
+      "name": "Water heater",
+      "platforms": [
+        "water_heater",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "dp_readonly"
+      ]
+    },
+    {
+      "file": "asip_0622_planter.yaml",
+      "name": "Planter",
+      "platforms": [
+        "switch",
+        "light",
+        "sensor",
+        "binary_sensor",
+        "select",
+        "number",
+        "button"
+      ],
+      "reasons": [
+        "sensor_dp_type"
+      ]
+    },
+    {
+      "file": "aspen_asp200_fan.yaml",
+      "name": "Fan",
+      "platforms": [
+        "fan",
+        "climate",
+        "light"
+      ],
+      "reasons": [
+        "fan_direction_mapping"
+      ]
+    },
+    {
+      "file": "beok_tol47_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "lock",
+        "switch",
+        "binary_sensor",
+        "number",
+        "select"
+      ],
+      "reasons": [
+        "climate_preset_mapping"
+      ]
+    },
+    {
+      "file": "bht002_galw_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "button",
+        "switch",
+        "lock",
+        "select",
+        "number",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "climate_hvac_action_mapping"
+      ]
+    },
+    {
+      "file": "blitzwolf_bwsh2_humidifier.yaml",
+      "name": "Humidifier",
+      "platforms": [
+        "fan",
+        "light",
+        "select"
+      ],
+      "reasons": [
+        "light_unsupported_dp:named_color"
+      ]
+    },
+    {
+      "file": "dekala_lumos_alarm_clock.yaml",
+      "name": "Sunrise alarm clock",
+      "platforms": [
+        "light",
+        "number",
+        "switch",
+        "siren",
+        "time",
+        "select",
+        "button",
+        "sensor"
+      ],
+      "reasons": [
+        "entity_mode"
+      ]
+    },
+    {
+      "file": "djive_arc_fan.yaml",
+      "name": "Humidifying fan",
+      "platforms": [
+        "fan",
+        "select",
+        "binary_sensor",
+        "switch",
+        "sensor"
+      ],
+      "reasons": [
+        "select_non_string_mapping"
+      ]
+    },
+    {
+      "file": "dr_heater_dr008_thermostat.yaml",
+      "name": "Floor thermostat",
+      "platforms": [
+        "climate",
+        "lock",
+        "sensor",
+        "select",
+        "number"
+      ],
+      "reasons": [
+        "select_complex_mapping"
+      ]
+    },
+    {
+      "file": "ecostrad_iq_heating_element.yaml",
+      "name": "Heating element",
+      "platforms": [
+        "climate",
+        "lock",
+        "select",
+        "number"
+      ],
+      "reasons": [
+        "select_complex_mapping"
+      ]
+    },
+    {
+      "file": "ecostrad_iqceramic_radiator.yaml",
+      "name": "Radiator",
+      "platforms": [
+        "climate",
+        "lock",
+        "select",
+        "switch",
+        "number"
+      ],
+      "reasons": [
+        "select_complex_mapping"
+      ]
+    },
+    {
+      "file": "ekaza_minipad_controlpanel.yaml",
+      "name": "Control panel",
+      "platforms": [
+        "switch",
+        "media_player",
+        "text"
+      ],
+      "reasons": [
+        "unsupported_platform:media_player"
+      ]
+    },
+    {
+      "file": "electriq_sc16hpw_aircon.yaml",
+      "name": "Air conditioner",
+      "platforms": [
+        "switch",
+        "climate",
+        "select",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "climate_hvac_mode_missing_off"
+      ]
+    },
+    {
+      "file": "essentials_purifier.yaml",
+      "name": "Air purifier",
+      "platforms": [
+        "fan",
+        "sensor",
+        "lock",
+        "select",
+        "switch",
+        "button"
+      ],
+      "reasons": [
+        "select_complex_mapping"
+      ]
+    },
+    {
+      "file": "fairland_rmic06_heatpump.yaml",
+      "name": "Pool heat pump",
+      "platforms": [
+        "climate",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "binary_sensor_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "fiesta_dk1g_kettle.yaml",
+      "name": "Kettle",
+      "platforms": [
+        "button",
+        "water_heater",
+        "select",
+        "number",
+        "switch",
+        "sensor",
+        "binary_sensor",
+        "time"
+      ],
+      "reasons": [
+        "water_heater_temperature_unit"
+      ]
+    },
+    {
+      "file": "fujicool_yuzu_heatpump.yaml",
+      "name": "Heat pump",
+      "platforms": [
+        "climate",
+        "binary_sensor",
+        "select",
+        "light",
+        "switch",
+        "sensor"
+      ],
+      "reasons": [
+        "switch_non_boolean"
+      ]
+    },
+    {
+      "file": "goldair_gpoc2415_oilheater.yaml",
+      "name": "Oil heater",
+      "platforms": [
+        "climate",
+        "lock",
+        "sensor",
+        "binary_sensor",
+        "switch",
+        "number"
+      ],
+      "reasons": [
+        "switch_non_identity_mapping"
+      ]
+    },
+    {
+      "file": "goldair_gpph_heater.yaml",
+      "name": "Heater",
+      "platforms": [
+        "climate",
+        "light",
+        "lock",
+        "time",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "climate_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "hdmi_sync_light.yaml",
+      "name": "HDMI sync light",
+      "platforms": [
+        "light",
+        "text",
+        "select",
+        "time"
+      ],
+      "reasons": [
+        "select_non_string_mapping"
+      ]
+    },
+    {
+      "file": "hiniso_dehumidifier.yaml",
+      "name": "Dehumidifier",
+      "platforms": [
+        "humidifier",
+        "binary_sensor",
+        "switch",
+        "lock",
+        "fan",
+        "select"
+      ],
+      "reasons": [
+        "entity_hidden_unavailable"
+      ]
+    },
+    {
+      "file": "inkbird_iaqm129w_airqualitymonitor.yaml",
+      "name": "Air quality monitor",
+      "platforms": [
+        "sensor",
+        "select",
+        "switch",
+        "light"
+      ],
+      "reasons": [
+        "multi_dp_mapped_extra:unit"
+      ]
+    },
+    {
+      "file": "inkbird_int12bw_thermometer.yaml",
+      "name": "BBQ thermometer",
+      "platforms": [
+        "sensor",
+        "select",
+        "number",
+        "button",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "sensor_dp_type"
+      ]
+    },
+    {
+      "file": "inventor_atmospherexl_dehumidifier.yaml",
+      "name": "Dehumidifier",
+      "platforms": [
+        "humidifier",
+        "fan",
+        "sensor",
+        "switch",
+        "lock",
+        "select",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "humidifier_switch_type"
+      ]
+    },
+    {
+      "file": "jiahong_et44w_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "lock",
+        "sensor",
+        "select",
+        "number"
+      ],
+      "reasons": [
+        "select_complex_mapping"
+      ]
+    },
+    {
+      "file": "klarstein_amazonia_dishwasher.yaml",
+      "name": "Dishwasher",
+      "platforms": [
+        "switch",
+        "button",
+        "time",
+        "select",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "button_duplicate_primary_dp"
+      ]
+    },
+    {
+      "file": "madimack_heatpump.yaml",
+      "name": "Pool heat pump",
+      "platforms": [
+        "climate",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "climate_hvac_mode_mapping"
+      ]
+    },
+    {
+      "file": "miheat_th11wf_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "switch",
+        "lock",
+        "sensor",
+        "binary_sensor",
+        "number",
+        "select"
+      ],
+      "reasons": [
+        "climate_hvac_mode_missing_off"
+      ]
+    },
+    {
+      "file": "nashone_mts700wb_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "number",
+        "button",
+        "select",
+        "sensor"
+      ],
+      "reasons": [
+        "climate_temperature_unit_mapping"
+      ]
+    },
+    {
+      "file": "nulite_nlb245_heatpump.yaml",
+      "name": "Heat pump",
+      "platforms": [
+        "climate",
+        "binary_sensor",
+        "water_heater",
+        "select"
+      ],
+      "reasons": [
+        "climate_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "orion_smart_lock.yaml",
+      "name": "Smart lock",
+      "platforms": [
+        "lock",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "lock_direct_control_required"
+      ]
+    },
+    {
+      "file": "orison_jst_fanrgbwlight.yaml",
+      "name": "Ceiling fan",
+      "platforms": [
+        "fan",
+        "light",
+        "time",
+        "text",
+        "switch",
+        "number"
+      ],
+      "reasons": [
+        "light_unsupported_dp:main_switch"
+      ]
+    },
+    {
+      "file": "parkside_ppwd30a1_vacuum.yaml",
+      "name": "Workshop vacuum",
+      "platforms": [
+        "vacuum",
+        "binary_sensor",
+        "sensor",
+        "number",
+        "switch",
+        "text"
+      ],
+      "reasons": [
+        "vacuum_optional_status"
+      ]
+    },
+    {
+      "file": "prestige_m3_ceilingfanlight.yaml",
+      "name": "Fan with light",
+      "platforms": [
+        "fan",
+        "light",
+        "select",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "advanced_mapping_rule_transform_semantics"
+      ]
+    },
+    {
+      "file": "probreeze_pb20.yaml",
+      "name": "Dehumidifier",
+      "platforms": [
+        "humidifier",
+        "fan",
+        "lock",
+        "select",
+        "sensor",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "humidifier_mode_mapping"
+      ]
+    },
+    {
+      "file": "pv28aw_co2detector.yaml",
+      "name": "CO2 detector",
+      "platforms": [
+        "binary_sensor",
+        "sensor",
+        "number",
+        "switch",
+        "select"
+      ],
+      "reasons": [
+        "switch_non_identity_mapping"
+      ]
+    },
+    {
+      "file": "qlima_d820a_dehumidifier.yaml",
+      "name": "Dehumidifier",
+      "platforms": [
+        "humidifier",
+        "fan",
+        "binary_sensor",
+        "select",
+        "switch",
+        "lock",
+        "sensor"
+      ],
+      "reasons": [
+        "advanced_mapping_redirect_target_mapping"
+      ]
+    },
+    {
+      "file": "qoto_03_sprinkler.yaml",
+      "name": "Sprinkler controller",
+      "platforms": [
+        "valve",
+        "sensor",
+        "time",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "valve_position_mapping"
+      ]
+    },
+    {
+      "file": "rgbcw_lightbulb_xld_cl002.yaml",
+      "name": "RGBCW lightbulb",
+      "platforms": [
+        "light",
+        "time",
+        "switch",
+        "text",
+        "select"
+      ],
+      "reasons": [
+        "entity_hidden_unavailable"
+      ]
+    },
+    {
+      "file": "rowenta_xplorer75s_vacuum.yaml",
+      "name": "Robot vacuum",
+      "platforms": [
+        "vacuum",
+        "sensor",
+        "select",
+        "number",
+        "binary_sensor",
+        "switch",
+        "button",
+        "text",
+        "event"
+      ],
+      "reasons": [
+        "vacuum_activate_mapping"
+      ]
+    },
+    {
+      "file": "saswell_t29utk_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "select"
+      ],
+      "reasons": [
+        "advanced_mapping_rule_semantics"
+      ]
+    },
+    {
+      "file": "sirena_ws902plus_siren.yaml",
+      "name": "Outdoor siren",
+      "platforms": [
+        "siren",
+        "binary_sensor",
+        "sensor",
+        "switch"
+      ],
+      "reasons": [
+        "unsupported_platform:siren"
+      ]
+    },
+    {
+      "file": "space_dog_music_lamp.yaml",
+      "name": "Music lamp",
+      "platforms": [
+        "light",
+        "select",
+        "time",
+        "switch",
+        "number"
+      ],
+      "reasons": [
+        "switch_non_identity_mapping"
+      ]
+    },
+    {
+      "file": "starlight_heatpump.yaml",
+      "name": "Heat pump",
+      "platforms": [
+        "climate",
+        "sensor",
+        "select",
+        "light",
+        "switch",
+        "binary_sensor"
+      ],
+      "reasons": [
+        "switch_non_boolean"
+      ]
+    },
+    {
+      "file": "steinbach_silent_mini_heatpump.yaml",
+      "name": "Heat pump",
+      "platforms": [
+        "climate",
+        "binary_sensor",
+        "sensor"
+      ],
+      "reasons": [
+        "climate_temperature_unit_mapping"
+      ]
+    },
+    {
+      "file": "t5e_wf_thermostat.yaml",
+      "name": "Thermostat",
+      "platforms": [
+        "climate",
+        "number",
+        "select",
+        "sensor",
+        "switch",
+        "binary_sensor",
+        "button",
+        "lock",
+        "light"
+      ],
+      "reasons": [
+        "climate_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "vtaplus_axial_fanheater.yaml",
+      "name": "Fan heater",
+      "platforms": [
+        "climate",
+        "lock",
+        "select",
+        "sensor"
+      ],
+      "reasons": [
+        "climate_preset_mapping"
+      ]
+    },
+    {
+      "file": "wdyk_3phase_energymonitor.yaml",
+      "name": "Energy monitoring circuit breaker",
+      "platforms": [
+        "switch",
+        "time",
+        "binary_sensor",
+        "select",
+        "lock",
+        "sensor"
+      ],
+      "reasons": [
+        "sensor_value_mapping_semantics"
+      ]
+    },
+    {
+      "file": "wdyk_4p100a_energymeter.yaml",
+      "name": "Energy meter",
+      "platforms": [
+        "sensor",
+        "binary_sensor",
+        "switch",
+        "number",
+        "button"
+      ],
+      "reasons": [
+        "sensor_value_mapping_semantics"
+      ]
+    },
+    {
+      "file": "webber_apg7800_airpurifier.yaml",
+      "name": "Purifier heater fan",
+      "platforms": [
+        "climate",
+        "fan",
+        "sensor",
+        "switch",
+        "lock",
+        "light",
+        "button",
+        "select"
+      ],
+      "reasons": [
+        "fan_preset_hidden"
+      ]
+    },
+    {
+      "file": "wetair_wch750_heater.yaml",
+      "name": "Heater",
+      "platforms": [
+        "climate",
+        "light",
+        "select",
+        "sensor"
+      ],
+      "reasons": [
+        "select_device_class"
+      ]
+    },
+    {
+      "file": "windcalm_fan.yaml",
+      "name": "Ceiling fan",
+      "platforms": [
+        "fan",
+        "number",
+        "switch"
+      ],
+      "reasons": [
+        "entity_hidden_unavailable"
+      ]
+    },
+    {
+      "file": "wlrtcz05z_presencesensor.yaml",
+      "name": "Human presence",
+      "platforms": [
+        "binary_sensor",
+        "sensor",
+        "number",
+        "light",
+        "button",
+        "event"
+      ],
+      "reasons": [
+        "event_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "woods_cortina_airconditioner.yaml",
+      "name": "Air conditioner",
+      "platforms": [
+        "climate",
+        "binary_sensor",
+        "switch",
+        "lock",
+        "select",
+        "sensor"
+      ],
+      "reasons": [
+        "climate_duplicate_dp_id"
+      ]
+    },
+    {
+      "file": "wouej_evcharger.yaml",
+      "name": "EV charger",
+      "platforms": [
+        "sensor",
+        "binary_sensor",
+        "select",
+        "switch",
+        "number",
+        "light"
+      ],
+      "reasons": [
+        "switch_non_boolean"
+      ]
+    }
+  ]
+}
