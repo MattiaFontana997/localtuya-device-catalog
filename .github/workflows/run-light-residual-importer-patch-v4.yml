@@ -1,0 +1,69 @@
+name: Run residual light importer patch v4
+
+on:
+  push:
+    paths:
+      - .github/workflows/run-light-residual-importer-patch-v4.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply residual importer patch and precise expectations
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/patch-light-residual-importer.yml').read_text().splitlines()
+          start = next(i for i, line in enumerate(workflow) if line.strip() == "python - <<'PY'") + 1
+          end = next(i for i in range(start, len(workflow)) if workflow[i].strip() == 'PY')
+          code = '\n'.join(line[10:] if line.startswith('          ') else line for line in workflow[start:end]) + '\n'
+          exec(compile(code, 'residual-importer-patch', 'exec'), {})
+
+          residual = Path('tests/test_import_tuya_local_light_residuals.py')
+          text = residual.read_text()
+          old = 'self.assertEqual(config["color_brightness_upper"], 1000)'
+          if old not in text:
+              raise SystemExit('legacy residual assertion anchor missing')
+          residual.write_text(text.replace(old, 'self.assertEqual(config["brightness_lower"], 0)\n        self.assertEqual(config["brightness_upper"], 1000)', 1))
+
+          existing = Path('tests/test_import_tuya_local_light.py')
+          text = existing.read_text()
+          marker = '    def test_extended_rgb_hsv_light_converts_exact_layout(self):\n'
+          next_marker = '    def test_extended_rgb_hsv_rejects_non_8bit_sv_range(self):\n'
+          if marker not in text or next_marker not in text:
+              raise SystemExit('extended test method anchors missing')
+          prefix, rest = text.split(marker, 1)
+          body, suffix = rest.split(next_marker, 1)
+          old = '''        self.assertNotIn("color_brightness_lower", config)\n        self.assertNotIn("color_brightness_upper", config)\n'''
+          new = '''        self.assertEqual(config["color_brightness_lower"], 0)\n        self.assertEqual(config["color_brightness_upper"], 255)\n'''
+          if old not in body:
+              raise SystemExit('extended assertion block missing')
+          body = body.replace(old, new, 1)
+          existing.write_text(prefix + marker + body + next_marker + suffix)
+          PY
+      - name: Install dependencies
+        run: python -m pip install 'PyYAML>=6,<7'
+      - name: Run targeted tests
+        run: |
+          python -m unittest tests.test_import_tuya_local_light_residuals tests.test_import_tuya_local_light tests.test_import_tuya_local_light_switch_values tests.test_import_tuya_local_productless_time_duration tests.test_import_tuya_local_productless -v
+      - name: Commit importer support
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local.py tools/import_tuya_local_productless.py tests/test_import_tuya_local_light_residuals.py tests/test_import_tuya_local_productless_time_duration.py tests/test_import_tuya_local_light.py
+          git diff --cached --check
+          git commit -m "Support residual light encodings and duration timers"
+          git push origin HEAD:develop
