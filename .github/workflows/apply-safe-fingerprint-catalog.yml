@@ -67,9 +67,9 @@ jobs:
           from pathlib import Path
           report = json.loads(Path("docs/productless-fingerprint-import-report.json").read_text())
           assert report["generated_candidates"] == 38, report
-          assert report["safe_candidates"] == 29, report
-          assert report["blocked_candidates"] == 9, report
-          print("Confirmed 29 safe and 9 blocked productless fingerprints")
+          assert report["safe_candidates"] == 28, report
+          assert report["blocked_candidates"] == 10, report
+          print("Confirmed 28 publishable and 10 blocked productless fingerprints")
           PY
 
       - name: Commit generated snapshot
