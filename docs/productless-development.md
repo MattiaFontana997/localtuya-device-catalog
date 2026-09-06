@@ -35,3 +35,12 @@ Validated 327 value comparisons against TuyaDpsConfig from the pinned upstream, 
 The existing H/I function-style tests were not collected by unittest. Added explicit load_tests hooks so their 14 regressions now run in the unchanged CI runner.
 
 K–P remain in progress. Media player remains excluded. No release is ready.
+## Batch K — exact fan mappings
+
+- Generated candidates: **111**
+- Safe productless fingerprints: **82**
+- Blocked after global collision analysis: **29**
+- Catalog mappings including Product-ID mappings: **84**
+- Adds bounded exact enumerated fan speed mappings with closest-value writes, ordered oscillation exact/default mappings, typed preset raw values, optional presets, and safe raw fan extras.
+- Switchless fans and non-HA direction states remain fail-closed.
+- Stable branches remain untouched.

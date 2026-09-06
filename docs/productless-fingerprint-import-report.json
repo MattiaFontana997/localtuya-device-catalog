@@ -4,6 +4,21 @@
       "available_dps": [
         1,
         2,
+        3,
+        4,
+        6
+      ],
+      "best_matches": [
+        "fingerprint-anko_fan-1232c846cc",
+        "fingerprint-weau_pool_heatpump-586b2d4561"
+      ],
+      "mapping_id": "fingerprint-anko_fan-1232c846cc",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
         5
       ],
       "best_matches": [
@@ -81,6 +96,39 @@
       ],
       "best_matches": [],
       "mapping_id": "fingerprint-eeese_carl_dehumidifier-f3a0092dfb",
+      "reason": "duplicate_entity_primary_dp"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        4,
+        5,
+        14,
+        16,
+        17,
+        19
+      ],
+      "best_matches": [],
+      "mapping_id": "fingerprint-eesee_adam_dehumidifier-e7eb8d65e4",
+      "reason": "duplicate_entity_primary_dp"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        10,
+        13,
+        19,
+        101,
+        102,
+        104
+      ],
+      "best_matches": [],
+      "mapping_id": "fingerprint-electriq_cd12pro_dehumidifier-04e155b00d",
       "reason": "duplicate_entity_primary_dp"
     },
     {
@@ -308,6 +356,49 @@
         1,
         2,
         3,
+        4
+      ],
+      "best_matches": [
+        "fingerprint-simple_quad_switch-727a0f9b0f",
+        "fingerprint-tmwf02_fan-960ee23f2c"
+      ],
+      "mapping_id": "fingerprint-simple_quad_switch-727a0f9b0f",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "best_matches": [
+        "fingerprint-simple_quad_switch-727a0f9b0f",
+        "fingerprint-tmwf02_fan-960ee23f2c"
+      ],
+      "mapping_id": "fingerprint-tmwf02_fan-960ee23f2c",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "best_matches": [
+        "fingerprint-anko_fan-1232c846cc",
+        "fingerprint-weau_pool_heatpump-586b2d4561"
+      ],
+      "mapping_id": "fingerprint-weau_pool_heatpump-586b2d4561",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
         5,
         7
       ],
@@ -319,8 +410,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 23,
-  "generated_candidates": 102,
+  "blocked_candidates": 29,
+  "generated_candidates": 111,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -335,9 +426,11 @@
     "fingerprint-brizlabs_string_lights-29eaa9cea7",
     "fingerprint-catit_pet_feeder-bb92e37192",
     "fingerprint-comfortzone_cztf423s_towerfan-7e0f8a179e",
+    "fingerprint-deta_fan-6d17ecc425",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
     "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
+    "fingerprint-electriq_cd25pro_dehumidifier-6adcf48dbb",
     "fingerprint-electriq_pd45e_dehumidifier-228b4116db",
     "fingerprint-eurom_600_heater-86f6faca72",
     "fingerprint-eurom_601_heater-8978109e06",
@@ -358,6 +451,7 @@
     "fingerprint-himox_h06_purifier-42cdcaa424",
     "fingerprint-hiniso_rm10s_dehumidifier-80076ad273",
     "fingerprint-hjz_radiator-3cfc2e1b57",
+    "fingerprint-honeywell_hspeedpro_purifier-d27e13bf89",
     "fingerprint-illumanance_sensor-14877f2349",
     "fingerprint-illumanance_v2_sensor-7252c8eb46",
     "fingerprint-intec_ceilingfanlight-4cd24c5989",
@@ -370,6 +464,7 @@
     "fingerprint-logicom_powerstrip-c1fe992975",
     "fingerprint-m027_curtain-09d85a1ed9",
     "fingerprint-makegood_double_power_point_with_energy-96f4bff3fc",
+    "fingerprint-mantra_fan-d520778154",
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
@@ -387,20 +482,19 @@
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
     "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
-    "fingerprint-simple_quad_switch-727a0f9b0f",
     "fingerprint-simple_rgbcw_lightbulb-e884ae361d",
     "fingerprint-simple_switch-bee53020a2",
     "fingerprint-smartplugv2_childlock-35ee6690e1",
     "fingerprint-smartplugv3-18b61a5fa7",
+    "fingerprint-soho_air_purifier-0e5e36514c",
     "fingerprint-somgom_double_switch-9388e4f5a7",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
     "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
     "fingerprint-weaja_s9_gasalarm-d4005d41a2",
-    "fingerprint-weau_pool_heatpump-586b2d4561",
     "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
     "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51"
   ],
-  "safe_candidates": 79
+  "safe_candidates": 82
 }

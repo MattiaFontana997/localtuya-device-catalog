@@ -1672,6 +1672,98 @@
       }
     },
     {
+      "id": "fingerprint-deta_fan-6d17ecc425",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          3,
+          9,
+          101,
+          102,
+          103
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 3,
+            "fan_speed_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "1",
+                  "value": 33
+                },
+                {
+                  "dps_val": "2",
+                  "value": 66
+                },
+                {
+                  "dps_val": "3",
+                  "value": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 9,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 102,
+            "platform": "select",
+            "options": "1;2;3;4;5",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "cancel;1h;2h;4h;8h"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 103,
+            "platform": "select",
+            "options": "1;2;3;4;5",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "cancel;1h;2h;4h;8h"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/deta_fan.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-digoo_dgsp202-4ab5fc769b",
       "confidence": "experimental",
       "match": {
@@ -1969,6 +2061,133 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/electriq_cd12pw_dehumidifier.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-electriq_cd25pro_dehumidifier-6adcf48dbb",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          7,
+          10,
+          102,
+          103,
+          104
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "humidifier",
+          "config": {
+            "id": 1,
+            "platform": "humidifier",
+            "device_class": "dehumidifier",
+            "humidifier_switch_dp": 1,
+            "humidifier_switch_on": true,
+            "humidifier_switch_off": false,
+            "humidifier_current_humidity_dp": 3,
+            "humidifier_target_humidity_dp": 4,
+            "humidifier_humidity_min": 35.0,
+            "humidifier_humidity_max": 80.0,
+            "humidifier_humidity_step": 5.0,
+            "humidifier_mode_dp": 2,
+            "humidifier_mode_values": {
+              "auto": "auto",
+              "eco": "low",
+              "boost": "high",
+              "purify": "fan"
+            }
+          }
+        },
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_preset_dp": 102,
+            "fan_preset_values": {
+              "sleep": "45",
+              "fresh": "90",
+              "nature": "0_90"
+            },
+            "fan_oscillating_control": 102,
+            "fan_oscillating_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "value": true,
+                  "dps_val": "0_90"
+                },
+                {
+                  "value": false,
+                  "dps_val": "90"
+                },
+                {
+                  "value": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 10,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 104,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 103,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/electriq_cd25pro_dehumidifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -3838,6 +4057,254 @@
       }
     },
     {
+      "id": "fingerprint-honeywell_hspeedpro_purifier-d27e13bf89",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          4,
+          5,
+          8,
+          12,
+          13,
+          21,
+          22,
+          27,
+          101,
+          103,
+          105,
+          106
+        ],
+        "optional_dps": [
+          102,
+          108
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 4,
+            "fan_speed_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "1",
+                  "value": 11
+                },
+                {
+                  "dps_val": "2",
+                  "value": 22
+                },
+                {
+                  "dps_val": "3",
+                  "value": 33
+                },
+                {
+                  "dps_val": "4",
+                  "value": 44
+                },
+                {
+                  "dps_val": "5",
+                  "value": 55
+                },
+                {
+                  "dps_val": "6",
+                  "value": 66
+                },
+                {
+                  "dps_val": "7",
+                  "value": 77
+                },
+                {
+                  "dps_val": "8",
+                  "value": 88
+                },
+                {
+                  "dps_val": "9",
+                  "value": 100
+                }
+              ]
+            },
+            "fan_preset_dp": 105,
+            "fan_preset_values": {
+              "auto": true,
+              "manual": false
+            },
+            "fan_preset_raw_type": "boolean"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 2,
+            "platform": "sensor",
+            "unit_of_measurement": "ugm3",
+            "state_class": "measurement",
+            "device_class": "pm25"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 5,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            },
+            "extra_state_attributes_dps": {
+              "replacement_date": 108
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 8,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 12,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 13,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "humidity"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 21,
+            "platform": "sensor",
+            "device_class": "enum",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "good",
+                  "value": "good"
+                },
+                {
+                  "dps_val": "medium",
+                  "value": "moderate"
+                },
+                {
+                  "dps_val": "severe",
+                  "value": "severe"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 22,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 22
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 27,
+            "platform": "sensor",
+            "unit_of_measurement": "ugm3",
+            "state_class": "measurement",
+            "device_class": "volatile_organic_compounds"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 102,
+            "platform": "button",
+            "button_press_value": true
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 103,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 106,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/honeywell_hspeedpro_purifier.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-illumanance_sensor-14877f2349",
       "confidence": "experimental",
       "match": {
@@ -4947,6 +5414,215 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/makegood_double_power_point_with_energy.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-mantra_fan-d520778154",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          3,
+          6,
+          7,
+          9,
+          10,
+          11,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 3,
+            "fan_speed_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "1",
+                  "value": 3
+                },
+                {
+                  "dps_val": "2",
+                  "value": 6
+                },
+                {
+                  "dps_val": "3",
+                  "value": 9
+                },
+                {
+                  "dps_val": "4",
+                  "value": 13
+                },
+                {
+                  "dps_val": "5",
+                  "value": 16
+                },
+                {
+                  "dps_val": "6",
+                  "value": 19
+                },
+                {
+                  "dps_val": "7",
+                  "value": 22
+                },
+                {
+                  "dps_val": "8",
+                  "value": 25
+                },
+                {
+                  "dps_val": "9",
+                  "value": 28
+                },
+                {
+                  "dps_val": "10",
+                  "value": 31
+                },
+                {
+                  "dps_val": "11",
+                  "value": 34
+                },
+                {
+                  "dps_val": "12",
+                  "value": 38
+                },
+                {
+                  "dps_val": "13",
+                  "value": 41
+                },
+                {
+                  "dps_val": "14",
+                  "value": 44
+                },
+                {
+                  "dps_val": "15",
+                  "value": 47
+                },
+                {
+                  "dps_val": "16",
+                  "value": 50
+                },
+                {
+                  "dps_val": "17",
+                  "value": 53
+                },
+                {
+                  "dps_val": "18",
+                  "value": 56
+                },
+                {
+                  "dps_val": "19",
+                  "value": 59
+                },
+                {
+                  "dps_val": "20",
+                  "value": 63
+                },
+                {
+                  "dps_val": "21",
+                  "value": 66
+                },
+                {
+                  "dps_val": "22",
+                  "value": 69
+                },
+                {
+                  "dps_val": "23",
+                  "value": 72
+                },
+                {
+                  "dps_val": "24",
+                  "value": 75
+                },
+                {
+                  "dps_val": "25",
+                  "value": 78
+                },
+                {
+                  "dps_val": "26",
+                  "value": 81
+                },
+                {
+                  "dps_val": "27",
+                  "value": 84
+                },
+                {
+                  "dps_val": "28",
+                  "value": 88
+                },
+                {
+                  "dps_val": "29",
+                  "value": 91
+                },
+                {
+                  "dps_val": "30",
+                  "value": 94
+                },
+                {
+                  "dps_val": "31",
+                  "value": 97
+                },
+                {
+                  "dps_val": "32",
+                  "value": 100
+                }
+              ]
+            },
+            "fan_direction": 101,
+            "fan_direction_forward": false,
+            "fan_direction_reverse": true
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 6,
+            "platform": "select",
+            "options": "0;1;2;3;4;5;6;7;8",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "cancel;1h;2h;3h;4h;5h;6h;7h;8h"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 7,
+            "platform": "sensor",
+            "unit_of_measurement": "min",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 9,
+            "platform": "light",
+            "music_mode": false,
+            "brightness": 10,
+            "brightness_lower": 10,
+            "brightness_upper": 1000,
+            "color_temp": 11,
+            "color_temp_min_kelvin": 2700,
+            "color_temp_max_kelvin": 5000,
+            "color_temp_reverse": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/mantra_fan.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -6832,68 +7508,6 @@
       }
     },
     {
-      "id": "fingerprint-simple_quad_switch-727a0f9b0f",
-      "confidence": "experimental",
-      "match": {
-        "product_ids": [],
-        "category": null,
-        "required_dps": [
-          1,
-          2,
-          3,
-          4
-        ],
-        "optional_dps": [],
-        "fingerprint": {
-          "mode": "exact_dps"
-        }
-      },
-      "entities": [
-        {
-          "platform": "switch",
-          "config": {
-            "id": 1,
-            "platform": "switch",
-            "restore_on_reconnect": false,
-            "is_passive_entity": false
-          }
-        },
-        {
-          "platform": "switch",
-          "config": {
-            "id": 2,
-            "platform": "switch",
-            "restore_on_reconnect": false,
-            "is_passive_entity": false
-          }
-        },
-        {
-          "platform": "switch",
-          "config": {
-            "id": 3,
-            "platform": "switch",
-            "restore_on_reconnect": false,
-            "is_passive_entity": false
-          }
-        },
-        {
-          "platform": "switch",
-          "config": {
-            "id": 4,
-            "platform": "switch",
-            "restore_on_reconnect": false,
-            "is_passive_entity": false
-          }
-        }
-      ],
-      "provenance": {
-        "source": "make-all/tuya-local",
-        "path": "custom_components/tuya_local/devices/simple_quad_switch.yaml",
-        "license": "MIT",
-        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
-      }
-    },
-    {
       "id": "fingerprint-simple_rgbcw_lightbulb-e884ae361d",
       "confidence": "experimental",
       "match": {
@@ -7277,6 +7891,175 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/smartplugv3.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-soho_air_purifier-0e5e36514c",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          16,
+          18,
+          21,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 4,
+            "fan_speed_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "low",
+                  "value": 33
+                },
+                {
+                  "dps_val": "mid",
+                  "value": 66
+                },
+                {
+                  "dps_val": "high",
+                  "value": 100
+                }
+              ]
+            },
+            "fan_preset_dp": 3,
+            "fan_preset_values": {
+              "auto": "auto",
+              "manual": "manual",
+              "sleep": "sleep"
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 6,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 9,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 8,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 18,
+            "platform": "select",
+            "options": "cancel;1h;2h;3h;4h;5h;6h;7h;8h;9h;10h;11h;12h",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 21,
+            "platform": "sensor",
+            "device_class": "enum",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "excellent",
+                  "value": "excellent"
+                },
+                {
+                  "dps_val": "good",
+                  "value": "good"
+                },
+                {
+                  "dps_val": "difference",
+                  "value": "poor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 2,
+            "platform": "sensor",
+            "unit_of_measurement": "ugm3",
+            "state_class": "measurement",
+            "device_class": "pm25"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 16,
+            "platform": "sensor",
+            "unit_of_measurement": "d",
+            "device_class": "duration"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/soho_air_purifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -7721,113 +8504,6 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/weaja_s9_gasalarm.yaml",
-        "license": "MIT",
-        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
-      }
-    },
-    {
-      "id": "fingerprint-weau_pool_heatpump-586b2d4561",
-      "confidence": "experimental",
-      "match": {
-        "product_ids": [],
-        "category": null,
-        "required_dps": [
-          1,
-          2,
-          3,
-          4,
-          6
-        ],
-        "optional_dps": [],
-        "fingerprint": {
-          "mode": "exact_dps"
-        }
-      },
-      "entities": [
-        {
-          "platform": "climate",
-          "config": {
-            "id": 1,
-            "platform": "climate",
-            "hvac_mode_dp": 1,
-            "hvac_mode_values": {
-              "off": "off",
-              "heat": "heat",
-              "cool": "cool",
-              "heat_cool": "heat_cool"
-            },
-            "target_temperature_dp": 2,
-            "target_precision": 1.0,
-            "temperature_step": 1.0,
-            "min_temperature_const": 7.0,
-            "max_temperature_const": 60.0,
-            "current_temperature_dp": 3,
-            "precision": 0.1,
-            "preset_dp": 4,
-            "preset_values": {
-              "quick_heat": "hot",
-              "quiet_heat": "eco",
-              "quiet_cool": "cold",
-              "auto": "auto"
-            },
-            "temperature_unit": "celsius",
-            "advanced_mapping_by_dp": {
-              "1": [
-                {
-                  "dps_val": false,
-                  "value": "off"
-                },
-                {
-                  "dps_val": true,
-                  "constraint_dp": 4,
-                  "conditions": [
-                    {
-                      "dps_val": "eco",
-                      "value": "heat"
-                    },
-                    {
-                      "dps_val": "hot",
-                      "value": "heat"
-                    },
-                    {
-                      "dps_val": "cold",
-                      "value": "cool"
-                    },
-                    {
-                      "dps_val": "auto",
-                      "value": "heat_cool"
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        {
-          "platform": "binary_sensor",
-          "config": {
-            "id": 6,
-            "platform": "binary_sensor",
-            "binary_sensor_mapping": [
-              {
-                "value": false,
-                "dps_val": 0
-              },
-              {
-                "value": true
-              }
-            ],
-            "binary_sensor_bitfield": true,
-            "device_class": "problem",
-            "extra_state_attributes_dps": {
-              "fault_code": 6
-            }
-          }
-        }
-      ],
-      "provenance": {
-        "source": "make-all/tuya-local",
-        "path": "custom_components/tuya_local/devices/weau_pool_heatpump.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
