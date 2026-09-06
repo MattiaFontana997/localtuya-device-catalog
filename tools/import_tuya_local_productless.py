@@ -8,6 +8,7 @@ written, but only through explicit converters in this module.
 from __future__ import annotations
 
 import copy
+import math
 from typing import Any, Callable
 
 import import_tuya_local as base
@@ -446,6 +447,42 @@ def _normalize_climate_temperature_unit(entity: dict[str, Any]) -> dict[str, Any
     return normalized
 
 
+def _prepare_climate_limit_precisions(
+    entity: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, float]]:
+    """Project simple scaled Climate limit DPS onto LocalTuya precision config.
+
+    Tuya Local applies ``scale`` on read for min/max temperature registers.
+    LocalTuya keeps those registers as raw DPS and applies an independent
+    precision multiplier. Only one transform-only ``scale`` rule is accepted;
+    all richer mapping semantics stay fail-closed in the base converter.
+    """
+    transformed = copy.deepcopy(entity)
+    precisions: dict[str, float] = {}
+    for dp in transformed.get("dps", []):
+        if not isinstance(dp, dict) or dp.get("name") not in {"min_temperature", "max_temperature"}:
+            continue
+        rules = _raw_mapping(dp)
+        if not rules:
+            continue
+        if len(rules) != 1 or set(rules[0]) != {"scale"}:
+            continue
+        scale = rules[0].get("scale")
+        if isinstance(scale, bool) or not isinstance(scale, (int, float)):
+            continue
+        scale = float(scale)
+        if not math.isfinite(scale) or scale <= 0:
+            continue
+        key = (
+            "min_temperature_precision"
+            if dp.get("name") == "min_temperature"
+            else "max_temperature_precision"
+        )
+        precisions[key] = 1.0 / scale
+        dp.pop("mapping", None)
+    return transformed, precisions
+
+
 def _prepare_advanced_entity(
     entity: dict[str, Any], platform: str
 ) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], set[int]]:
@@ -723,13 +760,17 @@ def _advanced_wrapper(
         flagged, disabled_default, hidden_extra_names, non_persistent_dps = (
             _prepare_runtime_flags(entity, platform)
         )
+        climate_limit_precisions: dict[str, float] = {}
         if platform == "climate":
             flagged = _normalize_climate_temperature_unit(flagged)
+            flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             flagged, platform
         )
         single, extras = _split_simple_multi_dp_entity(prepared, platform)
         converted, required, optional = converter(single, *args, **kwargs)
+        if climate_limit_precisions:
+            converted["config"].update(climate_limit_precisions)
 
         if extras:
             _preserve_simple_multi_dp_extras(
