@@ -258,6 +258,39 @@
         1,
         2,
         3,
+        4,
+        5,
+        18,
+        20,
+        105,
+        110,
+        113,
+        114,
+        119,
+        120,
+        123,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
+      ],
+      "best_matches": [
+        "fingerprint-fujicool_yuzu_heatpump-30cb38c441",
+        "fingerprint-hellnar_heatpump-3500920f8e"
+      ],
+      "mapping_id": "fingerprint-fujicool_yuzu_heatpump-30cb38c441",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
         11
       ],
       "best_matches": [
@@ -277,6 +310,39 @@
       ],
       "mapping_id": "fingerprint-garage_door_opener-27795bfd1d",
       "reason": "shadowed"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        18,
+        20,
+        105,
+        110,
+        113,
+        114,
+        119,
+        120,
+        123,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
+      ],
+      "best_matches": [
+        "fingerprint-fujicool_yuzu_heatpump-30cb38c441",
+        "fingerprint-hellnar_heatpump-3500920f8e"
+      ],
+      "mapping_id": "fingerprint-hellnar_heatpump-3500920f8e",
+      "reason": "ambiguous"
     },
     {
       "available_dps": [
@@ -524,6 +590,36 @@
         1,
         2,
         3,
+        4,
+        5,
+        18,
+        20,
+        105,
+        110,
+        113,
+        114,
+        119,
+        120,
+        123,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
+      ],
+      "best_matches": [],
+      "mapping_id": "fingerprint-starlight_heatpump-88efe8f792",
+      "reason": "duplicate_entity_primary_dp"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
         4
       ],
       "best_matches": [
@@ -564,8 +660,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 38,
-  "generated_candidates": 154,
+  "blocked_candidates": 41,
+  "generated_candidates": 161,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -613,12 +709,12 @@
     "fingerprint-goldair_geco_heater-2cb3bd4135",
     "fingerprint-goldair_gpcv405_heater-0060b0107f",
     "fingerprint-goldair_gpcv_heater-f1bfe362d4",
+    "fingerprint-goldair_gpoc2415_oilheater-d2154904af",
     "fingerprint-gorilla_fan_v2-2d169b1109",
     "fingerprint-grid_connect_double_switch-d7bb749eef",
     "fingerprint-grid_connect_usb_double_power_point-2b2f90440f",
     "fingerprint-grid_connect_usb_power_point-c199df8546",
     "fingerprint-haozee_rbsrain01_rainsensor-bbe3491b99",
-    "fingerprint-hellnar_heatpump-3500920f8e",
     "fingerprint-himox_h05_purifier-c17b3f9f28",
     "fingerprint-himox_h06_purifier-42cdcaa424",
     "fingerprint-hiniso_rm10s_dehumidifier-80076ad273",
@@ -656,6 +752,7 @@
     "fingerprint-princess_panel_heater-abd8dd026e",
     "fingerprint-prosto_ptc2000_heater-2106dd93c1",
     "fingerprint-purline_m100_heater-7591ca90d2",
+    "fingerprint-pv28aw_co2detector-f27200370a",
     "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rgb_nightlight_outlet-196a003dd8",
@@ -665,10 +762,12 @@
     "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
     "fingerprint-simple_switch-bee53020a2",
+    "fingerprint-sirena_ws902plus_siren-b07e1906b6",
     "fingerprint-smartplugv2_childlock-35ee6690e1",
     "fingerprint-smartplugv3-18b61a5fa7",
     "fingerprint-soho_air_purifier-0e5e36514c",
     "fingerprint-somgom_double_switch-9388e4f5a7",
+    "fingerprint-space_dog_music_lamp-3fafc236fe",
     "fingerprint-swimfun_inverboost_poolheatpump-d36788c501",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
     "fingerprint-tesla_aux_airconditioner-65805bea52",
@@ -680,9 +779,10 @@
     "fingerprint-wetair_wch750_heater-d5c19963e2",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
+    "fingerprint-wouej_evcharger-cbab625937",
     "fingerprint-zemismart_spm01_d2tw_energymeter-9a02e5ac3f",
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 116
+  "safe_candidates": 120
 }

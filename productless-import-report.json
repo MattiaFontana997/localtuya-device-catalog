@@ -17,7 +17,7 @@
     "dp_readonly": 1,
     "entity_hidden_unavailable": 3,
     "entity_mode": 1,
-    "event_duplicate_dp_id": 1,
+    "event_duplicate_dp_id": 2,
     "fan_direction_mapping": 1,
     "fan_missing_switch": 1,
     "fan_preset_hidden": 1,
@@ -32,11 +32,7 @@
     "select_complex_mapping": 6,
     "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
-    "switch_non_boolean": 3,
-    "switch_non_identity_mapping": 3,
-    "unsupported_platform:alarm_control_panel": 1,
     "unsupported_platform:media_player": 1,
-    "unsupported_platform:siren": 1,
     "vacuum_activate_mapping": 1,
     "vacuum_optional_status": 1,
     "valve_position_mapping": 1,
@@ -618,7 +614,7 @@
         "text"
       ],
       "reasons": [
-        "unsupported_platform:alarm_control_panel"
+        "event_duplicate_dp_id"
       ],
       "status": "skipped"
     },
@@ -8910,7 +8906,7 @@
     },
     {
       "file": "fujicool_yuzu_heatpump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-fujicool_yuzu_heatpump-30cb38c441",
       "name": "Heat pump",
       "platforms": [
         "climate",
@@ -8920,10 +8916,8 @@
         "switch",
         "sensor"
       ],
-      "reasons": [
-        "switch_non_boolean"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "fukumaru_af01w_pet_feeder.yaml",
@@ -9487,7 +9481,7 @@
     },
     {
       "file": "goldair_gpoc2415_oilheater.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-goldair_gpoc2415_oilheater-d2154904af",
       "name": "Oil heater",
       "platforms": [
         "climate",
@@ -9497,10 +9491,8 @@
         "switch",
         "number"
       ],
-      "reasons": [
-        "switch_non_identity_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "goldair_gpph900_heater.yaml",
@@ -19711,7 +19703,7 @@
     },
     {
       "file": "pv28aw_co2detector.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-pv28aw_co2detector-f27200370a",
       "name": "CO2 detector",
       "platforms": [
         "binary_sensor",
@@ -19720,10 +19712,8 @@
         "switch",
         "select"
       ],
-      "reasons": [
-        "switch_non_identity_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "pziot_e01_energymeter.yaml",
@@ -21787,7 +21777,7 @@
     },
     {
       "file": "sirena_ws902plus_siren.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-sirena_ws902plus_siren-b07e1906b6",
       "name": "Outdoor siren",
       "platforms": [
         "siren",
@@ -21795,10 +21785,8 @@
         "sensor",
         "switch"
       ],
-      "reasons": [
-        "unsupported_platform:siren"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "skyfan_dc_fan.yaml",
@@ -22548,7 +22536,7 @@
     },
     {
       "file": "space_dog_music_lamp.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-space_dog_music_lamp-3fafc236fe",
       "name": "Music lamp",
       "platforms": [
         "light",
@@ -22557,10 +22545,8 @@
         "switch",
         "number"
       ],
-      "reasons": [
-        "switch_non_identity_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "spaelectrics_light_controller.yaml",
@@ -22738,7 +22724,7 @@
     },
     {
       "file": "starlight_heatpump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-starlight_heatpump-88efe8f792",
       "name": "Heat pump",
       "platforms": [
         "climate",
@@ -22748,10 +22734,8 @@
         "switch",
         "binary_sensor"
       ],
-      "reasons": [
-        "switch_non_boolean"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "steigen_solarpro_dryer.yaml",
@@ -25948,7 +25932,7 @@
     },
     {
       "file": "wouej_evcharger.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-wouej_evcharger-cbab625937",
       "name": "EV charger",
       "platforms": [
         "sensor",
@@ -25958,10 +25942,8 @@
         "number",
         "light"
       ],
-      "reasons": [
-        "switch_non_boolean"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "ws06_weatherstation.yaml",
@@ -26940,9 +26922,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 154,
+    "convertible_fingerprint": 161,
     "not_productless": 1526,
-    "skipped": 57
+    "skipped": 50
   },
   "target_schema": 3
 }
