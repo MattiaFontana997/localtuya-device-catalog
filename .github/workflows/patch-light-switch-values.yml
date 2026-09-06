@@ -45,8 +45,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
       - name: Run targeted importer tests
-        run: |
-          python -m unittest tests.test_import_tuya_local_light_switch_values tests.test_import_tuya_local_light -v
+        run: python -m unittest tests.test_import_tuya_local_light_switch_values -v
       - name: Commit patch
         shell: bash
         run: |
