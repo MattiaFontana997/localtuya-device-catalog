@@ -502,16 +502,35 @@ def _prepare_advanced_entity(
             and rule.get("hidden") is True
         )
 
+    def dp_needs_advanced(name: Any, rules: list[dict[str, Any]]) -> bool:
+        if any(needs_advanced(name, rule) for rule in rules):
+            return True
+        if platform != "climate" or name != "hvac_action" or len(rules) < 2:
+            return False
+        # Read-only HVAC action can legitimately be many-to-one (several raw
+        # device states collapse to heating/idle). The mature converter stores
+        # friendly->raw and therefore cannot represent that losslessly. Route
+        # only fully explicit, non-null static mappings through the per-DP
+        # advanced mapper, while keeping null/default fallbacks fail-closed.
+        values: list[Any] = []
+        for rule in rules:
+            if set(rule) - {"dps_val", "value"}:
+                return False
+            if "dps_val" not in rule or rule.get("dps_val") is None or "value" not in rule:
+                return False
+            value = rule.get("value")
+            if not isinstance(value, str) or not value:
+                return False
+            values.append(value)
+        return len(set(values)) < len(values)
+
     has_advanced = False
     for raw_dp in raw_dps:
         if not isinstance(raw_dp, dict):
             continue
         name = raw_dp.get("name")
-        for rule in _raw_mapping(raw_dp):
-            if needs_advanced(name, rule):
-                has_advanced = True
-                break
-        if has_advanced:
+        if dp_needs_advanced(name, _raw_mapping(raw_dp)):
+            has_advanced = True
             break
     if not has_advanced:
         return entity, {}, set()
@@ -524,7 +543,7 @@ def _prepare_advanced_entity(
 
     for name, original_dp in by_name.items():
         rules = _raw_mapping(original_dp)
-        if not any(needs_advanced(name, rule) for rule in rules):
+        if not dp_needs_advanced(name, rules):
             continue
         translated, references = _translate_advanced_mapping(original_dp, by_name, platform)
         if translated:
