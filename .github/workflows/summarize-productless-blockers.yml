@@ -1,0 +1,50 @@
+name: Summarize productless blockers
+
+on:
+  push:
+    paths:
+      - .github/workflows/summarize-productless-blockers.yml
+
+permissions:
+  contents: write
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Build compact blocker summary
+        run: |
+          python - <<'PY'
+          import json
+          from collections import defaultdict
+          from pathlib import Path
+
+          report = json.loads(Path('productless-import-report.json').read_text())
+          grouped = defaultdict(list)
+          for item in report['results']:
+              if item['status'] != 'skipped':
+                  continue
+              for reason in item['reasons']:
+                  grouped[reason].append(item['file'])
+          out = {
+              'convertible_fingerprint': report['status_counts'].get('convertible_fingerprint', 0),
+              'skipped': report['status_counts'].get('skipped', 0),
+              'blockers': {k: sorted(v) for k, v in sorted(grouped.items())},
+          }
+          Path('productless-blockers-summary.json').write_text(json.dumps(out, indent=2, sort_keys=True) + '\n')
+          PY
+      - name: Commit summary
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add productless-blockers-summary.json
+          git diff --cached --check
+          git commit -m "Capture current productless blocker summary"
+          git push origin HEAD:develop
