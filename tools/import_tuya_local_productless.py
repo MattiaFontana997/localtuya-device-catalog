@@ -490,6 +490,83 @@ def _prepare_climate_limit_precisions(
     return transformed, precisions
 
 
+def _prepare_climate_dynamic_target_range(
+    entity: dict[str, Any],
+) -> tuple[dict[str, Any], bool]:
+    """Bootstrap the mature Climate converter for condition-only target ranges.
+
+    Tuya Local can make the writable target-temperature range depend on another
+    DP through mapping conditions. LocalTuya's advanced runtime reproduces that
+    metadata exactly, but the mature converter requires one range while building
+    its static config. Inject a conversion-only union range, then discard the
+    resulting static min/max constants after conversion so runtime metadata stays
+    authoritative. When no condition is active, LocalTuya falls back to HA's
+    defaults, matching Tuya Local's ``range() is None`` behaviour.
+    """
+    transformed = copy.deepcopy(entity)
+    dps = transformed.get("dps")
+    if not isinstance(dps, list):
+        return entity, False
+
+    target = next(
+        (
+            dp for dp in dps
+            if isinstance(dp, dict) and dp.get("name") == "temperature"
+        ),
+        None,
+    )
+    if target is None or target.get("range") is not None:
+        return entity, False
+
+    rules = _raw_mapping(target)
+    if not rules:
+        return entity, False
+
+    ranges: list[tuple[float, float]] = []
+    saw_conditional_range = False
+    for rule in rules:
+        # A real static rule range already gives the mature converter an exact
+        # fallback, so do not replace it with a synthetic bootstrap range.
+        if "range" in rule:
+            return entity, False
+        conditions = rule.get("conditions")
+        if not isinstance(conditions, list):
+            continue
+        for condition in conditions:
+            if not isinstance(condition, dict) or "range" not in condition:
+                continue
+            saw_conditional_range = True
+            value_range = condition.get("range")
+            if not isinstance(value_range, dict) or set(value_range) != {"min", "max"}:
+                continue
+            minimum = value_range.get("min")
+            maximum = value_range.get("max")
+            if (
+                isinstance(minimum, bool)
+                or isinstance(maximum, bool)
+                or not isinstance(minimum, (int, float))
+                or not isinstance(maximum, (int, float))
+                or maximum < minimum
+            ):
+                continue
+            ranges.append((float(minimum), float(maximum)))
+
+    # Malformed conditional metadata is intentionally not hidden here. Without
+    # a bootstrap range the advanced translator will emit its precise fail-closed
+    # validation error before the base converter is called.
+    if not saw_conditional_range or not ranges:
+        return entity, False
+
+    minimum = min(item[0] for item in ranges)
+    maximum = max(item[1] for item in ranges)
+    if minimum.is_integer():
+        minimum = int(minimum)
+    if maximum.is_integer():
+        maximum = int(maximum)
+    target["range"] = {"min": minimum, "max": maximum}
+    return transformed, True
+
+
 def _prepare_advanced_entity(
     entity: dict[str, Any], platform: str
 ) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], set[int]]:
@@ -926,9 +1003,11 @@ def _advanced_wrapper(
             _prepare_runtime_flags(entity, platform)
         )
         climate_limit_precisions: dict[str, float] = {}
+        climate_dynamic_target_range = False
         if platform == "climate":
             flagged = _normalize_climate_temperature_unit(flagged)
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
+            flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             flagged, platform
         )
@@ -939,6 +1018,11 @@ def _advanced_wrapper(
         converted, required, optional = converter(single, *args, **kwargs)
         if climate_limit_precisions:
             converted["config"].update(climate_limit_precisions)
+        if climate_dynamic_target_range:
+            # The injected union range existed only to satisfy the mature
+            # converter. Runtime advanced metadata owns the actual active range.
+            converted["config"].pop("min_temperature_const", None)
+            converted["config"].pop("max_temperature_const", None)
 
         for mapped_dp, rules in complex_mapped_extras:
             name = mapped_dp.get("name")

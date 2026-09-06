@@ -534,5 +534,93 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
             ])
 
 
+    def test_climate_conditional_target_range_is_runtime_authoritative(self):
+        result = self._convert([
+            {
+                "entity": "climate",
+                "dps": [
+                    {
+                        "id": 1,
+                        "name": "hvac_mode",
+                        "type": "string",
+                        "mapping": [
+                            {"dps_val": "off", "value": "off"},
+                            {"dps_val": "heat", "value": "heat"},
+                        ],
+                    },
+                    {
+                        "id": 2,
+                        "name": "temperature",
+                        "type": "integer",
+                        "mapping": [
+                            {
+                                "scale": 10,
+                                "constraint": "mode",
+                                "conditions": [
+                                    {
+                                        "dps_val": "cold",
+                                        "range": {"min": 170, "max": 300},
+                                    },
+                                    {
+                                        "dps_val": "hot",
+                                        "range": {"min": 0, "max": 300},
+                                    },
+                                    {"dps_val": "wind", "invalid": True},
+                                ],
+                            }
+                        ],
+                    },
+                    {"id": 4, "name": "mode", "type": "string", "hidden": True},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["target_temperature_dp"], 2)
+        self.assertEqual(config["target_precision"], 0.1)
+        self.assertNotIn("min_temperature_const", config)
+        self.assertNotIn("max_temperature_const", config)
+        self.assertEqual(
+            config["advanced_mapping_by_dp"]["2"],
+            [
+                {
+                    "constraint_dp": 4,
+                    "conditions": [
+                        {"dps_val": "cold", "range": {"min": 170, "max": 300}},
+                        {"dps_val": "hot", "range": {"min": 0, "max": 300}},
+                        {"dps_val": "wind", "invalid": True},
+                    ],
+                }
+            ],
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 2, 4])
+
+    def test_climate_static_target_range_keeps_static_limits(self):
+        result = self._convert([
+            {
+                "entity": "climate",
+                "dps": [
+                    {
+                        "id": 1,
+                        "name": "hvac_mode",
+                        "type": "string",
+                        "mapping": [
+                            {"dps_val": "off", "value": "off"},
+                            {"dps_val": "heat", "value": "heat"},
+                        ],
+                    },
+                    {
+                        "id": 2,
+                        "name": "temperature",
+                        "type": "integer",
+                        "range": {"min": 5, "max": 35},
+                    },
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["min_temperature_const"], 5.0)
+        self.assertEqual(config["max_temperature_const"], 35.0)
+
+
 if __name__ == "__main__":
     unittest.main()
