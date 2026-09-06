@@ -68,7 +68,7 @@ class ProductlessWaterHeaterTests(unittest.TestCase):
         self.assertEqual(optional, set())
         self.assertNotIn("work_mode", config.get("extra_state_attributes_dps", {}))
 
-    def test_dynamic_fahrenheit_range_remains_fail_closed(self):
+    def test_dynamic_fahrenheit_range_without_unit_mapping_fails_closed(self):
         entity = {
             "entity": "water_heater",
             "dps": [
@@ -82,7 +82,7 @@ class ProductlessWaterHeaterTests(unittest.TestCase):
                 {"id": 12, "type": "string", "name": "temperature_unit"},
             ],
         }
-        with self.assertRaisesRegex(base.ConversionError, "advanced_mapping_condition_semantics"):
+        with self.assertRaisesRegex(base.ConversionError, "water_heater_temperature_unit_mapping"):
             base._CONVERTERS["water_heater"](entity)
 
     def test_mismatched_temperature_scales_fail_closed(self):
