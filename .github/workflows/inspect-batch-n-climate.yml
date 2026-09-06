@@ -24,7 +24,7 @@ jobs:
           ref: 38347807cfc81ae8789974d98532eb928f42f174
           path: upstream-tuya-local
           fetch-depth: 1
-      - name: Inspect current climate blockers
+      - name: Inspect current Climate blockers after unit normalization
         run: |
           rm -rf /tmp/batch-n-generated
           python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
@@ -32,20 +32,15 @@ jobs:
             --output-dir /tmp/batch-n-generated \
             --json /tmp/batch-n.json >/tmp/batch-n-summary.txt
           python - <<'PY'
-          import json, pathlib, yaml
+          import json
           from collections import Counter
           r=json.load(open('/tmp/batch-n.json',encoding='utf-8'))
+          counts=Counter(x['status'] for x in r['results'])
           reasons=Counter(y for x in r['results'] if x['status']=='skipped' for y in x['reasons'])
-          wanted={k for k in reasons if k.startswith('climate_')}
-          print('CLIMATE_REASON_COUNTS', {k:reasons[k] for k in sorted(wanted)})
-          root=pathlib.Path('upstream-tuya-local/custom_components/tuya_local/devices')
-          for item in r['results']:
-            hits=[x for x in item.get('reasons',[]) if x.startswith('climate_')]
-            if not hits: continue
-            f=root/item['file']
-            data=yaml.safe_load(f.read_text(encoding='utf-8'))
-            print('\n===',item['file'],'===',','.join(hits))
-            for ent in data.get('entities',[]):
-              if ent.get('entity')=='climate':
-                print(yaml.safe_dump(ent,sort_keys=False).rstrip())
+          print('BATCH_N_COUNTS',dict(sorted(counts.items())))
+          for k,v in reasons.most_common(): print('GAP',k,v)
+          print('CLIMATE_SKIPPED')
+          for x in r['results']:
+            hits=[y for y in x.get('reasons',[]) if y.startswith('climate_') or y.startswith('advanced_mapping')]
+            if hits: print(x['file'],','.join(hits))
           PY
