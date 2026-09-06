@@ -409,6 +409,110 @@ def _prepare_advanced_entity(
     return transformed, advanced_by_dp, membership_ids
 
 
+def _advanced_dependency_ids(advanced_by_dp: dict[str, list[dict[str, Any]]]) -> set[int]:
+    """Return DPS referenced only as advanced-mapping dependencies."""
+    result: set[int] = set()
+    for rules in advanced_by_dp.values():
+        for rule in rules:
+            for key in ("constraint_dp", "value_redirect_dp"):
+                value = rule.get(key)
+                if value is not None:
+                    result.add(int(value))
+            for condition in rule.get("conditions", []):
+                if not isinstance(condition, dict):
+                    continue
+                value = condition.get("value_redirect_dp")
+                if value is not None:
+                    result.add(int(value))
+    return result
+
+
+def _split_simple_multi_dp_entity(
+    entity: dict[str, Any], platform: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Split a simple entity into one functional DP plus lossless raw extras.
+
+    Tuya Local exposes unconsumed DPS as extra state attributes. LocalTuya can
+    represent the same raw attributes through ``extra_state_attributes_dps``.
+    Batch G therefore permits multiple DPS only for the simple platforms whose
+    mature converter has exactly one functional DP.
+    """
+    primary_name = _SIMPLE_PRIMARY_NAMES.get(platform)
+    dps = entity.get("dps")
+    if primary_name is None or not isinstance(dps, list) or len(dps) <= 1:
+        return entity, []
+
+    named: dict[str, dict[str, Any]] = {}
+    for dp in dps:
+        if not isinstance(dp, dict):
+            raise ConversionError("invalid_dp")
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError(f"{platform}_missing_dp_name")
+        if name in named:
+            raise ConversionError(f"{platform}_duplicate_dp:{name}")
+        named[name] = dp
+
+    primary = named.get(primary_name)
+    if primary is None:
+        raise ConversionError(f"expected_dp_name:{primary_name}")
+
+    # Duplicate raw DP aliases are safe only when they agree on required vs
+    # optional membership. The raw value may then be exposed under another
+    # attribute name without requesting a contradictory fingerprint state.
+    primary_id = base._dp_id(primary)
+    primary_membership = base._dp_membership(primary)
+    for dp in dps:
+        if dp is primary:
+            continue
+        if base._dp_id(dp) == primary_id and base._dp_membership(dp) != primary_membership:
+            raise ConversionError("multi_dp_membership_conflict")
+
+    single = copy.deepcopy(entity)
+    single["dps"] = [copy.deepcopy(primary)]
+    extras = [copy.deepcopy(dp) for dp in dps if dp is not primary]
+    return single, extras
+
+
+def _preserve_simple_multi_dp_extras(
+    platform: str,
+    extras: list[dict[str, Any]],
+    advanced_by_dp: dict[str, list[dict[str, Any]]],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    dependency_ids = _advanced_dependency_ids(advanced_by_dp)
+    advanced_source_ids = {int(dp_id) for dp_id in advanced_by_dp}
+    exposed = len(config.get("extra_state_attributes_dps", {}))
+
+    for dp in extras:
+        dp_id = base._dp_id(dp)
+        name = dp.get("name")
+        if not isinstance(name, str) or not name:
+            raise ConversionError(f"{platform}_missing_dp_name")
+
+        # Constraint/redirect DPS are internal to Batch F and already retained
+        # in fingerprint membership. Do not expose them as unrelated raw attrs.
+        if dp_id in dependency_ids:
+            continue
+
+        # An extra DP with its own advanced mapping has HA-facing semantics of
+        # its own. Treating it as a raw attribute would silently discard them.
+        if dp_id in advanced_source_ids:
+            raise ConversionError(f"multi_dp_advanced_extra:{name}")
+
+        will_expose = dp.get("hidden") is not True and name not in {"state", "available"}
+        if will_expose:
+            exposed += 1
+            if exposed > 32:
+                raise ConversionError("multi_dp_too_many_extra_attributes")
+
+        base._preserve_core_extra(
+            platform, name, dp, config, required, optional
+        )
+
+
 def _advanced_wrapper(
     platform: str, converter: Callable[..., base.Converted]
 ) -> Callable[..., base.Converted]:
@@ -416,14 +520,32 @@ def _advanced_wrapper(
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             entity, platform
         )
-        converted, required, optional = converter(prepared, *args, **kwargs)
+        single, extras = _split_simple_multi_dp_entity(prepared, platform)
+        converted, required, optional = converter(single, *args, **kwargs)
+
+        if extras:
+            _preserve_simple_multi_dp_extras(
+                platform,
+                extras,
+                advanced_by_dp,
+                converted["config"],
+                required,
+                optional,
+            )
+
         if not advanced_by_dp:
             return converted, required, optional
 
         converted["config"]["advanced_mapping_by_dp"] = advanced_by_dp
-        originals = {base._dp_id(dp): dp for dp in _named_dps(entity, platform).values()}
+        originals = {
+            base._dp_id(dp): dp
+            for dp in entity.get("dps", [])
+            if isinstance(dp, dict)
+        }
         for dp_id in membership_ids:
-            dp = originals[dp_id]
+            dp = originals.get(dp_id)
+            if dp is None:
+                raise ConversionError("advanced_mapping_dependency_missing_dp")
             base._merge_membership(required, optional, dp)
         return converted, required, optional
 

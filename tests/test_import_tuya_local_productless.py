@@ -342,5 +342,171 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
         self.assertEqual(result["match"]["required_dps"], [1, 4])
 
 
+    def test_multidp_sensor_preserves_raw_extras(self):
+        result = self._convert([
+            {
+                "entity": "sensor",
+                "class": "energy",
+                "dps": [
+                    {
+                        "id": 109,
+                        "name": "sensor",
+                        "type": "integer",
+                        "unit": "kWh",
+                        "class": "total_increasing",
+                        "mapping": [{"scale": 100}],
+                    },
+                    {"id": 104, "name": "unknown_104", "type": "integer"},
+                    {"id": 105, "name": "unknown_105", "type": "integer", "optional": True},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {"unknown_104": 104, "unknown_105": 105},
+        )
+        self.assertEqual(result["match"]["required_dps"], [104, 109])
+        self.assertEqual(result["match"]["optional_dps"], [105])
+
+    def test_multidp_switch_preserves_raw_diagnostics(self):
+        result = self._convert([
+            {
+                "entity": "switch",
+                "dps": [
+                    {"id": 1, "name": "switch", "type": "boolean"},
+                    {"id": 21, "name": "test_bit", "type": "integer"},
+                    {"id": 43, "name": "inching", "type": "base64"},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(
+            config["extra_state_attributes_dps"],
+            {"test_bit": 21, "inching": 43},
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 21, 43])
+
+    def test_multidp_number_preserves_raw_companion_values(self):
+        result = self._convert([
+            {
+                "entity": "number",
+                "dps": [
+                    {"id": 14, "name": "value", "type": "integer", "range": {"min": 1, "max": 10}},
+                    {"id": 104, "name": "meal_plan", "type": "string"},
+                    {"id": 102, "name": "unknown_102", "type": "boolean"},
+                ],
+            }
+        ])
+        self.assertEqual(
+            result["entities"][0]["config"]["extra_state_attributes_dps"],
+            {"meal_plan": 104, "unknown_102": 102},
+        )
+
+    def test_multidp_select_preserves_raw_companion_values(self):
+        result = self._convert([
+            {
+                "entity": "select",
+                "dps": [
+                    {
+                        "id": 101,
+                        "name": "option",
+                        "type": "string",
+                        "mapping": [
+                            {"dps_val": "a", "value": "A"},
+                            {"dps_val": "b", "value": "B"},
+                        ],
+                    },
+                    {"id": 104, "name": "recently", "type": "integer"},
+                    {"id": 111, "name": "recent_love", "type": "integer"},
+                ],
+            }
+        ])
+        self.assertEqual(
+            result["entities"][0]["config"]["extra_state_attributes_dps"],
+            {"recently": 104, "recent_love": 111},
+        )
+
+    def test_multidp_binary_sensor_preserves_raw_selftest(self):
+        result = self._convert([
+            {
+                "entity": "binary_sensor",
+                "dps": [
+                    {
+                        "id": 1,
+                        "name": "sensor",
+                        "type": "string",
+                        "mapping": [
+                            {"dps_val": "presence", "value": True},
+                            {"dps_val": "none", "value": False},
+                        ],
+                    },
+                    {"id": 6, "name": "selftest_result", "type": "string"},
+                ],
+            }
+        ])
+        self.assertEqual(
+            result["entities"][0]["config"]["extra_state_attributes_dps"],
+            {"selftest_result": 6},
+        )
+
+    def test_multidp_extra_mapping_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "sensor_extra_mapping:description"):
+            self._convert([
+                {
+                    "entity": "sensor",
+                    "dps": [
+                        {"id": 1, "name": "sensor", "type": "integer"},
+                        {
+                            "id": 2,
+                            "name": "description",
+                            "type": "string",
+                            "mapping": [{"dps_val": "x", "value": "friendly"}],
+                        },
+                    ],
+                }
+            ])
+
+    def test_multidp_extra_force_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "sensor_extra_semantics:calibration"):
+            self._convert([
+                {
+                    "entity": "sensor",
+                    "dps": [
+                        {"id": 1, "name": "sensor", "type": "integer"},
+                        {"id": 2, "name": "calibration", "type": "integer", "force": True},
+                    ],
+                }
+            ])
+
+    def test_multidp_duplicate_raw_dp_alias_is_preserved(self):
+        result = self._convert([
+            {
+                "entity": "binary_sensor",
+                "dps": [
+                    {"id": 10, "name": "sensor", "type": "boolean"},
+                    {"id": 10, "name": "fault_code", "type": "boolean"},
+                ],
+            }
+        ])
+        self.assertEqual(
+            result["entities"][0]["config"]["extra_state_attributes_dps"],
+            {"fault_code": 10},
+        )
+        self.assertEqual(result["match"]["required_dps"], [10])
+
+    def test_multidp_duplicate_alias_membership_conflict_rejected(self):
+        with self.assertRaisesRegex(ConversionError, "multi_dp_membership_conflict"):
+            self._convert([
+                {
+                    "entity": "switch",
+                    "dps": [
+                        {"id": 1, "name": "switch", "type": "boolean"},
+                        {"id": 1, "name": "available", "type": "boolean", "optional": True},
+                    ],
+                }
+            ])
+
+
 if __name__ == "__main__":
     unittest.main()
