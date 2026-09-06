@@ -439,7 +439,7 @@
     }
   ],
   "blocked_candidates": 31,
-  "generated_candidates": 115,
+  "generated_candidates": 118,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -458,8 +458,10 @@
     "fingerprint-deta_fan-6d17ecc425",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
+    "fingerprint-electriq_12wminv_heatpump-744a833331",
     "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
     "fingerprint-electriq_cd25pro_dehumidifier-6adcf48dbb",
+    "fingerprint-electriq_desd9lw_dehumidifier-0abe8c9510",
     "fingerprint-electriq_pd45e_dehumidifier-228b4116db",
     "fingerprint-eurom_600_heater-86f6faca72",
     "fingerprint-eurom_601_heater-8978109e06",
@@ -504,7 +506,7 @@
     "fingerprint-pgst_climate_sensor-ce4b9c73f8",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
     "fingerprint-prosto_ptc2000_heater-2106dd93c1",
-    "fingerprint-purline_m100_heater-40ff05fbc4",
+    "fingerprint-purline_m100_heater-7591ca90d2",
     "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rgb_nightlight_outlet-196a003dd8",
@@ -524,7 +526,8 @@
     "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
     "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
-    "fingerprint-woox_r4028_powerstrip-8dbe67ef51"
+    "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
+    "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 84
+  "safe_candidates": 87
 }

@@ -2098,6 +2098,203 @@
       }
     },
     {
+      "id": "fingerprint-electriq_12wminv_heatpump-744a833331",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          12,
+          101,
+          102,
+          103,
+          104,
+          106,
+          107,
+          108,
+          109,
+          110
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "cool": "cool",
+              "fan_only": "fan_only",
+              "dry": "dry",
+              "heat": "heat",
+              "heat_cool": "heat_cool"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 16.0,
+            "max_temperature_const": 32.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "hvac_fan_mode_dp": 5,
+            "hvac_fan_mode_values": {
+              "auto": "auto",
+              "top": "top",
+              "low": "low",
+              "medium": "medium",
+              "high": "high"
+            },
+            "hvac_swing_mode_dp": 106,
+            "hvac_swing_mode_values": {
+              "off": false,
+              "on": true
+            },
+            "hvac_swing_horizontal_mode_dp": 107,
+            "hvac_swing_horizontal_mode_values": {
+              "on": true,
+              "off": false
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_8": 8,
+              "unknown_12": 12,
+              "unknown_102": 102,
+              "unknown_103": 103,
+              "unknown_108": 108,
+              "unknown_109": 109,
+              "unknown_110": 110
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "wind",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "wet",
+                      "value": "dry"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    }
+                  ]
+                }
+              ],
+              "5": [
+                {
+                  "dps_val": 1,
+                  "value": "auto",
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": 2,
+                  "value": "top",
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": 3,
+                  "value": "low",
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": 4,
+                  "value": "medium",
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": 5,
+                  "value": "high",
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 104,
+            "platform": "light",
+            "music_mode": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/electriq_12wminv_heatpump.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
       "confidence": "experimental",
       "match": {
@@ -2287,6 +2484,169 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/electriq_cd25pro_dehumidifier.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-electriq_desd9lw_dehumidifier-0abe8c9510",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          4,
+          5,
+          6,
+          7,
+          10,
+          12,
+          15,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "auto": "auto",
+              "heat": "heat",
+              "dry": "dry",
+              "fan_only": "fan_only"
+            },
+            "target_temperature_dp": 101,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 16.0,
+            "max_temperature_const": 30.0,
+            "current_temperature_dp": 7,
+            "precision": 1.0,
+            "target_humidity_dp": 2,
+            "target_humidity_precision": 1.0,
+            "min_humidity_const": 35.0,
+            "max_humidity_const": 80.0,
+            "current_humidity_dp": 6,
+            "current_humidity_precision": 1.0,
+            "hvac_fan_mode_dp": 4,
+            "hvac_fan_mode_values": {
+              "low": "low",
+              "medium": "medium",
+              "high": "high"
+            },
+            "hvac_swing_mode_dp": 10,
+            "hvac_swing_mode_values": {
+              "off": false,
+              "vertical": true
+            },
+            "temperature_unit": "celsius",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "Auto",
+                      "value": "auto"
+                    },
+                    {
+                      "dps_val": "Heater",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "Dehumidity",
+                      "value": "dry"
+                    },
+                    {
+                      "dps_val": "Fan",
+                      "value": "fan_only"
+                    }
+                  ]
+                }
+              ],
+              "4": [
+                {
+                  "dps_val": "Low",
+                  "value": "low",
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "Auto",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": "Medium",
+                  "value": "medium",
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "Auto",
+                      "invalid": true
+                    }
+                  ]
+                },
+                {
+                  "dps_val": "High",
+                  "value": "high",
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "Auto",
+                      "invalid": true
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 15,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 15,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 12,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/electriq_desd9lw_dehumidifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -6821,7 +7181,7 @@
       }
     },
     {
-      "id": "fingerprint-purline_m100_heater-40ff05fbc4",
+      "id": "fingerprint-purline_m100_heater-7591ca90d2",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -6851,6 +7211,7 @@
             "hvac_mode_dp": 1,
             "hvac_mode_values": {
               "off": "off",
+              "heat": "heat",
               "fan_only": "fan_only"
             },
             "target_temperature_dp": 2,
@@ -9228,6 +9589,415 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/woox_r4028_powerstrip.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-zmp71sh_pool_pump-05843f201e",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          4,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125
+        ],
+        "optional_dps": [
+          7,
+          8,
+          15,
+          16,
+          17,
+          128
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 4,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 4
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 7,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "battery",
+            "extra_state_attributes_dps": {
+              "level": 8
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 15,
+            "platform": "sensor",
+            "unit_of_measurement": "s",
+            "state_class": "measurement",
+            "device_class": "duration",
+            "extra_state_attributes_dps": {
+              "current_minutes": 111,
+              "total_minutes": 112
+            }
+          }
+        },
+        {
+          "platform": "text",
+          "config": {
+            "id": 16,
+            "platform": "text",
+            "text_mode": "text",
+            "text_pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "entity_registry_enabled_default": false
+          }
+        },
+        {
+          "platform": "text",
+          "config": {
+            "id": 17,
+            "platform": "text",
+            "text_mode": "text",
+            "text_pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "entity_registry_enabled_default": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 101,
+            "platform": "select",
+            "options": "low;mid;high;clear;plan",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "low;medium;high;rapid_clean;schedule"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 102,
+            "platform": "sensor",
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 103,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 104,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "advanced_mapping_by_dp": {
+              "104": [
+                {
+                  "constraint_dp": 116,
+                  "conditions": [
+                    {
+                      "dps_val": "rpm",
+                      "step": 50
+                    },
+                    {
+                      "dps_val": "percent",
+                      "range": {
+                        "min": 16,
+                        "max": 100
+                      },
+                      "value_redirect_dp": 105
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 106,
+            "platform": "sensor",
+            "state_class": "measurement",
+            "advanced_mapping_by_dp": {
+              "106": [
+                {
+                  "constraint_dp": 116,
+                  "conditions": [
+                    {
+                      "dps_val": "percent",
+                      "value_redirect_dp": 107
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 108,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 109,
+            "platform": "sensor",
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 110,
+            "platform": "sensor",
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 116,
+            "platform": "select",
+            "options": "rpm;percent",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 117,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 50.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 118,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 50.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 119,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 50.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 120,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 50.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 121,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 999.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "min"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 122,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 123,
+            "platform": "number",
+            "min_value": 600.0,
+            "max_value": 3600.0,
+            "step_size": 50.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "rpm"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 124,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 9999.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "min",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 125,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 9999.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "min",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "text",
+          "config": {
+            "id": 128,
+            "platform": "text",
+            "text_mode": "text",
+            "text_pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+            "entity_registry_enabled_default": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/zmp71sh_pool_pump.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }

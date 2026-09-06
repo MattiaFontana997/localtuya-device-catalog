@@ -53,3 +53,14 @@ K–P remain in progress. Media player remains excluded. No release is ready.
 - Adds lossless productless Water Heater conversion for bounded static/advanced mode, temperature, away-mode and raw-extra semantics.
 - Dynamic Celsius/Fahrenheit condition-range redirects remain fail-closed.
 - Stable branches remain untouched.
+## Batch M — Advanced Mapping metadata
+
+- Converter candidates: **118**
+- Remaining skipped productless profiles: **93**
+- Safe productless fingerprints: **87**
+- Blocked after global collision analysis: **31**
+- Catalog mappings including Product-ID mappings: **89**
+- Adds lossless conditional range/step metadata for Climate/Number and preserves static base transforms without double application.
+- Fixes enum projection when advanced conditions are invalid/hidden-only.
+- Condition scale, nested mappings, transformed redirect targets and unsupported recursive writes remain fail-closed.
+- Stable branches remain untouched.
