@@ -42,6 +42,22 @@
     {
       "available_dps": [
         1,
+        2,
+        3,
+        4,
+        7
+      ],
+      "best_matches": [
+        "fingerprint-eurom_walldesignheat2000_heater-5930ab5b4a",
+        "fingerprint-inow_heater_element-a6d3f3446c",
+        "fingerprint-netmostat_n1_thermostat-f91036ef47"
+      ],
+      "mapping_id": "fingerprint-eurom_walldesignheat2000_heater-5930ab5b4a",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
         101
       ],
       "best_matches": [
@@ -72,6 +88,7 @@
         7
       ],
       "best_matches": [
+        "fingerprint-eurom_walldesignheat2000_heater-5930ab5b4a",
         "fingerprint-inow_heater_element-a6d3f3446c",
         "fingerprint-netmostat_n1_thermostat-f91036ef47"
       ],
@@ -103,6 +120,7 @@
         7
       ],
       "best_matches": [
+        "fingerprint-eurom_walldesignheat2000_heater-5930ab5b4a",
         "fingerprint-inow_heater_element-a6d3f3446c",
         "fingerprint-netmostat_n1_thermostat-f91036ef47"
       ],
@@ -138,8 +156,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 10,
-  "generated_candidates": 38,
+  "blocked_candidates": 11,
+  "generated_candidates": 54,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -153,22 +171,37 @@
     "fingerprint-gidrolock_standard_wifi-36bbcd865c",
     "fingerprint-goldair_gpcv405_heater-0060b0107f",
     "fingerprint-gorilla_fan_v2-2d169b1109",
+    "fingerprint-grid_connect_double_switch-d7bb749eef",
+    "fingerprint-grid_connect_usb_power_point-c199df8546",
     "fingerprint-himox_h05_purifier-c17b3f9f28",
     "fingerprint-himox_h06_purifier-42cdcaa424",
     "fingerprint-intec_ceilingfanlight-4cd24c5989",
     "fingerprint-klarstein_wonderwall_irheater-e13bfcf103",
     "fingerprint-kogan_garage_opener-387738bf9b",
+    "fingerprint-kogan_kahtp_heater-253f65cc7e",
     "fingerprint-konlen_wf96l_waterlevel_controller-fff9d72dc3",
+    "fingerprint-logicom_powerstrip-c1fe992975",
+    "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
+    "fingerprint-moesgo_dimmer-fde463382e",
+    "fingerprint-nedis_htpl20f_heater-40b5de8922",
     "fingerprint-orion_ptc2000_heater-1d6c159639",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
+    "fingerprint-prosto_ptc2000_heater-2106dd93c1",
+    "fingerprint-purline_m100_heater-40ff05fbc4",
+    "fingerprint-pziot_e01_energymeter-ce77107ea2",
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
+    "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
     "fingerprint-simple_quad_switch-727a0f9b0f",
     "fingerprint-simple_rgbcw_lightbulb-e884ae361d",
     "fingerprint-simple_switch-bee53020a2",
-    "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0"
+    "fingerprint-somgom_double_switch-9388e4f5a7",
+    "fingerprint-teckin_ss42_sockets-94a32977b7",
+    "fingerprint-thb2_temperature_and_humidity_sensor-e3ffcee317",
+    "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
+    "fingerprint-woox_r4028_powerstrip-8dbe67ef51"
   ],
-  "safe_candidates": 28
+  "safe_candidates": 43
 }

@@ -924,6 +924,157 @@
       }
     },
     {
+      "id": "fingerprint-grid_connect_double_switch-d7bb749eef",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          11,
+          104,
+          105
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "switch",
+            "extra_state_attributes_dps": {
+              "unknown_11": 11,
+              "unknown_104": 104,
+              "unknown_105": 105
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "switch"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/grid_connect_double_switch.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-grid_connect_usb_power_point-c199df8546",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          9,
+          10,
+          38,
+          41,
+          44
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 9,
+            "id": 9
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 10,
+            "id": 10
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 38,
+            "platform": "select",
+            "options": "power_off;power_on;last",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "off;on;memory"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 41,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 44,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/grid_connect_usb_power_point.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-himox_h05_purifier-c17b3f9f28",
       "confidence": "experimental",
       "match": {
@@ -1324,6 +1475,82 @@
       }
     },
     {
+      "id": "fingerprint-kogan_kahtp_heater-253f65cc7e",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          2,
+          3,
+          4,
+          6,
+          7,
+          8
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 7,
+            "platform": "climate",
+            "hvac_mode_dp": 7,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "eco": "Low",
+              "boost": "High"
+            },
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 6,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_minute_dp": 8,
+            "id": 8
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/kogan_kahtp_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-konlen_wf96l_waterlevel_controller-fff9d72dc3",
       "confidence": "experimental",
       "match": {
@@ -1492,6 +1719,223 @@
       }
     },
     {
+      "id": "fingerprint-logicom_powerstrip-c1fe992975",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 3,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 4,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 5,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "switch"
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 9,
+            "id": 9
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 10,
+            "id": 10
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 11,
+            "id": 11
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 12,
+            "id": 12
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 13,
+            "id": 13
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/logicom_powerstrip.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          104
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "auto": "auto",
+              "heat": "heat"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 0.5,
+            "temperature_step": 0.5,
+            "min_temperature_const": 5.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 3,
+            "precision": 0.5,
+            "preset_dp": 5,
+            "preset_values": {
+              "eco": true,
+              "comfort": false
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_104": 104
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "0",
+                      "value": "auto"
+                    },
+                    {
+                      "dps_val": "1",
+                      "value": "heat"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 6,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/moes_bht002_thermostat_c.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-moes_dimmer-25b5c01342",
       "confidence": "experimental",
       "match": {
@@ -1565,6 +2009,181 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/moes_dimmer.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-moesgo_dimmer-fde463382e",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          26
+        ],
+        "optional_dps": [
+          14
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "light",
+          "config": {
+            "id": 1,
+            "platform": "light",
+            "music_mode": false,
+            "brightness": 2,
+            "brightness_lower": 10,
+            "brightness_upper": 1000
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 3,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 100.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 4,
+            "platform": "select",
+            "options": "led;incandescent;halogen",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "LED;Incandescent;Halogen"
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 6,
+            "id": 6
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 14,
+            "platform": "select",
+            "options": "off;on;memory",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 26,
+            "platform": "light",
+            "music_mode": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/moesgo_dimmer.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-nedis_htpl20f_heater-40b5de8922",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          7,
+          11,
+          13,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "heat": true,
+              "off": false
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "eco": "1",
+              "comfort": "2",
+              "away": "3"
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_11": 11,
+              "unknown_101": 101
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_minute_dp": 13,
+            "id": 13
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/nedis_htpl20f_heater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -1733,6 +2352,310 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/powerstrip_4outlet_usbs.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-prosto_ptc2000_heater-2106dd93c1",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          19,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "fan_only": "fan_only",
+              "heat": "heat"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 18.0,
+            "max_temperature_const": 45.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 5,
+            "preset_values": {
+              "none": "level_0",
+              "comfort": "level_1",
+              "boost": "level_2"
+            },
+            "hvac_swing_mode_dp": 8,
+            "hvac_swing_mode_values": {
+              "off": false,
+              "on": true
+            },
+            "temperature_unit": "celsius",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "level_0",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "level_1",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "level_2",
+                      "value": "heat",
+                      "hidden": true
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 4,
+            "platform": "select",
+            "options": "normal;auto",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "Full;Auto"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 19,
+            "platform": "select",
+            "options": "cancel;1h;2h;3h;4h;5h;6h;7h;8h",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/prosto_ptc2000_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-purline_m100_heater-40ff05fbc4",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          5,
+          10,
+          11,
+          12,
+          101,
+          102
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "fan_only": "fan_only"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 5,
+            "preset_values": {
+              "none": "off",
+              "1": "1",
+              "2": "2",
+              "3": "3",
+              "4": "4",
+              "5": "5",
+              "comfort": "auto"
+            },
+            "hvac_swing_mode_dp": 102,
+            "hvac_swing_mode_values": {
+              "off": false,
+              "vertical": true
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "timer_hours": 11,
+              "timer_remain": 12
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "value": "heat",
+                  "constraint_dp": 5,
+                  "conditions": [
+                    {
+                      "dps_val": "off",
+                      "value": "fan_only"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 10,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 101,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "switch"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/purline_m100_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-pziot_e01_energymeter-ce77107ea2",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          109
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 109,
+            "platform": "sensor",
+            "scaling": 0.01,
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "extra_state_attributes_dps": {
+              "unknown_104": 104,
+              "unknown_105": 105,
+              "unknown_106": 106
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "scaling": 0.1,
+            "unit_of_measurement": "V",
+            "state_class": "measurement",
+            "device_class": "voltage"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 102,
+            "platform": "sensor",
+            "scaling": 0.01,
+            "unit_of_measurement": "A",
+            "state_class": "measurement",
+            "device_class": "current"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 103,
+            "platform": "sensor",
+            "scaling": 0.01,
+            "unit_of_measurement": "W",
+            "state_class": "measurement",
+            "device_class": "power"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/pziot_e01_energymeter.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -1953,6 +2876,166 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/rumba_bathroom_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-sendo_airconditioner_c-8515ed4a85",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          8,
+          12,
+          13,
+          14,
+          28,
+          33,
+          102,
+          106
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "cool": "cool",
+              "heat": "heat",
+              "dry": "dry",
+              "fan_only": "fan_only",
+              "heat_cool": "heat_cool"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 0.1,
+            "temperature_step": 1.0,
+            "min_temperature_const": 16.0,
+            "max_temperature_const": 32.0,
+            "current_temperature_dp": 3,
+            "precision": 0.1,
+            "preset_dp": 8,
+            "preset_values": {
+              "eco": true,
+              "comfort": false
+            },
+            "hvac_swing_mode_dp": 33,
+            "hvac_swing_mode_values": {
+              "horizontal": true,
+              "off": false
+            },
+            "temperature_unit": "celsius",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "wet",
+                      "value": "dry"
+                    },
+                    {
+                      "dps_val": "wind",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 12,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 13,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 14,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 28,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 102,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 106,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/sendo_airconditioner_c.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -2201,6 +3284,326 @@
       }
     },
     {
+      "id": "fingerprint-somgom_double_switch-9388e4f5a7",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          7,
+          8,
+          16
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 7,
+            "id": 7
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 8,
+            "id": 8
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 16,
+            "platform": "light",
+            "music_mode": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/somgom_double_switch.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-teckin_ss42_sockets-94a32977b7",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          101,
+          102
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 101,
+            "id": 101
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 102,
+            "id": 102
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/teckin_ss42_sockets.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-thb2_temperature_and_humidity_sensor-e3ffcee317",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          4,
+          10,
+          11,
+          12,
+          13,
+          23,
+          24
+        ],
+        "optional_dps": [
+          9,
+          14,
+          15
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "scaling": 0.1,
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 2,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "humidity"
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 9,
+            "platform": "select",
+            "options": "f;c",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "fahrenheit;celsius"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 4,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "device_class": "battery"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 10,
+            "platform": "number",
+            "min_value": -20.0,
+            "max_value": 60.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 11,
+            "platform": "number",
+            "min_value": -20.0,
+            "max_value": 60.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 12,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 100.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 13,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 100.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%"
+          }
+        },
+        {
+          "platform": "event",
+          "config": {
+            "id": 14,
+            "platform": "event",
+            "event_dp": 14,
+            "event_types": {
+              "low": "loweralarm",
+              "high": "upperalarm",
+              "normal": "cancel"
+            }
+          }
+        },
+        {
+          "platform": "event",
+          "config": {
+            "id": 15,
+            "platform": "event",
+            "event_dp": 15,
+            "event_types": {
+              "low": "loweralarm",
+              "high": "upperalarm",
+              "normal": "cancel"
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 23,
+            "platform": "number",
+            "min_value": -2.0,
+            "max_value": 2.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature_delta"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 24,
+            "platform": "number",
+            "min_value": -10.0,
+            "max_value": 10.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/thb2_temperature_and_humidity_sensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
       "confidence": "experimental",
       "match": {
@@ -2274,6 +3677,108 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/wf520d_wifi_dual_touch_dimmer.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          7,
+          101,
+          102,
+          103,
+          105
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "switch",
+          "config": {
+            "id": 1,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 2,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 3,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "outlet"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 7,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "device_class": "switch"
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 101,
+            "id": 101
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 102,
+            "id": 102
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 103,
+            "id": 103
+          }
+        },
+        {
+          "platform": "time",
+          "config": {
+            "platform": "time",
+            "time_second_dp": 105,
+            "id": 105
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/woox_r4028_powerstrip.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
