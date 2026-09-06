@@ -98,5 +98,5 @@ jobs:
           for shape,count in sorted(shapes.items(), key=lambda item:(-item[1],item[0])):
               print(f"ADVSHAPE {count} {shape}: " + ', '.join(files[shape]))
           PY
-      - name: Batch F marker
-        run: echo "Batch F final corpus analysis"
+      - name: Batch G marker
+        run: echo "Batch G final corpus analysis"
