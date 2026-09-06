@@ -1,0 +1,4563 @@
+[
+  {
+    "entities": [],
+    "file": "advancedfires_1500_fireplace.yaml",
+    "reasons": [
+      "light_unsupported_dp:effects_disabled"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "airwoods_av_htpf_fresh_air_heat_pump.yaml",
+    "reasons": [
+      "fan_missing_switch"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 1,
+            "mapping": [
+              {
+                "dps_val": "disarmed",
+                "value": "disarmed"
+              },
+              {
+                "dps_val": "arm",
+                "value": "armed_away"
+              },
+              {
+                "dps_val": "home",
+                "value": "armed_home"
+              },
+              {
+                "dps_val": "sos",
+                "value": "triggered"
+              }
+            ],
+            "name": "alarm_state",
+            "type": "string"
+          },
+          {
+            "id": 24,
+            "name": "zone_attribute",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "alarm_control_panel"
+      }
+    ],
+    "file": "aixishs_big_siren.yaml",
+    "reasons": [
+      "unsupported_platform:alarm_control_panel"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "class": "energy",
+        "dps": [
+          {
+            "class": "total_increasing",
+            "id": 1,
+            "mapping": [
+              {
+                "scale": 100
+              }
+            ],
+            "name": "sensor",
+            "type": "integer",
+            "unit": "kWh"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "diagnostic",
+        "class": "enum",
+        "dps": [
+          {
+            "id": 3,
+            "mapping": [
+              {
+                "dps_val": "charger_free",
+                "value": "available"
+              },
+              {
+                "dps_val": "charger_insert",
+                "value": "plugged_in"
+              },
+              {
+                "dps_val": "charger_free_fault",
+                "value": "fault_unplugged"
+              },
+              {
+                "dps_val": "charger_wait",
+                "value": "waiting"
+              },
+              {
+                "dps_val": "charger_charging",
+                "value": "charging"
+              },
+              {
+                "dps_val": "charger_pause",
+                "value": "paused"
+              },
+              {
+                "dps_val": "charger_end",
+                "value": "charged"
+              },
+              {
+                "dps_val": "charger_fault",
+                "value": "fault"
+              }
+            ],
+            "name": "sensor",
+            "type": "string"
+          },
+          {
+            "id": 23,
+            "name": "version",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "id": 32,
+            "name": "ip_address",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "icon": "mdi:ev-station",
+        "translation_key": "status"
+      },
+      {
+        "category": "config",
+        "class": "current",
+        "dps": [
+          {
+            "id": 4,
+            "name": "value",
+            "range": {
+              "max": 16,
+              "min": 1
+            },
+            "type": "integer",
+            "unit": "A"
+          }
+        ],
+        "entity": "number"
+      },
+      {
+        "category": "diagnostic",
+        "class": "power",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 9,
+            "mapping": [
+              {
+                "scale": 1000
+              },
+              {
+                "dps_val": null,
+                "value_redirect": "single_phase"
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "integer",
+            "unit": "kW"
+          },
+          {
+            "id": 5,
+            "mapping": [
+              {
+                "scale": 1000
+              },
+              {
+                "dps_val": null,
+                "value_redirect": "phase_a"
+              }
+            ],
+            "name": "single_phase",
+            "optional": true,
+            "type": "integer"
+          },
+          {
+            "id": 6,
+            "mapping": [
+              {
+                "scale": 1000
+              }
+            ],
+            "mask": "0000000000FFFFFF",
+            "name": "phase_a",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "diagnostic",
+        "class": "voltage",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 6,
+            "mapping": [
+              {
+                "scale": 10
+              }
+            ],
+            "mask": "FFFF000000000000",
+            "name": "sensor",
+            "optional": true,
+            "type": "base64",
+            "unit": "V"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "diagnostic",
+        "class": "current",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 6,
+            "mapping": [
+              {
+                "scale": 1000
+              }
+            ],
+            "mask": "0000FFFFFF000000",
+            "name": "sensor",
+            "optional": true,
+            "type": "base64",
+            "unit": "A"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "diagnostic",
+        "class": "problem",
+        "dps": [
+          {
+            "id": 10,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": false
+              },
+              {
+                "dps_val": 16384,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "sensor",
+            "type": "bitfield"
+          },
+          {
+            "id": 10,
+            "name": "fault_code",
+            "type": "bitfield"
+          },
+          {
+            "id": 10,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "ok"
+              },
+              {
+                "dps_val": 1,
+                "value": "over_current"
+              },
+              {
+                "dps_val": 2,
+                "value": "over_current_fault"
+              },
+              {
+                "dps_val": 4,
+                "value": "over_voltage"
+              },
+              {
+                "dps_val": 8,
+                "value": "under_voltage"
+              },
+              {
+                "dps_val": 16,
+                "value": "loose_contact"
+              },
+              {
+                "dps_val": 32,
+                "value": "contact_fault"
+              },
+              {
+                "dps_val": 64,
+                "value": "earth_fault"
+              },
+              {
+                "dps_val": 128,
+                "value": "meter_hardware_alarm"
+              },
+              {
+                "dps_val": 256,
+                "value": "scram_fault"
+              },
+              {
+                "dps_val": 512,
+                "value": "cp_fault"
+              },
+              {
+                "dps_val": 1024,
+                "value": "meter_communication_fault"
+              },
+              {
+                "dps_val": 2048,
+                "value": "card_reader_fault"
+              },
+              {
+                "dps_val": 4096,
+                "value": "short_circuit"
+              },
+              {
+                "dps_val": 8192,
+                "value": "adhesion_fault"
+              },
+              {
+                "dps_val": 16384,
+                "value": "self_test"
+              },
+              {
+                "dps_val": 32768,
+                "value": "current_leakage"
+              }
+            ],
+            "name": "description",
+            "type": "bitfield"
+          }
+        ],
+        "entity": "binary_sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 11,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:alarm",
+        "name": "Alarm set 1"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 12,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:alarm",
+        "name": "Alarm set 2"
+      },
+      {
+        "category": "diagnostic",
+        "class": "enum",
+        "dps": [
+          {
+            "id": 13,
+            "mapping": [
+              {
+                "dps_val": "controlpi_12v",
+                "value": "standby"
+              },
+              {
+                "dps_val": "controlpi_12v_pwm",
+                "value": "monitor"
+              },
+              {
+                "dps_val": "controlpi_9v",
+                "value": "starting"
+              },
+              {
+                "dps_val": "controlpi_9v_pwm",
+                "value": "plugged_in"
+              },
+              {
+                "dps_val": "controlpi_6v",
+                "value": "idle"
+              },
+              {
+                "dps_val": "controlpi_6v_pwm",
+                "value": "charging"
+              },
+              {
+                "dps_val": "controlpi_error",
+                "value": "fault"
+              }
+            ],
+            "name": "sensor",
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "icon": "mdi:ev-plug-ccs2",
+        "name": "Connection",
+        "translation_key": "status"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 14,
+            "mapping": [
+              {
+                "dps_val": "charge_now",
+                "value": "immediate"
+              },
+              {
+                "dps_val": "charge_pct",
+                "value": "charge_to_percent"
+              },
+              {
+                "dps_val": "charge_energy",
+                "value": "fixed_charge"
+              },
+              {
+                "dps_val": "charge_schedule",
+                "value": "scheduled_charge"
+              },
+              {
+                "dps_val": "charge_delay",
+                "value": "delayed_charge"
+              },
+              {
+                "dps_val": null,
+                "hidden": true,
+                "value": "immediate"
+              }
+            ],
+            "name": "option",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "charging_mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 18,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch"
+      },
+      {
+        "category": "diagnostic",
+        "class": "temperature",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 24,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "C"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "diagnostic",
+        "class": "energy_storage",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 25,
+            "mapping": [
+              {
+                "scale": 100
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "integer",
+            "unit": "kWh"
+          }
+        ],
+        "entity": "sensor",
+        "name": "Last charge"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 27,
+            "mapping": [
+              {
+                "dps_val": "online",
+                "value": true
+              },
+              {
+                "dps_val": "offline",
+                "value": false
+              }
+            ],
+            "name": "switch",
+            "type": "string"
+          }
+        ],
+        "entity": "switch",
+        "name": "Real time updates"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 28,
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 12,
+              "min": 0
+            },
+            "type": "integer",
+            "unit": "h"
+          },
+          {
+            "id": 14,
+            "mapping": [
+              {
+                "dps_val": "charge_delay",
+                "value": true
+              },
+              {
+                "value": false
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "number",
+        "icon": "mdi:car-clock",
+        "translation_key": "timer"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 33,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:car-select",
+        "name": "Charging mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 101,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:clock",
+        "name": "Clock set"
+      }
+    ],
+    "file": "ampbolt_portable_evcharger.yaml",
+    "reasons": [
+      "advanced_mapping_empty_rule"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "aosd_garagedoorwithlight.yaml",
+    "reasons": [
+      "cover_action_friendly"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 1,
+            "mapping": [
+              {
+                "dps_val": false,
+                "value": "off"
+              },
+              {
+                "conditions": [
+                  {
+                    "dps_val": "ECO",
+                    "value": "eco"
+                  },
+                  {
+                    "dps_val": "Stand",
+                    "value": "heat_pump"
+                  },
+                  {
+                    "dps_val": "HYB",
+                    "value": "high_demand"
+                  },
+                  {
+                    "dps_val": "HYB1",
+                    "value": "performance"
+                  },
+                  {
+                    "dps_val": "ELE",
+                    "value": "electric"
+                  }
+                ],
+                "constraint": "work_mode",
+                "dps_val": true
+              }
+            ],
+            "name": "operation_mode",
+            "type": "boolean"
+          },
+          {
+            "hidden": true,
+            "id": 2,
+            "name": "work_mode",
+            "type": "string"
+          },
+          {
+            "id": 4,
+            "name": "temperature",
+            "range": {
+              "max": 75,
+              "min": 15
+            },
+            "readonly": true,
+            "type": "integer",
+            "unit": "C"
+          },
+          {
+            "id": 7,
+            "name": "defrosting",
+            "type": "boolean"
+          },
+          {
+            "id": 16,
+            "name": "current_temperature",
+            "type": "integer"
+          }
+        ],
+        "entity": "water_heater"
+      },
+      {
+        "category": "diagnostic",
+        "class": "problem",
+        "dps": [
+          {
+            "id": 15,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "sensor",
+            "type": "bitfield"
+          },
+          {
+            "id": 15,
+            "name": "fault_code",
+            "type": "bitfield"
+          }
+        ],
+        "entity": "binary_sensor"
+      }
+    ],
+    "file": "aquatech_x6_water_heater.yaml",
+    "reasons": [
+      "dp_readonly"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "asip_0622_planter.yaml",
+    "reasons": [
+      "sensor_dp_type"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "aspen_asp200_fan.yaml",
+    "reasons": [
+      "fan_direction_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "beok_tol47_thermostat.yaml",
+    "reasons": [
+      "climate_preset_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "bht002_galw_thermostat.yaml",
+    "reasons": [
+      "climate_hvac_action_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "blitzwolf_bwsh2_humidifier.yaml",
+    "reasons": [
+      "light_unsupported_dp:named_color"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 2,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 101,
+            "mapping": [
+              {
+                "step": 10
+              }
+            ],
+            "name": "brightness",
+            "optional": true,
+            "range": {
+              "max": 1000,
+              "min": 10
+            },
+            "type": "integer"
+          },
+          {
+            "format": [
+              {
+                "bytes": 2,
+                "name": "h",
+                "range": {
+                  "max": 360,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "s",
+                "range": {
+                  "max": 100,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "v",
+                "range": {
+                  "max": 1000,
+                  "min": 0
+                }
+              }
+            ],
+            "id": 11,
+            "name": "rgbhsv",
+            "optional": true,
+            "type": "hex"
+          }
+        ],
+        "entity": "light",
+        "translation_key": "color_light"
+      },
+      {
+        "dps": [
+          {
+            "id": 102,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 123,
+            "mapping": [
+              {
+                "step": 10
+              }
+            ],
+            "name": "brightness",
+            "optional": true,
+            "range": {
+              "max": 1000,
+              "min": 10
+            },
+            "type": "integer"
+          }
+        ],
+        "entity": "light",
+        "translation_key": "ambient_light"
+      },
+      {
+        "dps": [
+          {
+            "id": 104,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 124,
+            "mapping": [
+              {
+                "step": 10
+              }
+            ],
+            "name": "brightness",
+            "optional": true,
+            "range": {
+              "max": 1000,
+              "min": 10
+            },
+            "type": "integer"
+          },
+          {
+            "format": [
+              {
+                "bytes": 2,
+                "name": "h",
+                "range": {
+                  "max": 360,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "s",
+                "range": {
+                  "max": 100,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "v",
+                "range": {
+                  "max": 1000,
+                  "min": 0
+                }
+              }
+            ],
+            "id": 105,
+            "name": "rgbhsv",
+            "optional": true,
+            "type": "hex"
+          }
+        ],
+        "entity": "light",
+        "translation_key": "nightlight"
+      },
+      {
+        "dps": [
+          {
+            "id": 5,
+            "name": "value",
+            "range": {
+              "max": 100,
+              "min": 5
+            },
+            "type": "integer",
+            "unit": "%"
+          }
+        ],
+        "entity": "number",
+        "mode": "slider",
+        "translation_key": "volume"
+      },
+      {
+        "dps": [
+          {
+            "id": 106,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "name": "Sleep aid"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 108,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "scale": 10
+              }
+            ],
+            "mask": "0000000000FF0000000000000000",
+            "name": "volume_level",
+            "optional": true,
+            "range": {
+              "max": 10,
+              "min": 1
+            },
+            "type": "base64"
+          },
+          {
+            "id": 109,
+            "mask": "000000000000FF00000000000000",
+            "name": "duration",
+            "optional": true,
+            "range": {
+              "max": 30,
+              "min": 5
+            },
+            "type": "base64",
+            "unit": "min"
+          },
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "none"
+              },
+              {
+                "dps_val": 1,
+                "value": "birds"
+              },
+              {
+                "dps_val": 2,
+                "value": "sea"
+              },
+              {
+                "dps_val": 3,
+                "value": "valley"
+              },
+              {
+                "dps_val": 4,
+                "value": "piano"
+              },
+              {
+                "dps_val": 5,
+                "value": "soft"
+              },
+              {
+                "dps_val": 6,
+                "value": "phone"
+              },
+              {
+                "dps_val": 7,
+                "value": "beep"
+              },
+              {
+                "dps_val": 8,
+                "value": "radio"
+              }
+            ],
+            "mask": "000000FF00000000000000000000",
+            "name": "tone",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "siren",
+        "translation_key": "alarm_x",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 110,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "scale": 10
+              }
+            ],
+            "mask": "0000000000FF0000000000000000",
+            "name": "volume_level",
+            "optional": true,
+            "range": {
+              "max": 10,
+              "min": 1
+            },
+            "type": "base64"
+          },
+          {
+            "id": 111,
+            "mask": "000000000000FF00000000000000",
+            "name": "duration",
+            "optional": true,
+            "range": {
+              "max": 30,
+              "min": 5
+            },
+            "type": "base64",
+            "unit": "min"
+          },
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "none"
+              },
+              {
+                "dps_val": 1,
+                "value": "birds"
+              },
+              {
+                "dps_val": 2,
+                "value": "sea"
+              },
+              {
+                "dps_val": 3,
+                "value": "valley"
+              },
+              {
+                "dps_val": 4,
+                "value": "piano"
+              },
+              {
+                "dps_val": 5,
+                "value": "soft"
+              },
+              {
+                "dps_val": 6,
+                "value": "phone"
+              },
+              {
+                "dps_val": 7,
+                "value": "beep"
+              },
+              {
+                "dps_val": 8,
+                "value": "radio"
+              }
+            ],
+            "mask": "000000FF00000000000000000000",
+            "name": "tone",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "siren",
+        "translation_key": "alarm_x",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "FF00000000000000000000000000",
+            "name": "hour",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 109,
+            "mask": "00FF000000000000000000000000",
+            "name": "minute",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "time",
+        "translation_key": "alarm_x_time",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000010000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_sunday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000020000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_saturday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000040000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_friday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000080000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_thursday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000100000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_wednesday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000200000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_tuesday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000400000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_monday",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "normal"
+              },
+              {
+                "dps_val": 1,
+                "value": "fade_in"
+              },
+              {
+                "dps_val": 2,
+                "value": "fade_out"
+              }
+            ],
+            "mask": "00000000FF000000000000000000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_sound_effect",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "no_light"
+              },
+              {
+                "dps_val": 1,
+                "value": "rainbow"
+              },
+              {
+                "dps_val": 2,
+                "value": "candle_flicker"
+              },
+              {
+                "dps_val": 3,
+                "value": "romantic_breath"
+              },
+              {
+                "dps_val": 4,
+                "value": "quiet_deep_sea"
+              },
+              {
+                "dps_val": 5,
+                "value": "flowing_colors"
+              },
+              {
+                "dps_val": 6,
+                "value": "magic_jungle"
+              },
+              {
+                "dps_val": 7,
+                "value": "perfect_party"
+              },
+              {
+                "dps_val": 8,
+                "value": "sunrise_at_sea"
+              },
+              {
+                "dps_val": 9,
+                "value": "dynamic_music"
+              }
+            ],
+            "mask": "00000000000000FF000000000000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_wake_light_mode",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "0000000000000000FF0000000000",
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 120,
+              "min": 0
+            },
+            "type": "base64",
+            "unit": "min"
+          }
+        ],
+        "entity": "number",
+        "translation_key": "alarm_x_wake_light_lead_time",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "000000000000000000FF00000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_snooze_enabled",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mask": "00000000000000000000FF000000",
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 20,
+              "min": 5
+            },
+            "type": "base64",
+            "unit": "min"
+          }
+        ],
+        "entity": "number",
+        "translation_key": "alarm_x_snooze_duration",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "mute"
+              },
+              {
+                "dps_val": 1,
+                "value": "mute_light"
+              },
+              {
+                "dps_val": 2,
+                "value": "light_only"
+              }
+            ],
+            "mask": "0000000000000000000000FF0000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_snooze_action",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "FF00000000000000000000000000",
+            "name": "hour",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 111,
+            "mask": "00FF000000000000000000000000",
+            "name": "minute",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "time",
+        "translation_key": "alarm_x_time",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000010000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_sunday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000020000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_saturday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000040000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_friday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000080000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_thursday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000100000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_wednesday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000200000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_tuesday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000400000000000000000000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_day_monday",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "normal"
+              },
+              {
+                "dps_val": 1,
+                "value": "fade_in"
+              },
+              {
+                "dps_val": 2,
+                "value": "fade_out"
+              }
+            ],
+            "mask": "00000000FF000000000000000000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_sound_effect",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "no_light"
+              },
+              {
+                "dps_val": 1,
+                "value": "rainbow"
+              },
+              {
+                "dps_val": 2,
+                "value": "candle_flicker"
+              },
+              {
+                "dps_val": 3,
+                "value": "romantic_breath"
+              },
+              {
+                "dps_val": 4,
+                "value": "quiet_deep_sea"
+              },
+              {
+                "dps_val": 5,
+                "value": "flowing_colors"
+              },
+              {
+                "dps_val": 6,
+                "value": "magic_jungle"
+              },
+              {
+                "dps_val": 7,
+                "value": "perfect_party"
+              },
+              {
+                "dps_val": 8,
+                "value": "sunrise_at_sea"
+              },
+              {
+                "dps_val": 9,
+                "value": "dynamic_music"
+              }
+            ],
+            "mask": "00000000000000FF000000000000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_wake_light_mode",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "0000000000000000FF0000000000",
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 120,
+              "min": 0
+            },
+            "type": "base64",
+            "unit": "min"
+          }
+        ],
+        "entity": "number",
+        "translation_key": "alarm_x_wake_light_lead_time",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "000000000000000000FF00000000",
+            "name": "switch",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "alarm_x_snooze_enabled",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mask": "00000000000000000000FF000000",
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 20,
+              "min": 5
+            },
+            "type": "base64",
+            "unit": "min"
+          }
+        ],
+        "entity": "number",
+        "translation_key": "alarm_x_snooze_duration",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "mute"
+              },
+              {
+                "dps_val": 1,
+                "value": "mute_light"
+              },
+              {
+                "dps_val": 2,
+                "value": "light_only"
+              }
+            ],
+            "mask": "0000000000000000000000FF0000",
+            "name": "option",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "alarm_x_snooze_action",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "dps": [
+          {
+            "id": 7,
+            "name": "button",
+            "type": "boolean"
+          }
+        ],
+        "entity": "button",
+        "translation_key": "alarm_snooze"
+      },
+      {
+        "dps": [
+          {
+            "id": 112,
+            "name": "button",
+            "type": "boolean"
+          }
+        ],
+        "entity": "button",
+        "translation_key": "alarm_off"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "mapping": [
+              {
+                "dps_val": "AAB/AwAGDwEeAQkAAAA=",
+                "value": true
+              }
+            ],
+            "name": "button",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "button",
+        "translation_key": "alarm_x_reset",
+        "translation_placeholders": {
+          "x": "1"
+        }
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 111,
+            "mapping": [
+              {
+                "dps_val": "AAB/AwAGDwEeAQkAAAA=",
+                "value": true
+              }
+            ],
+            "name": "button",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "button",
+        "translation_key": "alarm_x_reset",
+        "translation_placeholders": {
+          "x": "2"
+        }
+      },
+      {
+        "dps": [
+          {
+            "id": 129,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "music_playback"
+      },
+      {
+        "dps": [
+          {
+            "id": 130,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "radio"
+      },
+      {
+        "dps": [
+          {
+            "id": 133,
+            "mask": "FF00",
+            "name": "value",
+            "optional": true,
+            "range": {
+              "max": 108,
+              "min": 76
+            },
+            "type": "base64",
+            "unit": "MHz"
+          },
+          {
+            "id": 133,
+            "mapping": [
+              {
+                "scale": 10
+              }
+            ],
+            "mask": "00FF",
+            "name": "decimal",
+            "optional": true,
+            "range": {
+              "max": 9,
+              "min": 0
+            },
+            "type": "base64"
+          },
+          {
+            "id": 130,
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "number",
+        "mode": "box",
+        "translation_key": "radio_frequency"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 114,
+            "mask": "000000FF000000",
+            "name": "hour",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 114,
+            "mask": "00000000FF0000",
+            "name": "minute",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 114,
+            "mask": "0000000000FF00",
+            "name": "second",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 115,
+            "mapping": [
+              {
+                "dps_val": true,
+                "value": false
+              },
+              {
+                "dps_val": false,
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "time",
+        "translation_key": "clock_time"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 115,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "network_time"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 121,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "night_mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 125,
+            "mapping": [
+              {
+                "dps_val": false,
+                "value": "12_hour"
+              },
+              {
+                "dps_val": true,
+                "value": "24_hour"
+              }
+            ],
+            "name": "option",
+            "type": "boolean"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "time_format"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 116,
+            "mapping": [
+              {
+                "dps_val": "0",
+                "value": "off"
+              },
+              {
+                "dps_val": "1",
+                "value": "dim"
+              },
+              {
+                "dps_val": "2",
+                "value": "bright"
+              },
+              {
+                "dps_val": "3",
+                "value": "auto"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "display_brightness"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 118,
+            "mapping": [
+              {
+                "dps_val": "0",
+                "value": "static"
+              },
+              {
+                "dps_val": "1",
+                "value": "blinking"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "seconds_dot"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 119,
+            "mapping": [
+              {
+                "dps_val": "C",
+                "value": "celsius"
+              },
+              {
+                "dps_val": "F",
+                "value": "fahrenheit"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "temperature_unit"
+      },
+      {
+        "category": "diagnostic",
+        "class": "enum",
+        "dps": [
+          {
+            "id": 117,
+            "mapping": [
+              {
+                "dps_val": "IDlE",
+                "value": "idle"
+              },
+              {
+                "dps_val": "CHARGING",
+                "value": "charging"
+              },
+              {
+                "dps_val": "FULL",
+                "value": "full"
+              },
+              {
+                "dps_val": "FOD",
+                "value": "foreign_object_detected"
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "translation_key": "wireless_charging"
+      },
+      {
+        "category": "diagnostic",
+        "class": "enum",
+        "dps": [
+          {
+            "id": 134,
+            "mapping": [
+              {
+                "dps_val": "ALL_OFF",
+                "value": "all_off"
+              },
+              {
+                "dps_val": "Night_ON",
+                "value": "night_on"
+              },
+              {
+                "dps_val": "Color_ON",
+                "value": "color_on"
+              },
+              {
+                "dps_val": "Spec_ON",
+                "value": "ambient_on"
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "translation_key": "active_lights"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 11,
+            "name": "sensor",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Color light raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 105,
+            "name": "sensor",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Night light raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 101,
+            "name": "sensor",
+            "optional": true,
+            "type": "integer"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Color light brightness raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 123,
+            "name": "sensor",
+            "optional": true,
+            "type": "integer"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Ambient light brightness raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 124,
+            "name": "sensor",
+            "optional": true,
+            "type": "integer"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Night light brightness raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 126,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Alarm status raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 109,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Alarm 1 status raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 111,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Alarm 2 status raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 128,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Sleep aid status raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 113,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Weather raw"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 114,
+            "name": "sensor",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "sensor",
+        "hidden": true,
+        "name": "Device time raw"
+      }
+    ],
+    "file": "dekala_lumos_alarm_clock.yaml",
+    "reasons": [
+      "entity_mode"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "dr_heater_dr008_thermostat.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "ecostrad_iq_heating_element.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "ecostrad_iqceramic_radiator.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "class": "speaker",
+        "dps": [
+          {
+            "id": 80,
+            "mapping": [
+              {
+                "scale": 100
+              }
+            ],
+            "name": "volume",
+            "range": {
+              "max": 100,
+              "min": 0
+            },
+            "type": "integer"
+          },
+          {
+            "id": 82,
+            "name": "play",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 83,
+            "mapping": [
+              {
+                "dps_val": "smart_speaker",
+                "value": "Smart speaker"
+              },
+              {
+                "dps_val": "bluetooth",
+                "value": "Bluetooth"
+              }
+            ],
+            "name": "source",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "id": 85,
+            "name": "prev",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 86,
+            "name": "next",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 87,
+            "mapping": [
+              {
+                "dps_val": "random",
+                "value": true
+              },
+              {
+                "dps_val": "order",
+                "value": false
+              },
+              {
+                "hidden": true,
+                "value": false
+              }
+            ],
+            "name": "shuffle",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "id": 87,
+            "mapping": [
+              {
+                "dps_val": "repeat_all",
+                "value": "all"
+              },
+              {
+                "dps_val": "repeat_one",
+                "value": "one"
+              },
+              {
+                "dps_val": "order",
+                "value": "off"
+              },
+              {
+                "hidden": true,
+                "value": "off"
+              }
+            ],
+            "name": "repeat",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "media_player"
+      }
+    ],
+    "file": "ekaza_minipad_controlpanel.yaml",
+    "reasons": [
+      "unsupported_platform:media_player"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "electriq_sc16hpw_aircon.yaml",
+    "reasons": [
+      "climate_hvac_mode_missing_off"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "essentials_purifier.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "fairland_rmic06_heatpump.yaml",
+    "reasons": [
+      "binary_sensor_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "fiesta_dk1g_kettle.yaml",
+    "reasons": [
+      "water_heater_temperature_unit"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "fujicool_yuzu_heatpump.yaml",
+    "reasons": [
+      "switch_non_boolean"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "goldair_gpoc2415_oilheater.yaml",
+    "reasons": [
+      "switch_non_identity_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "goldair_gpph_heater.yaml",
+    "reasons": [
+      "climate_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "hdmi_sync_light.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "class": "dehumidifier",
+        "dps": [
+          {
+            "id": 1,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 2,
+            "mapping": [
+              {
+                "step": 5
+              }
+            ],
+            "name": "humidity",
+            "range": {
+              "max": 90,
+              "min": 30
+            },
+            "type": "integer"
+          },
+          {
+            "id": 5,
+            "mapping": [
+              {
+                "dps_val": "dehumidify",
+                "value": "auto"
+              },
+              {
+                "dps_val": "drying",
+                "value": "laundry"
+              },
+              {
+                "dps_val": "sleep",
+                "value": "sleep"
+              }
+            ],
+            "name": "mode",
+            "type": "string"
+          },
+          {
+            "id": 6,
+            "name": "current_humidity",
+            "type": "integer"
+          }
+        ],
+        "entity": "humidifier",
+        "translation_only_key": "extended"
+      },
+      {
+        "category": "diagnostic",
+        "dps": [
+          {
+            "id": 25,
+            "mapping": [
+              {
+                "dps_val": "on",
+                "value": true
+              },
+              {
+                "dps_val": "off",
+                "value": false
+              }
+            ],
+            "name": "sensor",
+            "type": "string"
+          }
+        ],
+        "entity": "binary_sensor",
+        "translation_key": "tank_full"
+      },
+      {
+        "category": "diagnostic",
+        "class": "problem",
+        "dps": [
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": false
+              },
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "bitfield"
+          },
+          {
+            "id": 19,
+            "name": "fault_code",
+            "optional": true,
+            "type": "bitfield"
+          },
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": "OK"
+              },
+              {
+                "dps_val": 1,
+                "value": "Communication fault"
+              },
+              {
+                "dps_val": 2,
+                "value": "Indoor sensor fault"
+              },
+              {
+                "dps_val": 4,
+                "value": "Evaporator sensor fault"
+              }
+            ],
+            "name": "description",
+            "optional": true,
+            "type": "bitfield"
+          }
+        ],
+        "entity": "binary_sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 10,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 10,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "hidden": "unavailable",
+        "translation_key": "ionizer"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 13,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 13,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "hidden": "unavailable",
+        "translation_key": "uv_sterilization"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 16,
+            "name": "lock",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 16,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "lock",
+        "hidden": "unavailable",
+        "translation_key": "child_lock"
+      },
+      {
+        "dps": [
+          {
+            "id": 1,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 4,
+            "mapping": [
+              {
+                "dps_val": "low",
+                "value": 33
+              },
+              {
+                "dps_val": "mid",
+                "value": 66
+              },
+              {
+                "dps_val": "high",
+                "value": 100
+              }
+            ],
+            "name": "speed",
+            "type": "string"
+          }
+        ],
+        "entity": "fan",
+        "translation_key": "dehumidifier"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 17,
+            "mapping": [
+              {
+                "dps_val": "cancel",
+                "value": "cancel"
+              },
+              {
+                "dps_val": "1h",
+                "value": "1h"
+              },
+              {
+                "dps_val": "2h",
+                "value": "2h"
+              },
+              {
+                "dps_val": "3h",
+                "value": "3h"
+              },
+              {
+                "dps_val": "4h",
+                "value": "4h"
+              },
+              {
+                "dps_val": "5h",
+                "value": "5h"
+              },
+              {
+                "dps_val": "6h",
+                "value": "6h"
+              },
+              {
+                "dps_val": "7h",
+                "value": "7h"
+              },
+              {
+                "dps_val": "8h",
+                "value": "8h"
+              },
+              {
+                "dps_val": "9h",
+                "value": "9h"
+              },
+              {
+                "dps_val": "10h",
+                "value": "10h"
+              },
+              {
+                "dps_val": "11h",
+                "value": "11h"
+              },
+              {
+                "dps_val": "12h",
+                "value": "12h"
+              },
+              {
+                "dps_val": "13h",
+                "value": "13h"
+              },
+              {
+                "dps_val": "14h",
+                "value": "14h"
+              },
+              {
+                "dps_val": "15h",
+                "value": "15h"
+              },
+              {
+                "dps_val": "16h",
+                "value": "16h"
+              },
+              {
+                "dps_val": "17h",
+                "value": "17h"
+              },
+              {
+                "dps_val": "18h",
+                "value": "18h"
+              },
+              {
+                "dps_val": "19h",
+                "value": "19h"
+              },
+              {
+                "dps_val": "20h",
+                "value": "20h"
+              },
+              {
+                "dps_val": "21h",
+                "value": "21h"
+              },
+              {
+                "dps_val": "22h",
+                "value": "22h"
+              },
+              {
+                "dps_val": "23h",
+                "value": "23h"
+              },
+              {
+                "dps_val": "24h",
+                "value": "24h"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "timer"
+      }
+    ],
+    "file": "hiniso_dehumidifier.yaml",
+    "reasons": [
+      "entity_hidden_unavailable"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "class": "enum",
+        "dps": [
+          {
+            "id": 1,
+            "mapping": [
+              {
+                "dps_val": "Good",
+                "value": "good"
+              },
+              {
+                "dps_val": "Medium",
+                "value": "moderate"
+              },
+              {
+                "dps_val": "Serious",
+                "value": "poor"
+              }
+            ],
+            "name": "sensor",
+            "type": "string"
+          }
+        ],
+        "entity": "sensor",
+        "translation_key": "air_quality"
+      },
+      {
+        "class": "aqi",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 2,
+            "name": "sensor",
+            "type": "integer"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "class": "temperature",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 18,
+            "name": "sensor",
+            "type": "integer"
+          },
+          {
+            "id": 101,
+            "mapping": [
+              {
+                "dps_val": "f",
+                "value": "F"
+              },
+              {
+                "value": "C"
+              }
+            ],
+            "name": "unit",
+            "type": "string"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "class": "humidity",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 19,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "%"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "class": "pm25",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 20,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "ugm3"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "class": "volatile_organic_compounds",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 21,
+            "mapping": [
+              {
+                "scale": 0.1
+              }
+            ],
+            "name": "sensor",
+            "type": "integer",
+            "unit": "ugm3"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "class": "carbon_dioxide",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 22,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "ppm"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 101,
+            "mapping": [
+              {
+                "dps_val": "c",
+                "value": "celsius"
+              },
+              {
+                "dps_val": "f",
+                "value": "fahrenheit"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "temperature_unit"
+      },
+      {
+        "class": "pm10",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 102,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "ugm3"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 103,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "name": "Eco"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 104,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "sound"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 105,
+            "mapping": [
+              {
+                "dps_val": false,
+                "value": "12_hour"
+              },
+              {
+                "dps_val": true,
+                "value": "24_hour"
+              }
+            ],
+            "name": "option",
+            "type": "boolean"
+          }
+        ],
+        "entity": "select",
+        "icon": "mdi:clock-digital",
+        "translation_key": "time_format"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 108,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "light",
+        "translation_key": "backlight"
+      }
+    ],
+    "file": "inkbird_iaqm129w_airqualitymonitor.yaml",
+    "reasons": [
+      "multi_dp_mapped_extra:unit"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "inkbird_int12bw_thermometer.yaml",
+    "reasons": [
+      "sensor_dp_type"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "inventor_atmospherexl_dehumidifier.yaml",
+    "reasons": [
+      "humidifier_switch_type"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "jiahong_et44w_thermostat.yaml",
+    "reasons": [
+      "select_complex_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "klarstein_amazonia_dishwasher.yaml",
+    "reasons": [
+      "button_duplicate_primary_dp"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "madimack_heatpump.yaml",
+    "reasons": [
+      "climate_hvac_mode_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "miheat_th11wf_thermostat.yaml",
+    "reasons": [
+      "climate_hvac_mode_missing_off"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "nashone_mts700wb_thermostat.yaml",
+    "reasons": [
+      "climate_temperature_unit_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "nulite_nlb245_heatpump.yaml",
+    "reasons": [
+      "climate_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "orion_smart_lock.yaml",
+    "reasons": [
+      "lock_direct_control_required"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "orison_jst_fanrgbwlight.yaml",
+    "reasons": [
+      "light_unsupported_dp:main_switch"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "parkside_ppwd30a1_vacuum.yaml",
+    "reasons": [
+      "vacuum_optional_status"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 1,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 2,
+            "mapping": [
+              {
+                "dps_val": "nature",
+                "value": "nature"
+              },
+              {
+                "dps_val": "sleep",
+                "value": "sleep"
+              },
+              {
+                "dps_val": "fresh",
+                "value": "fresh"
+              },
+              {
+                "dps_val": "smart",
+                "value": "smart"
+              },
+              {
+                "dps_val": "custom",
+                "value": "custom"
+              }
+            ],
+            "name": "preset_mode",
+            "type": "string"
+          },
+          {
+            "id": 3,
+            "name": "speed",
+            "range": {
+              "max": 6,
+              "min": 1
+            },
+            "type": "integer"
+          },
+          {
+            "id": 8,
+            "name": "direction",
+            "type": "string"
+          },
+          {
+            "id": 101,
+            "name": "model_number",
+            "optional": true,
+            "type": "integer"
+          },
+          {
+            "id": 102,
+            "name": "device_num",
+            "optional": true,
+            "type": "integer"
+          },
+          {
+            "id": 103,
+            "name": "version",
+            "optional": true,
+            "type": "integer"
+          }
+        ],
+        "entity": "fan",
+        "translation_only_key": "fan_with_presets"
+      },
+      {
+        "dps": [
+          {
+            "id": 15,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 16,
+            "name": "brightness",
+            "range": {
+              "max": 100,
+              "min": 1
+            },
+            "type": "integer"
+          },
+          {
+            "id": 17,
+            "mapping": [
+              {
+                "target_range": {
+                  "max": 6500,
+                  "min": 3000
+                }
+              },
+              {
+                "dps_val": null,
+                "value_redirect": "fixed_color_temp"
+              }
+            ],
+            "name": "color_temp",
+            "optional": true,
+            "range": {
+              "max": 100,
+              "min": 0
+            },
+            "type": "integer"
+          },
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": "night",
+                "value": 3000
+              },
+              {
+                "dps_val": "warm",
+                "value": 4000
+              },
+              {
+                "dps_val": "white",
+                "value": 5000
+              },
+              {
+                "dps_val": "cold",
+                "value": 6500
+              }
+            ],
+            "name": "fixed_color_temp",
+            "type": "string"
+          }
+        ],
+        "entity": "light"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": "night",
+                "value": "Night"
+              },
+              {
+                "dps_val": "warm",
+                "value": "Warm white"
+              },
+              {
+                "dps_val": "white",
+                "value": "Daylight"
+              },
+              {
+                "dps_val": "cold",
+                "value": "Cold white"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "icon": "mdi:lightbulb",
+        "name": "Fixed color temperature"
+      },
+      {
+        "class": "temperature",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 21,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "C"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 22,
+            "mapping": [
+              {
+                "dps_val": "cancel",
+                "value": "cancel"
+              },
+              {
+                "dps_val": "1h",
+                "value": "1h"
+              },
+              {
+                "dps_val": "2h",
+                "value": "2h"
+              },
+              {
+                "dps_val": "3h",
+                "value": "3h"
+              },
+              {
+                "dps_val": "4h",
+                "value": "4h"
+              },
+              {
+                "dps_val": "5h",
+                "value": "5h"
+              },
+              {
+                "dps_val": "6h",
+                "value": "6h"
+              },
+              {
+                "dps_val": "7h",
+                "value": "7h"
+              },
+              {
+                "dps_val": "8h",
+                "value": "8h"
+              },
+              {
+                "dps_val": "9h",
+                "value": "9h"
+              },
+              {
+                "dps_val": "10h",
+                "value": "10h"
+              },
+              {
+                "dps_val": "11h",
+                "value": "11h"
+              },
+              {
+                "dps_val": "12h",
+                "value": "12h"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "timer"
+      },
+      {
+        "category": "diagnostic",
+        "class": "problem",
+        "dps": [
+          {
+            "id": 24,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": false
+              },
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "sensor",
+            "optional": true,
+            "type": "bitfield"
+          },
+          {
+            "id": 24,
+            "name": "fault_code",
+            "optional": true,
+            "type": "bitfield"
+          }
+        ],
+        "entity": "binary_sensor"
+      }
+    ],
+    "file": "prestige_m3_ceilingfanlight.yaml",
+    "reasons": [
+      "advanced_mapping_rule_transform_semantics"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "probreeze_pb20.yaml",
+    "reasons": [
+      "humidifier_mode_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "pv28aw_co2detector.yaml",
+    "reasons": [
+      "switch_non_identity_mapping"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "class": "dehumidifier",
+        "dps": [
+          {
+            "id": 1,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 3,
+            "mapping": [
+              {
+                "step": 5
+              }
+            ],
+            "name": "humidity",
+            "range": {
+              "max": 80,
+              "min": 35
+            },
+            "type": "integer"
+          },
+          {
+            "id": 5,
+            "mapping": [
+              {
+                "dps_val": "dry_clothes",
+                "value": "laundry"
+              },
+              {
+                "dps_val": "sleep_mode",
+                "value": "sleep"
+              },
+              {
+                "dps_val": "manual_dehumidify",
+                "value": "normal"
+              },
+              {
+                "dps_val": "auto",
+                "value": "auto"
+              }
+            ],
+            "name": "mode",
+            "type": "string"
+          },
+          {
+            "id": 6,
+            "name": "current_humidity",
+            "type": "integer"
+          }
+        ],
+        "entity": "humidifier",
+        "translation_only_key": "extended"
+      },
+      {
+        "dps": [
+          {
+            "id": 1,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 4,
+            "mapping": [
+              {
+                "conditions": [
+                  {
+                    "dps_val": "airpurify",
+                    "value_redirect": "purify_speed"
+                  },
+                  {
+                    "dps_val": [
+                      "dehum_air",
+                      "dehum30_air"
+                    ],
+                    "mapping": [
+                      {
+                        "dps_val": "low",
+                        "value": 33
+                      },
+                      {
+                        "dps_val": "mid",
+                        "value": 67
+                      },
+                      {
+                        "dps_val": "high",
+                        "value": 100
+                      }
+                    ]
+                  }
+                ],
+                "constraint": "mode"
+              }
+            ],
+            "name": "speed",
+            "type": "string"
+          },
+          {
+            "id": 8,
+            "name": "oscillate",
+            "type": "boolean"
+          },
+          {
+            "id": 103,
+            "mapping": [
+              {
+                "dps_val": "high",
+                "value": 100
+              },
+              {
+                "dps_val": "mid",
+                "value": 67
+              },
+              {
+                "dps_val": "low",
+                "value": 33
+              }
+            ],
+            "name": "purify_speed",
+            "type": "string"
+          },
+          {
+            "id": 105,
+            "name": "mode",
+            "type": "string"
+          }
+        ],
+        "entity": "fan"
+      },
+      {
+        "category": "diagnostic",
+        "class": "problem",
+        "dps": [
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": 0,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "sensor",
+            "type": "bitfield"
+          },
+          {
+            "id": 19,
+            "name": "fault_code",
+            "type": "bitfield"
+          }
+        ],
+        "entity": "binary_sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 104,
+            "mapping": [
+              {
+                "dps_val": "1",
+                "value": "Humidity off"
+              },
+              {
+                "dps_val": "2",
+                "value": "All off"
+              },
+              {
+                "dps_val": "3",
+                "value": "All on"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "icon": "mdi:led-on",
+        "name": "Indicators"
+      },
+      {
+        "dps": [
+          {
+            "id": 105,
+            "mapping": [
+              {
+                "dps_val": "dehum_air",
+                "value": "dehumidify"
+              },
+              {
+                "dps_val": "airpurify",
+                "value": "purify"
+              },
+              {
+                "dps_val": "dehum30_air",
+                "value": "dehumidify_and_purify"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "air_mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 108,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "name": "Internal dry"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 109,
+            "name": "switch",
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "icon": "mdi:volume-mute",
+        "name": "Silent"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 16,
+            "name": "lock",
+            "type": "boolean"
+          }
+        ],
+        "entity": "lock",
+        "translation_key": "child_lock"
+      },
+      {
+        "category": "diagnostic",
+        "class": "temperature",
+        "dps": [
+          {
+            "class": "measurement",
+            "id": 7,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "C"
+          }
+        ],
+        "entity": "sensor"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 17,
+            "mapping": [
+              {
+                "dps_val": "cancel",
+                "value": "cancel"
+              },
+              {
+                "dps_val": "1h",
+                "value": "1h"
+              },
+              {
+                "dps_val": "2h",
+                "value": "2h"
+              },
+              {
+                "dps_val": "3h",
+                "value": "3h"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "timer"
+      },
+      {
+        "category": "diagnostic",
+        "class": "duration",
+        "dps": [
+          {
+            "id": 18,
+            "name": "sensor",
+            "type": "integer",
+            "unit": "min"
+          }
+        ],
+        "entity": "sensor",
+        "translation_key": "time_remaining"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 102,
+            "mapping": [
+              {
+                "dps_val": "manual",
+                "value": false
+              },
+              {
+                "dps_val": "night",
+                "value": true
+              }
+            ],
+            "name": "switch",
+            "type": "string"
+          }
+        ],
+        "entity": "switch",
+        "translation_key": "sleep"
+      }
+    ],
+    "file": "qlima_d820a_dehumidifier.yaml",
+    "reasons": [
+      "advanced_mapping_redirect_target_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "qoto_03_sprinkler.yaml",
+    "reasons": [
+      "valve_position_mapping"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 20,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 21,
+            "mapping": [
+              {
+                "dps_val": "white",
+                "value": "color_temp"
+              },
+              {
+                "dps_val": "colour",
+                "value": "hs"
+              },
+              {
+                "dps_val": "scene",
+                "value": "Scene"
+              },
+              {
+                "dps_val": "music",
+                "value": "Music"
+              }
+            ],
+            "name": "color_mode",
+            "type": "string"
+          },
+          {
+            "id": 22,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": 0
+              }
+            ],
+            "name": "brightness",
+            "optional": true,
+            "range": {
+              "max": 1000,
+              "min": 10
+            },
+            "type": "integer"
+          },
+          {
+            "id": 23,
+            "mapping": [
+              {
+                "target_range": {
+                  "max": 6500,
+                  "min": 2700
+                }
+              }
+            ],
+            "name": "color_temp",
+            "optional": true,
+            "range": {
+              "max": 1000,
+              "min": 0
+            },
+            "type": "integer"
+          },
+          {
+            "format": [
+              {
+                "bytes": 2,
+                "name": "h",
+                "range": {
+                  "max": 360,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "s",
+                "range": {
+                  "max": 1000,
+                  "min": 0
+                }
+              },
+              {
+                "bytes": 2,
+                "name": "v",
+                "range": {
+                  "max": 1000,
+                  "min": 0
+                }
+              }
+            ],
+            "id": 24,
+            "name": "rgbhsv",
+            "optional": true,
+            "type": "hex"
+          }
+        ],
+        "entity": "light"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 26,
+            "name": "second",
+            "optional": true,
+            "range": {
+              "max": 86400,
+              "min": 0
+            },
+            "type": "integer"
+          }
+        ],
+        "entity": "time",
+        "translation_key": "timer"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 34,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 34,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "hidden": "unavailable",
+        "translation_key": "do_not_disturb"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 51,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "translation_key": "scene"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 51,
+            "mapping": [
+              {
+                "dps_val": "AAUA7APoA+gD6AAA",
+                "value": "WW 100%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gB9AAA",
+                "value": "WW 50%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gACgAA",
+                "value": "WW 1%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gD6gHg",
+                "value": "WN 100%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gB9gHg",
+                "value": "WN 50%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gACgHg",
+                "value": "WN 1%"
+              },
+              {
+                "dps_val": "AAUA7APoA+gD6AAA",
+                "value": "RGB RED 100%"
+              },
+              {
+                "dps_val": "AAYAAAPoA+gB9AAA",
+                "value": "RGB RED 50%"
+              },
+              {
+                "dps_val": "AAYAAAPoAAoACgAA",
+                "value": "RGB RED 1%"
+              },
+              {
+                "dps_val": "AAcAAAPoAAoACgAA",
+                "value": "WW+RED 100%"
+              },
+              {
+                "dps_val": "AAcAAAPoAfMB8QAA",
+                "value": "WW+RED 50%"
+              },
+              {
+                "dps_val": "AAcAAAPoA+gD6AAA",
+                "value": "WW+RED 1%"
+              }
+            ],
+            "name": "option",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "id": 25,
+            "name": "scene_data",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "scene"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 30,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          },
+          {
+            "id": 27,
+            "name": "music_data",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:music",
+        "name": "Rhythm mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 31,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:sleep",
+        "name": "Sleep mode"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 32,
+            "name": "value",
+            "optional": true,
+            "type": "base64"
+          }
+        ],
+        "entity": "text",
+        "hidden": true,
+        "icon": "mdi:weather-sunset-up",
+        "name": "Wakeup mode"
+      }
+    ],
+    "file": "rgbcw_lightbulb_xld_cl002.yaml",
+    "reasons": [
+      "entity_hidden_unavailable"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "rowenta_xplorer75s_vacuum.yaml",
+    "reasons": [
+      "vacuum_activate_mapping"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 1,
+            "name": "power",
+            "type": "boolean"
+          },
+          {
+            "id": 2,
+            "mapping": [
+              {
+                "conditions": [
+                  {
+                    "dps_val": "f",
+                    "range": {
+                      "max": 950,
+                      "min": 410
+                    },
+                    "step": 10
+                  }
+                ],
+                "constraint": "temperature_unit",
+                "scale": 10,
+                "step": 5
+              }
+            ],
+            "name": "temperature",
+            "range": {
+              "max": 350,
+              "min": 50
+            },
+            "type": "integer"
+          },
+          {
+            "id": 3,
+            "mapping": [
+              {
+                "scale": 10
+              }
+            ],
+            "name": "current_temperature",
+            "type": "integer"
+          },
+          {
+            "id": 4,
+            "mapping": [
+              {
+                "conditions": [
+                  {
+                    "dps_val": "2",
+                    "invalid": true
+                  }
+                ],
+                "constraint": "configuration",
+                "dps_val": "cold",
+                "icon": "mdi:thermometer-minus",
+                "value": "cool"
+              },
+              {
+                "conditions": [
+                  {
+                    "dps_val": "1",
+                    "invalid": true
+                  }
+                ],
+                "constraint": "configuration",
+                "dps_val": "hot",
+                "icon": "mdi:thermometer-plus",
+                "value": "heat"
+              },
+              {
+                "dps_val": "off",
+                "icon": "mdi:thermometer-off",
+                "value": "off"
+              }
+            ],
+            "name": "hvac_mode",
+            "type": "string"
+          },
+          {
+            "id": 5,
+            "mapping": [
+              {
+                "dps_val": "auto",
+                "value": "auto"
+              },
+              {
+                "dps_val": "on",
+                "value": "on"
+              }
+            ],
+            "name": "fan_mode",
+            "type": "string"
+          },
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": "f",
+                "value": "F"
+              },
+              {
+                "value": "C"
+              }
+            ],
+            "name": "temperature_unit",
+            "type": "string"
+          },
+          {
+            "id": 101,
+            "mapping": [
+              {
+                "dps_val": true,
+                "value": "away"
+              },
+              {
+                "conditions": [
+                  {
+                    "dps_val": true,
+                    "value": "program"
+                  },
+                  {
+                    "dps_val": false,
+                    "value": "manual"
+                  }
+                ],
+                "constraint": "program",
+                "dps_val": false
+              }
+            ],
+            "name": "preset_mode",
+            "type": "boolean"
+          },
+          {
+            "hidden": true,
+            "id": 102,
+            "name": "program",
+            "type": "boolean"
+          },
+          {
+            "id": 103,
+            "mapping": [
+              {
+                "conditions": [
+                  {
+                    "dps_val": false,
+                    "value": "off"
+                  },
+                  {
+                    "dps_val": true,
+                    "value": "cooling"
+                  }
+                ],
+                "constraint": "power",
+                "dps_val": "cold"
+              },
+              {
+                "conditions": [
+                  {
+                    "dps_val": false,
+                    "value": "off"
+                  },
+                  {
+                    "dps_val": true,
+                    "value": "heating"
+                  }
+                ],
+                "constraint": "power",
+                "dps_val": "hot"
+              }
+            ],
+            "name": "hvac_action",
+            "type": "string"
+          },
+          {
+            "id": 112,
+            "mapping": [
+              {
+                "dps_val": "1",
+                "value": "cooling"
+              },
+              {
+                "dps_val": "2",
+                "value": "heating"
+              },
+              {
+                "dps_val": "3",
+                "value": "heat/cool"
+              },
+              {
+                "dps_val": "5",
+                "value": "heatpump"
+              }
+            ],
+            "name": "configuration",
+            "type": "string"
+          },
+          {
+            "id": 113,
+            "name": "unknown_113",
+            "type": "integer"
+          },
+          {
+            "id": 114,
+            "name": "temperature_c",
+            "type": "integer"
+          },
+          {
+            "id": 115,
+            "name": "current_temperature_c",
+            "type": "integer"
+          },
+          {
+            "id": 116,
+            "name": "temperature_f",
+            "type": "integer"
+          },
+          {
+            "id": 117,
+            "name": "current_temperature_f",
+            "type": "integer"
+          }
+        ],
+        "entity": "climate",
+        "translation_only_key": "thermostat"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 19,
+            "mapping": [
+              {
+                "dps_val": "f",
+                "value": "fahrenheit"
+              },
+              {
+                "dps_val": "c",
+                "value": "celsius"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "translation_key": "temperature_unit"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 112,
+            "mapping": [
+              {
+                "dps_val": "1",
+                "value": "cooling"
+              },
+              {
+                "dps_val": "2",
+                "value": "heating"
+              },
+              {
+                "dps_val": "3",
+                "value": "heat/cool"
+              },
+              {
+                "dps_val": "5",
+                "value": "heatpump"
+              }
+            ],
+            "name": "option",
+            "type": "string"
+          }
+        ],
+        "entity": "select",
+        "icon": "mdi:tune",
+        "name": "Configuration"
+      }
+    ],
+    "file": "saswell_t29utk_thermostat.yaml",
+    "reasons": [
+      "advanced_mapping_rule_semantics"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 1,
+            "mapping": [
+              {
+                "dps_val": "alarm_sound",
+                "value": "sound"
+              },
+              {
+                "dps_val": "alarm_light",
+                "value": "light"
+              },
+              {
+                "default": true,
+                "dps_val": "alarm_sound_light",
+                "value": "sound+light"
+              },
+              {
+                "dps_val": "normal",
+                "value": "off"
+              }
+            ],
+            "name": "tone",
+            "type": "string"
+          },
+          {
+            "id": 5,
+            "mapping": [
+              {
+                "dps_val": "mute",
+                "value": 0.0
+              },
+              {
+                "dps_val": "low",
+                "value": 0.33
+              },
+              {
+                "dps_val": "middle",
+                "value": 0.67
+              },
+              {
+                "dps_val": "high",
+                "value": 1.0
+              }
+            ],
+            "name": "volume_level",
+            "type": "string"
+          },
+          {
+            "id": 7,
+            "name": "duration",
+            "range": {
+              "max": 59,
+              "min": 1
+            },
+            "type": "integer",
+            "unit": "min"
+          }
+        ],
+        "entity": "siren"
+      }
+    ],
+    "file": "sirena_ws902plus_siren.yaml",
+    "reasons": [
+      "unsupported_platform:siren"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "space_dog_music_lamp.yaml",
+    "reasons": [
+      "switch_non_identity_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "starlight_heatpump.yaml",
+    "reasons": [
+      "switch_non_boolean"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "steinbach_silent_mini_heatpump.yaml",
+    "reasons": [
+      "climate_temperature_unit_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "t5e_wf_thermostat.yaml",
+    "reasons": [
+      "climate_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "vtaplus_axial_fanheater.yaml",
+    "reasons": [
+      "climate_preset_mapping"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "wdyk_3phase_energymonitor.yaml",
+    "reasons": [
+      "sensor_value_mapping_semantics"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "wdyk_4p100a_energymeter.yaml",
+    "reasons": [
+      "sensor_value_mapping_semantics"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "webber_apg7800_airpurifier.yaml",
+    "reasons": [
+      "fan_preset_hidden"
+    ]
+  },
+  {
+    "entities": [
+      {
+        "dps": [
+          {
+            "id": 60,
+            "name": "switch",
+            "type": "boolean"
+          },
+          {
+            "id": 62,
+            "name": "speed",
+            "range": {
+              "max": 6,
+              "min": 1
+            },
+            "type": "integer"
+          },
+          {
+            "id": 63,
+            "name": "direction",
+            "type": "string"
+          }
+        ],
+        "entity": "fan"
+      },
+      {
+        "category": "config",
+        "class": "duration",
+        "dps": [
+          {
+            "id": 64,
+            "name": "value",
+            "range": {
+              "max": 540,
+              "min": 0
+            },
+            "type": "integer",
+            "unit": "min"
+          }
+        ],
+        "entity": "number",
+        "translation_key": "timer"
+      },
+      {
+        "category": "config",
+        "dps": [
+          {
+            "id": 66,
+            "name": "switch",
+            "optional": true,
+            "type": "boolean"
+          },
+          {
+            "id": 66,
+            "mapping": [
+              {
+                "dps_val": null,
+                "value": false
+              },
+              {
+                "value": true
+              }
+            ],
+            "name": "available",
+            "optional": true,
+            "type": "boolean"
+          }
+        ],
+        "entity": "switch",
+        "hidden": "unavailable",
+        "translation_key": "sound"
+      }
+    ],
+    "file": "windcalm_fan.yaml",
+    "reasons": [
+      "entity_hidden_unavailable"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "wlrtcz05z_presencesensor.yaml",
+    "reasons": [
+      "event_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "woods_cortina_airconditioner.yaml",
+    "reasons": [
+      "climate_duplicate_dp_id"
+    ]
+  },
+  {
+    "entities": [],
+    "file": "wouej_evcharger.yaml",
+    "reasons": [
+      "switch_non_boolean"
+    ]
+  }
+]
