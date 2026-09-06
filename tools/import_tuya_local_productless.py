@@ -1857,6 +1857,8 @@ _FAN_EXTENDED_REASONS = {
     "fan_oscillate_mapping",
     "fan_preset_type",
     "fan_preset_optional",
+    "fan_preset_hidden",
+    "fan_missing_switch",
 }
 
 
@@ -1948,7 +1950,7 @@ def _fan_productless_presets(dp: dict[str, Any], config: dict[str, Any]) -> None
     try:
         values = base._fan_static_presets(dp)
     except ConversionError as err:
-        if str(err) not in {"fan_preset_type", "fan_preset_optional"}:
+        if str(err) not in {"fan_preset_type", "fan_preset_optional", "fan_preset_hidden"}:
             raise
     else:
         config["fan_preset_dp"] = base._dp_id(dp)
@@ -1961,10 +1963,23 @@ def _fan_productless_presets(dp: dict[str, Any], config: dict[str, Any]) -> None
         raise ConversionError("fan_preset_type")
     values: dict[str, Any] = {}
     raw_seen: list[Any] = []
+    default_friendly: str | None = None
     for rule in _raw_mapping(dp):
         if set(rule) - {"dps_val", "value", "hidden"}:
             raise ConversionError("fan_preset_mapping")
-        if rule.get("hidden") is True or "dps_val" not in rule or "value" not in rule:
+        if rule.get("hidden") is True:
+            # Tuya Local permits a hidden default rule without dps_val. It is
+            # read-only fallback semantics: any unmatched raw value reports the
+            # declared friendly preset, while writes still use a visible exact
+            # rule for that friendly preset.
+            if "dps_val" in rule or "value" not in rule or default_friendly is not None:
+                raise ConversionError("fan_preset_mapping")
+            friendly = rule["value"]
+            if not isinstance(friendly, str) or not friendly.strip():
+                raise ConversionError("fan_preset_mapping")
+            default_friendly = friendly.strip()
+            continue
+        if "dps_val" not in rule or "value" not in rule:
             raise ConversionError("fan_preset_mapping")
         friendly = rule["value"]
         if not isinstance(friendly, str) or not friendly.strip():
@@ -1980,9 +1995,13 @@ def _fan_productless_presets(dp: dict[str, Any], config: dict[str, Any]) -> None
         raw_seen.append(raw)
     if not values:
         raise ConversionError("fan_preset_mapping")
+    if default_friendly is not None and default_friendly not in values:
+        raise ConversionError("fan_preset_default_without_writable_value")
     config["fan_preset_dp"] = base._dp_id(dp)
     config["fan_preset_values"] = values
     config["fan_preset_raw_type"] = raw_type
+    if default_friendly is not None:
+        config["fan_preset_default"] = default_friendly
 
 
 def _convert_fan_productless(entity: dict[str, Any]) -> base.Converted:
@@ -1999,19 +2018,27 @@ def _convert_fan_productless(entity: dict[str, Any]) -> base.Converted:
     base._entity_metadata(entity, {})
     dps = _fan_productless_dps(entity)
     switch = dps.get("switch")
-    if switch is None:
-        raise ConversionError("fan_missing_switch")
-    base._check_common_dp_semantics(switch, writable=True)
-    if base._dp_type(switch) != "boolean":
-        raise ConversionError("fan_switch_type")
-    base._identity_boolean_mapping(switch, "fan_switch_mapping")
-
-    config: dict[str, Any] = {"id": base._dp_id(switch), "platform": "fan"}
-    required: set[int] = set()
-    optional: set[int] = set()
-    base._merge_membership(required, optional, switch)
-
     speed = dps.get("speed")
+    if switch is None:
+        if speed is None:
+            raise ConversionError("fan_missing_switch")
+        config: dict[str, Any] = {
+            "id": base._dp_id(speed),
+            "platform": "fan",
+            "fan_no_switch": True,
+        }
+        required: set[int] = set()
+        optional: set[int] = set()
+    else:
+        base._check_common_dp_semantics(switch, writable=True)
+        if base._dp_type(switch) != "boolean":
+            raise ConversionError("fan_switch_type")
+        base._identity_boolean_mapping(switch, "fan_switch_mapping")
+        config = {"id": base._dp_id(switch), "platform": "fan"}
+        required = set()
+        optional = set()
+        base._merge_membership(required, optional, switch)
+
     if speed is not None:
         _fan_productless_speed(speed, config)
         base._merge_membership(required, optional, speed)
