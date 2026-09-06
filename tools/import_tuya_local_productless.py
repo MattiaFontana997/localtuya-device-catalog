@@ -7,7 +7,8 @@ written, but only through explicit converters in this module.
 
 from __future__ import annotations
 
-from typing import Any
+import copy
+from typing import Any, Callable
 
 import import_tuya_local as base
 
@@ -18,6 +19,23 @@ SOURCE_REPOSITORY = base.SOURCE_REPOSITORY
 _devices_dir = base._devices_dir
 _product_ids = base._product_ids
 _platforms = base._platforms
+
+
+# Batch F translates only semantics that LocalTuya 6.4's declarative mapping
+# engine reproduces exactly. Tuya Local features with different runtime
+# behaviour stay fail-closed instead of being approximated.
+_ADVANCED_SOURCE_KEYS = {"conditions", "constraint", "invalid", "value_redirect"}
+_UNSUPPORTED_ADVANCED_KEYS = {"available", "mapping", "value_mirror"}
+_RUNTIME_RULE_BASE_KEYS = {"dps_val", "value", "hidden", "invalid"}
+_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect"}
+_BASE_PROJECTION_DROP = {"conditions", "constraint", "invalid", "value_redirect"}
+_SIMPLE_PRIMARY_NAMES = {
+    "binary_sensor": "sensor",
+    "number": "value",
+    "select": "option",
+    "sensor": "sensor",
+    "switch": "switch",
+}
 
 
 def _named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]:
@@ -43,6 +61,299 @@ def _named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]
         seen_ids.add(dp_id)
         result[name] = dp
     return result
+
+
+def _raw_mapping(dp: dict[str, Any]) -> list[dict[str, Any]]:
+    mapping = dp.get("mapping")
+    if mapping is None:
+        return []
+    if not isinstance(mapping, list):
+        raise ConversionError("invalid_mapping")
+    result = []
+    for rule in mapping:
+        if not isinstance(rule, dict):
+            raise ConversionError("invalid_mapping_rule")
+        result.append(rule)
+    return result
+
+
+def _runtime_scalar(value: Any, reason: str) -> str | int | float | bool | None:
+    if value is None or isinstance(value, (str, bool)):
+        return value
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value
+    raise ConversionError(reason)
+
+
+def _condition_dps_value(value: Any) -> Any:
+    if isinstance(value, list):
+        if not value or len(value) > 32:
+            raise ConversionError("advanced_mapping_condition_value")
+        return [_runtime_scalar(item, "advanced_mapping_condition_value") for item in value]
+    return _runtime_scalar(value, "advanced_mapping_condition_value")
+
+
+def _dependency_dp(
+    name: Any,
+    by_name: dict[str, dict[str, Any]],
+    *,
+    reason: str,
+) -> tuple[int, dict[str, Any]]:
+    if not isinstance(name, str) or not name:
+        raise ConversionError(reason)
+    dp = by_name.get(name)
+    if dp is None:
+        raise ConversionError(f"{reason}:{name}")
+    return base._dp_id(dp), dp
+
+
+def _validate_constraint_dp(dp: dict[str, Any]) -> None:
+    # Tuya Local decodes hex/base64 constraints and gives bitfields special
+    # subset matching. LocalTuya's current advanced matcher compares cached raw
+    # scalar values, so those shapes are deliberately not imported yet.
+    if base._dp_type(dp) not in {"boolean", "integer", "string"}:
+        raise ConversionError("advanced_mapping_constraint_type")
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError("advanced_mapping_constraint_semantics")
+
+
+def _validate_redirect_target(dp: dict[str, Any], *, writable_source: bool) -> None:
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError("advanced_mapping_redirect_semantics")
+    if set(dp) & {"mask", "mask_signed", "format", "endianness"}:
+        raise ConversionError("advanced_mapping_redirect_encoding")
+    # Reads recurse through LocalTuya mappings, but writes intentionally redirect
+    # to the target raw DP in one step. Tuya Local recursively applies the target
+    # DP's write mapping, so a writable redirect is lossless only when the target
+    # itself has no mapping transformation.
+    if writable_source and _raw_mapping(dp):
+        raise ConversionError("advanced_mapping_redirect_target_mapping")
+
+
+def _translate_advanced_mapping(
+    dp: dict[str, Any],
+    by_name: dict[str, dict[str, Any]],
+) -> tuple[list[dict[str, Any]], set[str]]:
+    rules = _raw_mapping(dp)
+    if not rules:
+        return [], set()
+    if base._dp_type(dp) == "bitfield":
+        # Tuya Local uses bit containment for bitfield dps_val matching while the
+        # current LocalTuya mapping engine uses scalar equality.
+        raise ConversionError("advanced_mapping_bitfield")
+
+    translated: list[dict[str, Any]] = []
+    references: set[str] = set()
+    writable_source = dp.get("readonly") is not True
+
+    for source in rules:
+        if not (set(source) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS)):
+            continue
+        unsupported = set(source) & _UNSUPPORTED_ADVANCED_KEYS
+        if unsupported:
+            raise ConversionError(
+                "advanced_mapping_unsupported:" + ",".join(sorted(unsupported))
+            )
+        if source.get("default") is True:
+            # Tuya Local's `default` participates in entity default selection;
+            # LocalTuya validates the key but does not implement that selection.
+            raise ConversionError("advanced_mapping_default")
+
+        allowed_source = _RUNTIME_RULE_BASE_KEYS | {
+            "conditions", "constraint", "value_redirect",
+            # These simple transforms remain in the base projection. They are
+            # intentionally not duplicated into the advanced rule.
+            "scale", "invert", "step", "range", "target_range", "default",
+        }
+        if set(source) - allowed_source:
+            raise ConversionError("advanced_mapping_rule_semantics")
+
+        rule: dict[str, Any] = {}
+        for key in ("dps_val", "value"):
+            if key in source:
+                rule[key] = _runtime_scalar(source[key], "advanced_mapping_scalar")
+        for key in ("hidden", "invalid"):
+            if key in source:
+                if not isinstance(source[key], bool):
+                    raise ConversionError("advanced_mapping_boolean")
+                rule[key] = source[key]
+
+        redirect = source.get("value_redirect")
+        if redirect is not None:
+            redirect_id, redirect_dp = _dependency_dp(
+                redirect, by_name, reason="advanced_mapping_redirect_missing"
+            )
+            _validate_redirect_target(redirect_dp, writable_source=writable_source)
+            references.add(redirect)
+            rule["value_redirect_dp"] = redirect_id
+
+        conditions = source.get("conditions")
+        constraint = source.get("constraint")
+        if conditions is not None:
+            if not isinstance(conditions, list) or not conditions or len(conditions) > 16:
+                raise ConversionError("advanced_mapping_conditions")
+            # LocalTuya can observe same-DP constraints, but on reverse mapping it
+            # would also write that constraint DP. Tuya Local suppresses that side
+            # effect when constraint==self, so require an explicit external DP.
+            if not isinstance(constraint, str) or not constraint or constraint == dp.get("name"):
+                raise ConversionError("advanced_mapping_external_constraint_required")
+            constraint_id, constraint_dp = _dependency_dp(
+                constraint, by_name, reason="advanced_mapping_constraint_missing"
+            )
+            _validate_constraint_dp(constraint_dp)
+            references.add(constraint)
+            rule["constraint_dp"] = constraint_id
+            translated_conditions: list[dict[str, Any]] = []
+            for condition in conditions:
+                if not isinstance(condition, dict):
+                    raise ConversionError("advanced_mapping_condition")
+                unsupported_condition = set(condition) & _UNSUPPORTED_ADVANCED_KEYS
+                if unsupported_condition:
+                    raise ConversionError(
+                        "advanced_mapping_condition_unsupported:"
+                        + ",".join(sorted(unsupported_condition))
+                    )
+                if set(condition) - _RUNTIME_CONDITION_KEYS:
+                    # Dynamic scale/range/step changes also alter HA limits and
+                    # precision in Tuya Local. LocalTuya 6.4 has static entity
+                    # metadata for those, so importing them would only be partial.
+                    raise ConversionError("advanced_mapping_condition_semantics")
+                if "dps_val" not in condition:
+                    raise ConversionError("advanced_mapping_condition_missing_dps_val")
+                out: dict[str, Any] = {
+                    "dps_val": _condition_dps_value(condition["dps_val"])
+                }
+                for key in ("value",):
+                    if key in condition:
+                        out[key] = _runtime_scalar(
+                            condition[key], "advanced_mapping_condition_scalar"
+                        )
+                for key in ("hidden", "invalid"):
+                    if key in condition:
+                        if not isinstance(condition[key], bool):
+                            raise ConversionError("advanced_mapping_condition_boolean")
+                        out[key] = condition[key]
+                condition_redirect = condition.get("value_redirect")
+                if condition_redirect is not None:
+                    redirect_id, redirect_dp = _dependency_dp(
+                        condition_redirect,
+                        by_name,
+                        reason="advanced_mapping_redirect_missing",
+                    )
+                    _validate_redirect_target(
+                        redirect_dp, writable_source=writable_source
+                    )
+                    references.add(condition_redirect)
+                    out["value_redirect_dp"] = redirect_id
+                translated_conditions.append(out)
+            rule["conditions"] = translated_conditions
+        elif constraint is not None:
+            raise ConversionError("advanced_mapping_constraint_without_conditions")
+
+        if not rule:
+            raise ConversionError("advanced_mapping_empty_rule")
+        translated.append(rule)
+
+    if not translated:
+        return [], set()
+    return translated, references
+
+
+def _project_mapping_for_base(dp: dict[str, Any]) -> dict[str, Any]:
+    projected = copy.deepcopy(dp)
+    rules = _raw_mapping(dp)
+    if not rules:
+        return projected
+    output: list[dict[str, Any]] = []
+    for source in rules:
+        rule = {
+            key: copy.deepcopy(value)
+            for key, value in source.items()
+            if key not in _BASE_PROJECTION_DROP
+            and key not in _UNSUPPORTED_ADVANCED_KEYS
+        }
+        if rule:
+            output.append(rule)
+    if output:
+        projected["mapping"] = output
+    else:
+        projected.pop("mapping", None)
+    return projected
+
+
+def _validate_consumed_dependency(dp: dict[str, Any]) -> None:
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        raise ConversionError("advanced_mapping_dependency_semantics")
+    if set(dp) & {"mask", "mask_signed", "format", "endianness"}:
+        raise ConversionError("advanced_mapping_dependency_encoding")
+
+
+def _prepare_advanced_entity(
+    entity: dict[str, Any], platform: str
+) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], set[int]]:
+    by_name = _named_dps(entity, platform)
+    advanced_by_dp: dict[str, list[dict[str, Any]]] = {}
+    referenced_names: set[str] = set()
+    transformed = copy.deepcopy(entity)
+    transformed_by_name = _named_dps(transformed, platform)
+
+    for name, original_dp in by_name.items():
+        rules = _raw_mapping(original_dp)
+        if not any(
+            set(rule) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS)
+            for rule in rules
+        ):
+            continue
+        translated, references = _translate_advanced_mapping(original_dp, by_name)
+        if translated:
+            advanced_by_dp[str(base._dp_id(original_dp))] = translated
+            referenced_names.update(references)
+            transformed_by_name[name].clear()
+            transformed_by_name[name].update(_project_mapping_for_base(original_dp))
+
+    if not advanced_by_dp:
+        return entity, {}, set()
+
+    membership_ids = {int(dp_id) for dp_id in advanced_by_dp}
+    for name in referenced_names:
+        dependency = by_name[name]
+        _validate_consumed_dependency(dependency)
+        membership_ids.add(base._dp_id(dependency))
+
+    # Simple LocalTuya entity converters historically require exactly one DP.
+    # Batch F consumes only DPs that exist solely as declarative mapping
+    # dependencies. Generic multi-DP entity support remains Batch G.
+    primary_name = _SIMPLE_PRIMARY_NAMES.get(platform)
+    if primary_name is not None and len(transformed.get("dps", [])) > 1:
+        primary = transformed_by_name.get(primary_name)
+        if primary is None:
+            return transformed, advanced_by_dp, membership_ids
+        extras = set(transformed_by_name) - {primary_name}
+        if extras and extras.issubset(referenced_names):
+            transformed["dps"] = [primary]
+
+    return transformed, advanced_by_dp, membership_ids
+
+
+def _advanced_wrapper(
+    platform: str, converter: Callable[[dict[str, Any]], base.Converted]
+) -> Callable[[dict[str, Any]], base.Converted]:
+    def wrapped(entity: dict[str, Any]) -> base.Converted:
+        prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
+            entity, platform
+        )
+        converted, required, optional = converter(prepared)
+        if not advanced_by_dp:
+            return converted, required, optional
+
+        converted["config"]["advanced_mapping_by_dp"] = advanced_by_dp
+        originals = {base._dp_id(dp): dp for dp in _named_dps(entity, platform).values()}
+        for dp_id in membership_ids:
+            dp = originals[dp_id]
+            base._merge_membership(required, optional, dp)
+        return converted, required, optional
+
+    return wrapped
 
 
 def _simple_time_component(dp: dict[str, Any], *, reason: str) -> None:
@@ -75,9 +386,6 @@ def _convert_time(entity: dict[str, Any]) -> base.Converted:
     dps = _named_dps(entity, "time")
     functional = {"hour", "minute", "second", "hms"}
 
-    # Tuya Local currently does not write its hms DP in async_set_value. Importing
-    # hms as writable would therefore claim behaviour the source profile itself
-    # does not provide. Keep this first tranche to integer components only.
     if "hms" in dps:
         raise ConversionError("time_hms_not_lossless")
 
@@ -97,7 +405,6 @@ def _convert_time(entity: dict[str, Any]) -> base.Converted:
         config[f"time_{name}_dp"] = base._dp_id(dp)
         base._merge_membership(required, optional, dp)
 
-    # Availability follows a required functional DP whenever one exists.
     primary = next((dp for dp in components if not bool(dp.get("optional"))), components[0])
     config["id"] = base._dp_id(primary)
 
@@ -168,8 +475,6 @@ def _convert_event(entity: dict[str, Any]) -> base.Converted:
             raise ConversionError("event_device_class")
         config["event_device_class"] = device_class.strip()
 
-    # Validate generic entity metadata, but do not copy its generic device_class
-    # key because Event uses event_device_class at runtime.
     metadata_probe: dict[str, Any] = {}
     base._entity_metadata({k: v for k, v in entity.items() if k != "class"}, metadata_probe)
 
@@ -184,10 +489,19 @@ def _convert_event(entity: dict[str, Any]) -> base.Converted:
     return {"platform": "event", "config": config}, required, optional
 
 
-# Extend only the productless conversion surface. The underlying base converter
-# still performs all atomic profile validation, required/optional DP accounting,
-# provenance generation and duplicate-core-entity checks.
+# Extend only the productless conversion surface. Keep the mature product-ID
+# importer unchanged while wrapping its converters for Batch F on this module's
+# develop-only path.
 base.SUPPORTED_PLATFORMS.update({"time", "event"})
+_original_converters = dict(base._CONVERTERS)
+for _platform, _converter in _original_converters.items():
+    base._CONVERTERS[_platform] = _advanced_wrapper(_platform, _converter)
+
+# convert_profile has a special light-scene path that calls _convert_light
+# directly rather than through _CONVERTERS, so wrap that reference as well.
+if "light" in _original_converters:
+    base._convert_light = _advanced_wrapper("light", base._convert_light)
+
 base._CONVERTERS.update({
     "time": _convert_time,
     "event": _convert_event,
