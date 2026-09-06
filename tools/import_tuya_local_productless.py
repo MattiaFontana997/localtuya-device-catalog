@@ -494,6 +494,26 @@ def _prepare_advanced_entity(
         _validate_consumed_dependency(dependency)
         membership_ids.add(base._dp_id(dependency))
 
+    # Complex platforms may use private redirect/constraint DPS that have no
+    # independent HA-facing meaning (for example Fahrenheit shadow temperature
+    # registers). Keep those DPS in fingerprint/runtime membership, but do not
+    # hand them to the mature platform converter as generic extra attributes.
+    # Named semantic DPS remain visible to the converter even when referenced.
+    if platform == "climate" and referenced_names:
+        climate_semantic_names = {
+            "hvac_mode", "temperature", "current_temperature",
+            "target_temp_low", "target_temp_high", "humidity",
+            "current_humidity", "preset_mode", "fan_mode", "swing_mode",
+            "swing_horizontal_mode", "hvac_action", "temperature_unit",
+            "min_temperature", "max_temperature", "state", "available",
+        }
+        internal_names = referenced_names - climate_semantic_names
+        if internal_names:
+            transformed["dps"] = [
+                dp for dp in transformed.get("dps", [])
+                if not (isinstance(dp, dict) and dp.get("name") in internal_names)
+            ]
+
     # Simple LocalTuya entity converters historically require exactly one DP.
     # Batch F consumes only DPs that exist solely as declarative mapping
     # dependencies. Generic multi-DP entity support remains Batch G.
