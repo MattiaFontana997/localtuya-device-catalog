@@ -45,8 +45,25 @@ jobs:
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
       - name: Run targeted importer tests
-        run: python -m unittest tests.test_import_tuya_local_light_switch_values -v
+        id: switchtests
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m unittest tests.test_import_tuya_local_light_switch_values -v 2>&1 | tee switch-test-output.txt
+      - name: Save test diagnostic
+        if: steps.switchtests.outcome == 'failure'
+        shell: bash
+        run: |
+          git restore tools/import_tuya_local.py
+          rm -f tests/test_import_tuya_local_light_switch_values.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add switch-test-output.txt
+          git commit -m "Capture light switch importer test failure"
+          git push origin HEAD:develop
       - name: Commit patch
+        if: steps.switchtests.outcome == 'success'
         shell: bash
         run: |
           git config user.name github-actions[bot]
