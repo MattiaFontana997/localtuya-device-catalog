@@ -30,7 +30,6 @@
     "lock_direct_control_required": 1,
     "multi_dp_mapped_extra:unit": 1,
     "select_complex_mapping": 6,
-    "select_device_class": 1,
     "sensor_dp_type": 2,
     "sensor_value_mapping_semantics": 2,
     "switch_non_boolean": 3,
@@ -25596,7 +25595,7 @@
     },
     {
       "file": "wetair_wch750_heater.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-wetair_wch750_heater-d5c19963e2",
       "name": "Heater",
       "platforms": [
         "climate",
@@ -25604,10 +25603,8 @@
         "select",
         "sensor"
       ],
-      "reasons": [
-        "select_device_class"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "weye_wdh29a_dehumidifier.yaml",
@@ -26945,9 +26942,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 152,
+    "convertible_fingerprint": 153,
     "not_productless": 1526,
-    "skipped": 59
+    "skipped": 58
   },
   "target_schema": 3
 }
