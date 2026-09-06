@@ -33,7 +33,7 @@ _platforms = base._platforms
 _ADVANCED_SOURCE_KEYS = {"conditions", "constraint", "invalid", "value_redirect"}
 _UNSUPPORTED_ADVANCED_KEYS = {"available", "mapping", "value_mirror"}
 _RUNTIME_RULE_BASE_KEYS = {"dps_val", "value", "hidden", "invalid"}
-_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect"}
+_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect", "range", "step"}
 _BASE_PROJECTION_DROP = {"conditions", "constraint", "invalid", "value_redirect"}
 _SIMPLE_PRIMARY_NAMES = {
     "binary_sensor": "sensor",
@@ -139,6 +139,7 @@ def _validate_redirect_target(dp: dict[str, Any], *, writable_source: bool) -> N
 def _translate_advanced_mapping(
     dp: dict[str, Any],
     by_name: dict[str, dict[str, Any]],
+    platform: str,
 ) -> tuple[list[dict[str, Any]], set[str]]:
     rules = _raw_mapping(dp)
     if not rules:
@@ -172,7 +173,12 @@ def _translate_advanced_mapping(
         }
         if set(source) - allowed_source:
             raise ConversionError("advanced_mapping_rule_semantics")
-        if set(source) & transform_keys:
+        # Static mapping transforms remain in the mature base converter.  Do not
+        # duplicate them into advanced_mapping_by_dp or values would be transformed
+        # twice.  Batch M only overlays condition-dependent metadata below.
+        # Invert/target_range are still rejected when mixed with advanced semantics
+        # because their exact transform range differs from the active metadata range.
+        if set(source) & {"invert", "target_range"}:
             raise ConversionError("advanced_mapping_rule_transform_semantics")
 
         rule: dict[str, Any] = {}
@@ -221,9 +227,9 @@ def _translate_advanced_mapping(
                         + ",".join(sorted(unsupported_condition))
                     )
                 if set(condition) - _RUNTIME_CONDITION_KEYS:
-                    # Dynamic scale/range/step changes also alter HA limits and
-                    # precision in Tuya Local. LocalTuya 6.4 has static entity
-                    # metadata for those, so importing them would only be partial.
+                    raise ConversionError("advanced_mapping_condition_semantics")
+                dynamic_metadata = set(condition) & {"range", "step"}
+                if dynamic_metadata and platform not in {"climate", "number"}:
                     raise ConversionError("advanced_mapping_condition_semantics")
                 if "dps_val" not in condition:
                     raise ConversionError("advanced_mapping_condition_missing_dps_val")
@@ -240,6 +246,21 @@ def _translate_advanced_mapping(
                         if not isinstance(condition[key], bool):
                             raise ConversionError("advanced_mapping_condition_boolean")
                         out[key] = condition[key]
+                if "range" in condition:
+                    value_range = condition["range"]
+                    if (
+                        not isinstance(value_range, dict)
+                        or set(value_range) != {"min", "max"}
+                        or any(isinstance(value_range[k], bool) or not isinstance(value_range[k], (int, float)) for k in ("min", "max"))
+                        or value_range["max"] < value_range["min"]
+                    ):
+                        raise ConversionError("advanced_mapping_condition_range")
+                    out["range"] = {"min": value_range["min"], "max": value_range["max"]}
+                if "step" in condition:
+                    step = condition["step"]
+                    if isinstance(step, bool) or not isinstance(step, (int, float)) or step <= 0:
+                        raise ConversionError("advanced_mapping_condition_step")
+                    out["step"] = step
                 condition_redirect = condition.get("value_redirect")
                 if condition_redirect is not None:
                     redirect_id, redirect_dp = _dependency_dp(
@@ -315,14 +336,20 @@ def _project_mapping_for_base(
             continue
         conditions = source.get("conditions")
         if isinstance(conditions, list) and conditions:
+            # Tuya Local exposes the mapping's own value first, then any visible
+            # condition-specific values.  Invalid-only conditions therefore must
+            # not erase an otherwise valid base enum value.
+            if "value" in source:
+                add_output(source["value"])
             for condition in conditions:
                 if not isinstance(condition, dict):
                     raise ConversionError("advanced_mapping_condition")
                 if condition.get("invalid") is True or condition.get("hidden") is True:
                     continue
-                add_output(condition.get(
-                    "value", source.get("value", source.get("dps_val", missing))
-                ))
+                if "value" in condition:
+                    add_output(condition["value"])
+                elif "value" in source:
+                    add_output(source["value"])
         else:
             add_output(source.get("value", source.get("dps_val", missing)))
 
@@ -387,7 +414,7 @@ def _prepare_advanced_entity(
             for rule in rules
         ):
             continue
-        translated, references = _translate_advanced_mapping(original_dp, by_name)
+        translated, references = _translate_advanced_mapping(original_dp, by_name, platform)
         if translated:
             advanced_by_dp[str(base._dp_id(original_dp))] = translated
             referenced_names.update(references)
