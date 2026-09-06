@@ -718,6 +718,27 @@ def _mapped_extra_runtime_rules(
             raise ConversionError(f"{platform}_mapped_extra_scale:{name}")
         return [{"scale": scale}]
 
+    if dp_type == "bitfield":
+        translated: list[dict[str, Any]] = []
+        seen_raw: set[int] = set()
+        for rule in rules:
+            if set(rule) != {"dps_val", "value"}:
+                raise ConversionError(f"{platform}_mapped_extra_mapping:{name}")
+            raw = rule.get("dps_val")
+            if isinstance(raw, bool) or not isinstance(raw, int) or raw < 0:
+                raise ConversionError(f"{platform}_mapped_extra_raw_type:{name}")
+            if raw in seen_raw:
+                raise ConversionError(f"{platform}_mapped_extra_duplicate_raw:{name}")
+            seen_raw.add(raw)
+            translated.append({
+                "dps_val": raw,
+                "value": _runtime_scalar(
+                    rule.get("value"), f"{platform}_mapped_extra_scalar:{name}"
+                ),
+                "bitmask": True,
+            })
+        return translated
+
     if dp_type not in {"boolean", "integer", "string"}:
         raise ConversionError(f"{platform}_mapped_extra_type:{name}")
 
@@ -758,24 +779,23 @@ def _store_mapped_extra(
     required: set[int],
     optional: set[int],
 ) -> None:
-    """Expose one extra attribute through dps() instead of the raw status cache."""
+    """Expose one extra attribute with mapping scoped only to that attribute."""
     dp_id = base._dp_id(dp)
-    key = str(dp_id)
-    existing = advanced_by_dp.get(key)
-    if existing is not None and existing != rules:
-        raise ConversionError(f"{platform}_mapped_extra_dp_conflict:{name}")
-    advanced_by_dp[key] = copy.deepcopy(rules)
 
     raw_attrs = config.get("extra_state_attributes_dps", {})
     mapped_attrs = config.setdefault("mapped_extra_state_attributes_dps", {})
-    if name in raw_attrs or name in mapped_attrs:
+    scoped = config.setdefault("mapped_extra_state_attribute_mappings", {})
+    if name in raw_attrs or name in mapped_attrs or name in scoped:
         raise ConversionError(f"{platform}_mapped_extra_name_conflict:{name}")
     if name not in {"state", "available"}:
         if len(raw_attrs) + len(mapped_attrs) >= 32:
             raise ConversionError("multi_dp_too_many_extra_attributes")
         mapped_attrs[name] = dp_id
+        scoped[name] = copy.deepcopy(rules)
     if not mapped_attrs:
         config.pop("mapped_extra_state_attributes_dps", None)
+    if not scoped:
+        config.pop("mapped_extra_state_attribute_mappings", None)
     base._merge_membership(required, optional, dp)
 
 

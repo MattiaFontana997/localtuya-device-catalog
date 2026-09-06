@@ -38,10 +38,11 @@ class ProductlessMappedExtraTests(unittest.TestCase):
         )
         self.assertEqual(config["mapped_extra_state_attributes_dps"], {"unit": 23})
         self.assertNotIn("extra_state_attributes_dps", config)
-        self.assertEqual(advanced["23"], [
+        self.assertEqual(config["mapped_extra_state_attribute_mappings"]["unit"], [
             {"dps_val": "c", "value": "C"},
             {"dps_val": "f", "value": "F"},
         ])
+        self.assertEqual(advanced, {})
         self.assertIn(23, required)
 
     def test_raw_extra_behavior_is_unchanged(self):

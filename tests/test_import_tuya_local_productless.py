@@ -468,9 +468,72 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
         config = result["entities"][0]["config"]
         self.assertEqual(config["mapped_extra_state_attributes_dps"], {"description": 2})
         self.assertEqual(
-            config["advanced_mapping_by_dp"]["2"],
+            config["mapped_extra_state_attribute_mappings"]["description"],
             [{"dps_val": "x", "value": "friendly"}],
         )
+        self.assertNotIn("advanced_mapping_by_dp", config)
+
+    def test_multidp_bitfield_description_uses_scoped_ordered_bitmask_mapping(self):
+        result = self._convert([
+            {
+                "entity": "binary_sensor",
+                "dps": [
+                    {
+                        "id": 19,
+                        "name": "sensor",
+                        "type": "bitfield",
+                        "mapping": [
+                            {"dps_val": 0, "value": False},
+                            {"value": True},
+                        ],
+                    },
+                    {"id": 19, "name": "fault_code", "type": "bitfield"},
+                    {
+                        "id": 19,
+                        "name": "description",
+                        "type": "bitfield",
+                        "mapping": [
+                            {"dps_val": 0, "value": "OK"},
+                            {"dps_val": 1, "value": "Fault A"},
+                            {"dps_val": 2, "value": "Fault B"},
+                            {"dps_val": 4, "value": "Fault C"},
+                        ],
+                    },
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertTrue(config["binary_sensor_bitfield"])
+        self.assertEqual(config["extra_state_attributes_dps"], {"fault_code": 19})
+        self.assertEqual(
+            config["mapped_extra_state_attributes_dps"], {"description": 19}
+        )
+        self.assertEqual(
+            config["mapped_extra_state_attribute_mappings"]["description"],
+            [
+                {"dps_val": 0, "value": "OK", "bitmask": True},
+                {"dps_val": 1, "value": "Fault A", "bitmask": True},
+                {"dps_val": 2, "value": "Fault B", "bitmask": True},
+                {"dps_val": 4, "value": "Fault C", "bitmask": True},
+            ],
+        )
+        self.assertNotIn("advanced_mapping_by_dp", config)
+        self.assertEqual(result["match"]["required_dps"], [19])
+
+    def test_multidp_bitfield_description_rejects_default_rule(self):
+        with self.assertRaisesRegex(ConversionError, "multi_dp_mapped_extra:description"):
+            self._convert([
+                {
+                    "entity": "binary_sensor",
+                    "dps": [
+                        {"id": 19, "name": "sensor", "type": "bitfield",
+                         "mapping": [{"dps_val": 0, "value": False}, {"value": True}]},
+                        {"id": 19, "name": "fault_code", "type": "bitfield"},
+                        {"id": 19, "name": "description", "type": "bitfield",
+                         "mapping": [{"dps_val": 0, "value": "OK"}, {"value": "Other"}]},
+                    ],
+                }
+            ])
 
     def test_multidp_richer_extra_mapping_stays_fail_closed(self):
         with self.assertRaisesRegex(ConversionError, "multi_dp_mapped_extra:description"):
