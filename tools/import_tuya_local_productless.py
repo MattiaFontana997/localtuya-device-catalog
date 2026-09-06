@@ -1033,6 +1033,27 @@ def _preserve_simple_multi_dp_extras(
 
 
 
+def _prepare_productless_select_device_class(entity: dict[str, Any]) -> dict[str, Any]:
+    """Drop metadata-only duration class from safely named Select entities.
+
+    Tuya Local's Select platform does not branch on device class. A duration
+    class can still influence naming through common entity metadata, so only
+    consume it when the entity already has an explicit name or translation key.
+    Other classes and unnamed duration selects remain fail-closed.
+    """
+    if entity.get("entity") != "select" or entity.get("class") != "duration":
+        return entity
+    has_explicit_name = any(
+        isinstance(entity.get(key), str) and entity[key].strip()
+        for key in ("name", "translation_key", "translation_only_key")
+    )
+    if not has_explicit_name:
+        return entity
+    transformed = copy.deepcopy(entity)
+    transformed.pop("class", None)
+    return transformed
+
+
 def _normalize_string_select_raw_mapping(entity: dict[str, Any]) -> dict[str, Any]:
     """Normalize YAML scalar mapping keys for Tuya string Select DPS.
 
@@ -1249,6 +1270,7 @@ def _advanced_wrapper(
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
             flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
         elif platform == "select":
+            flagged = _prepare_productless_select_device_class(flagged)
             flagged = _normalize_string_select_raw_mapping(flagged)
             flagged, typed_select_mapping = _prepare_typed_productless_select(flagged)
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
