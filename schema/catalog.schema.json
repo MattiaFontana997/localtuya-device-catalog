@@ -11,13 +11,13 @@
   "properties": {
     "schema_version": {
       "type": "integer",
-      "const": 2
+      "enum": [
+        2,
+        3
+      ]
     },
     "mappings": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/mapping"
-      }
+      "type": "array"
     },
     "fingerprint": {
       "type": "object",
@@ -59,6 +59,19 @@
         "maximum": 65535
       }
     },
+    "match_fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "exact_dps"
+        }
+      }
+    },
     "mapping": {
       "type": "object",
       "required": [
@@ -95,7 +108,7 @@
           "properties": {
             "product_ids": {
               "type": "array",
-              "minItems": 1,
+              "minItems": 0,
               "maxItems": 64,
               "uniqueItems": true,
               "items": {
@@ -116,6 +129,9 @@
             },
             "optional_dps": {
               "$ref": "#/$defs/dp_array"
+            },
+            "fingerprint": {
+              "$ref": "#/$defs/match_fingerprint"
             }
           }
         },
@@ -172,21 +188,31 @@
         "platform": {
           "type": "string",
           "enum": [
+            "alarm_control_panel",
             "binary_sensor",
             "button",
+            "camera",
             "climate",
             "cover",
+            "datetime",
+            "event",
             "fan",
             "humidifier",
+            "infrared",
+            "lawn_mower",
             "light",
             "lock",
             "number",
+            "remote",
             "select",
             "sensor",
+            "siren",
             "switch",
             "text",
+            "time",
             "vacuum",
-            "valve"
+            "valve",
+            "water_heater"
           ]
         },
         "config": {
@@ -218,6 +244,111 @@
           }
         }
       }
+    },
+    "product_mapping": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/mapping"
+        },
+        {
+          "properties": {
+            "match": {
+              "properties": {
+                "product_ids": {
+                  "minItems": 1
+                }
+              },
+              "not": {
+                "required": [
+                  "fingerprint"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "fingerprint_mapping": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/mapping"
+        },
+        {
+          "properties": {
+            "confidence": {
+              "not": {
+                "const": "verified"
+              }
+            },
+            "match": {
+              "required": [
+                "fingerprint"
+              ],
+              "properties": {
+                "product_ids": {
+                  "maxItems": 0
+                },
+                "fingerprint": {
+                  "const": {
+                    "mode": "exact_dps"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": 2
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "properties": {
+          "mappings": {
+            "items": {
+              "$ref": "#/$defs/product_mapping"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": 3
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "properties": {
+          "mappings": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/product_mapping"
+                },
+                {
+                  "$ref": "#/$defs/fingerprint_mapping"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
 }
