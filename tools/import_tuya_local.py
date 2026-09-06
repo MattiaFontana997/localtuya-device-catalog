@@ -882,6 +882,71 @@ def _configure_light_scale(
         config["brightness_lower"] = minimum if require_lower else 0
 
 
+def _light_power_raw_value(dp_type: str, value: Any, reason: str) -> Any:
+    """Validate one exact raw light-power mapping value."""
+    if dp_type == "boolean":
+        if not isinstance(value, bool):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "string":
+        if not isinstance(value, str):
+            raise ConversionError(reason)
+        return value
+    if dp_type == "integer":
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ConversionError(reason)
+        return value
+    raise ConversionError(reason)
+
+
+def _light_power_mapping(dp: dict[str, Any], config: dict[str, Any]) -> None:
+    """Preserve lossless Tuya Local light switch mappings."""
+    reason = "light_switch_mapping"
+    dp_type = _dp_type(dp)
+    rules = _mapping_rules(dp)
+
+    if not rules:
+        if dp_type != "boolean":
+            raise ConversionError("light_switch_non_boolean")
+        return
+
+    if (
+        dp_type == "boolean"
+        and len(rules) == 1
+        and set(rules[0]) == {"dps_val", "value"}
+        and rules[0]["dps_val"] is None
+        and rules[0]["value"] is False
+    ):
+        config["light_null_value"] = False
+        return
+
+    if len(rules) != 2:
+        raise ConversionError(reason)
+
+    by_state: dict[bool, Any] = {}
+    raw_values: list[Any] = []
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError(reason)
+        state = rule["value"]
+        if not isinstance(state, bool) or state in by_state:
+            raise ConversionError(reason)
+        raw = _light_power_raw_value(dp_type, rule["dps_val"], reason)
+        if any(type(raw) is type(existing) and raw == existing for existing in raw_values):
+            raise ConversionError(reason)
+        by_state[state] = raw
+        raw_values.append(raw)
+
+    if set(by_state) != {False, True}:
+        raise ConversionError(reason)
+
+    raw_on = by_state[True]
+    raw_off = by_state[False]
+    if not (dp_type == "boolean" and raw_on is True and raw_off is False):
+        config["light_on_value"] = raw_on
+        config["light_off_value"] = raw_off
+
+
 def _convert_light(
     entity: dict[str, Any],
     *,
@@ -900,9 +965,6 @@ def _convert_light(
         # LocalTuya's light entity currently requires a writable primary power DP.
         raise ConversionError("light_missing_switch")
     _check_common_dp_semantics(switch, writable=True)
-    if _dp_type(switch) != "boolean":
-        raise ConversionError("light_switch_non_boolean")
-    _identity_boolean_mapping(switch, "light_switch_mapping")
 
     config: dict[str, Any] = {
         "id": _dp_id(switch),
@@ -912,6 +974,7 @@ def _convert_light(
     required: set[int] = set()
     optional: set[int] = set()
     _merge_membership(required, optional, switch)
+    _light_power_mapping(switch, config)
 
     work_mode = dps.get("work_mode")
     if work_mode is not None:
