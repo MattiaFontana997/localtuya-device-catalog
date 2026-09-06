@@ -204,6 +204,20 @@
     {
       "available_dps": [
         1,
+        2,
+        3,
+        11
+      ],
+      "best_matches": [
+        "fingerprint-gamp_bcv300_waterheater-ae0f9c3be9",
+        "fingerprint-klarstein_wonderwall_irheater-e13bfcf103"
+      ],
+      "mapping_id": "fingerprint-gamp_bcv300_waterheater-ae0f9c3be9",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
         101
       ],
       "best_matches": [
@@ -256,6 +270,20 @@
       "best_matches": [],
       "mapping_id": "fingerprint-inow_heater_element_v2-819341e4b4",
       "reason": "duplicate_entity_primary_dp"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        11
+      ],
+      "best_matches": [
+        "fingerprint-gamp_bcv300_waterheater-ae0f9c3be9",
+        "fingerprint-klarstein_wonderwall_irheater-e13bfcf103"
+      ],
+      "mapping_id": "fingerprint-klarstein_wonderwall_irheater-e13bfcf103",
+      "reason": "ambiguous"
     },
     {
       "available_dps": [
@@ -410,11 +438,12 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 29,
-  "generated_candidates": 111,
+  "blocked_candidates": 31,
+  "generated_candidates": 115,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
+    "fingerprint-apricus_heat_pump_water_heater-bb9dc49aec",
     "fingerprint-arlec_fan-7d3eaf9f7f",
     "fingerprint-arlec_lve160ha_balllights-c9d4994e3a",
     "fingerprint-avatto_curtain_switch-84c1f88992",
@@ -452,10 +481,10 @@
     "fingerprint-hiniso_rm10s_dehumidifier-80076ad273",
     "fingerprint-hjz_radiator-3cfc2e1b57",
     "fingerprint-honeywell_hspeedpro_purifier-d27e13bf89",
+    "fingerprint-hydrotherm_dynamic_x8_water_heater-82ac7a0bab",
     "fingerprint-illumanance_sensor-14877f2349",
     "fingerprint-illumanance_v2_sensor-7252c8eb46",
     "fingerprint-intec_ceilingfanlight-4cd24c5989",
-    "fingerprint-klarstein_wonderwall_irheater-e13bfcf103",
     "fingerprint-kogan_garage_opener-387738bf9b",
     "fingerprint-kogan_heater_fan-bc33e8eea6",
     "fingerprint-kogan_kahtp_heater-253f65cc7e",
@@ -490,11 +519,12 @@
     "fingerprint-somgom_double_switch-9388e4f5a7",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
     "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
+    "fingerprint-thermex_lima80v_waterheater-d02e689333",
     "fingerprint-weaja_s9_gasalarm-d4005d41a2",
     "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
     "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51"
   ],
-  "safe_candidates": 82
+  "safe_candidates": 84
 }

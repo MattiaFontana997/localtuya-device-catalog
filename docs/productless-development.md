@@ -44,3 +44,12 @@ K–P remain in progress. Media player remains excluded. No release is ready.
 - Adds bounded exact enumerated fan speed mappings with closest-value writes, ordered oscillation exact/default mappings, typed preset raw values, optional presets, and safe raw fan extras.
 - Switchless fans and non-HA direction states remain fail-closed.
 - Stable branches remain untouched.
+## Batch L — Water Heater
+
+- Generated candidates: **115**
+- Safe productless fingerprints: **84**
+- Blocked after global collision analysis: **31**
+- Catalog mappings including Product-ID mappings: **86**
+- Adds lossless productless Water Heater conversion for bounded static/advanced mode, temperature, away-mode and raw-extra semantics.
+- Dynamic Celsius/Fahrenheit condition-range redirects remain fail-closed.
+- Stable branches remain untouched.

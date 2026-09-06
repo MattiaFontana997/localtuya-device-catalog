@@ -306,6 +306,105 @@
       }
     },
     {
+      "id": "fingerprint-apricus_heat_pump_water_heater-bb9dc49aec",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "water_heater",
+          "config": {
+            "id": 1,
+            "platform": "water_heater",
+            "water_heater_mode_dp": 1,
+            "water_heater_mode_values": {
+              "off": "off",
+              "heat_pump": "heat_pump",
+              "eco": "eco",
+              "high_demand": "high_demand",
+              "electric": "electric"
+            },
+            "water_heater_power_dp": 1,
+            "water_heater_power_on": true,
+            "water_heater_power_off": false,
+            "water_heater_target_temperature_dp": 2,
+            "water_heater_temperature_min": 48.0,
+            "water_heater_temperature_max": 70.0,
+            "water_heater_temperature_step": 1.0,
+            "water_heater_current_temperature_dp": 3,
+            "water_heater_temperature_unit": "°C",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "AUTO",
+                      "value": "heat_pump"
+                    },
+                    {
+                      "dps_val": "ECO",
+                      "value": "eco"
+                    },
+                    {
+                      "dps_val": "BOOST",
+                      "value": "high_demand"
+                    },
+                    {
+                      "dps_val": "ELE",
+                      "value": "electric"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "unit_of_measurement": "kWh",
+            "state_class": "total_increasing",
+            "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/apricus_heat_pump_water_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-arlec_fan-7d3eaf9f7f",
       "confidence": "experimental",
       "match": {
@@ -4305,6 +4404,113 @@
       }
     },
     {
+      "id": "fingerprint-hydrotherm_dynamic_x8_water_heater-82ac7a0bab",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          21
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "water_heater",
+          "config": {
+            "id": 1,
+            "platform": "water_heater",
+            "water_heater_mode_dp": 1,
+            "water_heater_mode_values": {
+              "off": "off",
+              "eco": "eco",
+              "heat_pump": "heat_pump",
+              "high_demand": "high_demand",
+              "performance": "performance",
+              "electric": "electric"
+            },
+            "water_heater_power_dp": 1,
+            "water_heater_power_on": true,
+            "water_heater_power_off": false,
+            "water_heater_target_temperature_dp": 2,
+            "water_heater_temperature_min": 15.0,
+            "water_heater_temperature_max": 75.0,
+            "water_heater_temperature_step": 1.0,
+            "water_heater_current_temperature_dp": 3,
+            "water_heater_temperature_unit": "°C",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "ECO",
+                      "value": "eco"
+                    },
+                    {
+                      "dps_val": "STANDARD",
+                      "value": "heat_pump"
+                    },
+                    {
+                      "dps_val": "HYBRID",
+                      "value": "high_demand"
+                    },
+                    {
+                      "dps_val": "HYBRID1",
+                      "value": "performance"
+                    },
+                    {
+                      "dps_val": "ELEMENT",
+                      "value": "electric"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 21,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 21
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/hydrotherm_dynamic_x8_water_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-illumanance_sensor-14877f2349",
       "confidence": "experimental",
       "match": {
@@ -4475,74 +4681,6 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/intec_ceilingfanlight.yaml",
-        "license": "MIT",
-        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
-      }
-    },
-    {
-      "id": "fingerprint-klarstein_wonderwall_irheater-e13bfcf103",
-      "confidence": "experimental",
-      "match": {
-        "product_ids": [],
-        "category": null,
-        "required_dps": [
-          1,
-          2,
-          3,
-          11
-        ],
-        "optional_dps": [
-          10
-        ],
-        "fingerprint": {
-          "mode": "exact_dps"
-        }
-      },
-      "entities": [
-        {
-          "platform": "climate",
-          "config": {
-            "id": 1,
-            "platform": "climate",
-            "hvac_mode_dp": 1,
-            "hvac_mode_values": {
-              "off": false,
-              "heat": true
-            },
-            "target_temperature_dp": 2,
-            "target_precision": 1.0,
-            "temperature_step": 1.0,
-            "min_temperature_const": 0.0,
-            "max_temperature_const": 37.0,
-            "current_temperature_dp": 3,
-            "precision": 1.0,
-            "temperature_unit": "celsius"
-          }
-        },
-        {
-          "platform": "select",
-          "config": {
-            "id": 10,
-            "platform": "select",
-            "options": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24",
-            "restore_on_reconnect": false,
-            "is_passive_entity": false,
-            "options_friendly": "cancel;1h;2h;3h;4h;5h;6h;7h;8h;9h;10h;11h;12h;13h;14h;15h;16h;17h;18h;19h;20h;21h;22h;23h;24h"
-          }
-        },
-        {
-          "platform": "sensor",
-          "config": {
-            "id": 11,
-            "platform": "sensor",
-            "unit_of_measurement": "min",
-            "device_class": "duration"
-          }
-        }
-      ],
-      "provenance": {
-        "source": "make-all/tuya-local",
-        "path": "custom_components/tuya_local/devices/klarstein_wonderwall_irheater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -8387,6 +8525,62 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/thb2_temperature_and_humidity_sensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-thermex_lima80v_waterheater-d02e689333",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          9,
+          13,
+          20,
+          101,
+          102
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "water_heater",
+          "config": {
+            "id": 1,
+            "platform": "water_heater",
+            "water_heater_mode_dp": 1,
+            "water_heater_mode_values": {
+              "off": false,
+              "electric": true
+            },
+            "water_heater_power_dp": 1,
+            "water_heater_power_on": true,
+            "water_heater_power_off": false,
+            "water_heater_target_temperature_dp": 9,
+            "water_heater_temperature_min": 35.0,
+            "water_heater_temperature_max": 75.0,
+            "water_heater_temperature_step": 1.0,
+            "water_heater_current_temperature_dp": 102,
+            "water_heater_temperature_unit": "°C",
+            "water_heater_away_dp": 101,
+            "water_heater_away_on": true,
+            "water_heater_away_off": false,
+            "extra_state_attributes_dps": {
+              "work_mode": 13,
+              "attr1": 20
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/thermex_lima80v_waterheater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
