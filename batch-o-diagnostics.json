@@ -1,0 +1,163 @@
+[
+  {
+    "file": "ampbolt_portable_evcharger.yaml",
+    "mapping_id": null,
+    "name": "EV charger",
+    "platforms": [
+      "sensor",
+      "number",
+      "binary_sensor",
+      "text",
+      "select",
+      "switch"
+    ],
+    "reasons": [
+      "advanced_mapping_empty_rule"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "dr_heater_dr008_thermostat.yaml",
+    "mapping_id": null,
+    "name": "Floor thermostat",
+    "platforms": [
+      "climate",
+      "lock",
+      "sensor",
+      "select",
+      "number"
+    ],
+    "reasons": [
+      "advanced_mapping_condition_semantics"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "ecostrad_iq_heating_element.yaml",
+    "mapping_id": null,
+    "name": "Heating element",
+    "platforms": [
+      "climate",
+      "lock",
+      "select",
+      "number"
+    ],
+    "reasons": [
+      "advanced_mapping_redirect_target_mapping"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "fiesta_dk1g_kettle.yaml",
+    "mapping_id": null,
+    "name": "Kettle",
+    "platforms": [
+      "button",
+      "water_heater",
+      "select",
+      "number",
+      "switch",
+      "sensor",
+      "binary_sensor",
+      "time"
+    ],
+    "reasons": [
+      "advanced_mapping_condition_semantics"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "goldair_fan.yaml",
+    "mapping_id": null,
+    "name": "Fan",
+    "platforms": [
+      "fan",
+      "light"
+    ],
+    "reasons": [
+      "advanced_mapping_condition_semantics"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "minco_mh1823d_thermostat.yaml",
+    "mapping_id": null,
+    "name": "Thermostat",
+    "platforms": [
+      "climate",
+      "select",
+      "number",
+      "sensor",
+      "lock",
+      "switch"
+    ],
+    "reasons": [
+      "advanced_mapping_redirect_target_mapping"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "prestige_m3_ceilingfanlight.yaml",
+    "mapping_id": null,
+    "name": "Fan with light",
+    "platforms": [
+      "fan",
+      "light",
+      "select",
+      "sensor",
+      "binary_sensor"
+    ],
+    "reasons": [
+      "advanced_mapping_rule_transform_semantics"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "qlima_d820a_dehumidifier.yaml",
+    "mapping_id": null,
+    "name": "Dehumidifier",
+    "platforms": [
+      "humidifier",
+      "fan",
+      "binary_sensor",
+      "select",
+      "switch",
+      "lock",
+      "sensor"
+    ],
+    "reasons": [
+      "advanced_mapping_redirect_target_mapping"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "saswell_t29utk_thermostat.yaml",
+    "mapping_id": null,
+    "name": "Thermostat",
+    "platforms": [
+      "climate",
+      "select"
+    ],
+    "reasons": [
+      "advanced_mapping_rule_semantics"
+    ],
+    "status": "skipped"
+  },
+  {
+    "file": "swimfun_inverboost_poolheatpump.yaml",
+    "mapping_id": null,
+    "name": "Pool heat pump",
+    "platforms": [
+      "climate",
+      "select",
+      "binary_sensor",
+      "sensor",
+      "number",
+      "button"
+    ],
+    "reasons": [
+      "advanced_mapping_redirect_target_mapping"
+    ],
+    "status": "skipped"
+  }
+]
