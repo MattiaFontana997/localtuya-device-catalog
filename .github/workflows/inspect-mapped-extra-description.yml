@@ -53,3 +53,4 @@ jobs:
                       if isinstance(dp,dict):
                           print('  DP', json.dumps(dp, sort_keys=True))
           PY
+# Triggered after creation so GitHub evaluates this workflow on develop.
