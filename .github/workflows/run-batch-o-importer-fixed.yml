@@ -33,22 +33,22 @@ jobs:
               line[10:] if line.startswith("          ") else line
               for line in script.splitlines()
           )
-
           bad_start = script.index('# Keep the old generic redirect regression fail-closed')
           test_start = script.index("Path('tests/test_productless_batch_o.py').write_text", bad_start)
-          regression = '''regression_path = Path('tests/test_import_tuya_local_productless.py')
-text = regression_path.read_text()
-old = ''' + repr('                            "mapping": [{"scale": 10}],\n') + '''
-start = text.index('    def test_writable_redirect_with_target_mapping_stays_fail_closed')
-end = text.index('    def test_dynamic_condition_scale_stays_fail_closed', start)
-block = text[start:end]
-if old not in block:
-    raise SystemExit('redirect regression target mapping not found')
-block = block.replace(old, '                            "mapping": [{"dps_val": 32, "value": 10}],\\n', 1)
-text = text[:start] + block + text[end:]
-regression_path.write_text(text)
-
-'''
+          regression = "\n".join([
+              "regression_path = Path('tests/test_import_tuya_local_productless.py')",
+              "text = regression_path.read_text()",
+              "old = '                            \\\"mapping\\\": [{\\\"scale\\\": 10}],\\n'",
+              "start = text.index('    def test_writable_redirect_with_target_mapping_stays_fail_closed')",
+              "end = text.index('    def test_dynamic_condition_scale_stays_fail_closed', start)",
+              "block = text[start:end]",
+              "if old not in block:",
+              "    raise SystemExit('redirect regression target mapping not found')",
+              "block = block.replace(old, '                            \\\"mapping\\\": [{\\\"dps_val\\\": 32, \\\"value\\\": 10}],\\n', 1)",
+              "text = text[:start] + block + text[end:]",
+              "regression_path.write_text(text)",
+              "",
+          ])
           script = script[:bad_start] + regression + script[test_start:]
           exec(compile(script, '<batch-o-importer-patch>', 'exec'), {})
           PY
