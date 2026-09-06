@@ -106,6 +106,60 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(config["brightness_upper"], 1000)
         self.assertEqual(config["brightness_step"], 10)
 
+    def test_brightness_null_to_zero_mapping_converts_read_fallback(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "null-brightness-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 2,
+                                "type": "integer",
+                                "name": "brightness",
+                                "range": {"min": 10, "max": 1000},
+                                "mapping": [{"dps_val": None, "value": 0}],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="null_brightness_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["brightness"], 2)
+        self.assertEqual(config["brightness_lower"], 10)
+        self.assertEqual(config["brightness_upper"], 1000)
+        self.assertEqual(config["brightness_null_value"], 0)
+        self.assertNotIn("brightness_step", config)
+
+    def test_brightness_null_mapping_other_value_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "light_brightness_mapping"):
+            convert_profile(
+                {
+                    "products": [{"id": "unsafe-null-brightness"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "integer",
+                                    "name": "brightness",
+                                    "range": {"min": 10, "max": 1000},
+                                    "mapping": [{"dps_val": None, "value": 1}],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="unsafe_null_brightness.yaml",
+            )
+
     def test_brightness_mapping_non_step_stays_fail_closed(self):
         with self.assertRaisesRegex(ConversionError, "light_brightness_mapping"):
             convert_profile(
@@ -121,7 +175,7 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
                                     "type": "integer",
                                     "name": "brightness",
                                     "range": {"min": 10, "max": 1000},
-                                    "mapping": [{"dps_val": None, "value": 0}],
+                                    "mapping": [{"dps_val": 0, "value": 0}],
                                 },
                             ],
                         }

@@ -1000,14 +1000,28 @@ def _convert_light(
         if _dp_type(brightness) != "integer":
             raise ConversionError("light_brightness_type")
         brightness_step = 1
+        brightness_null_value = None
         rules = _mapping_rules(brightness)
         if rules:
-            if len(rules) != 1 or set(rules[0]) != {"step"}:
+            if len(rules) != 1:
                 raise ConversionError("light_brightness_mapping")
-            step = rules[0].get("step")
-            if isinstance(step, bool) or not isinstance(step, int) or step <= 0:
+            rule = rules[0]
+            if set(rule) == {"step"}:
+                step = rule.get("step")
+                if isinstance(step, bool) or not isinstance(step, int) or step <= 0:
+                    raise ConversionError("light_brightness_mapping")
+                brightness_step = step
+            elif (
+                set(rule) == {"dps_val", "value"}
+                and rule.get("dps_val") is None
+                and rule.get("value") == 0
+            ):
+                # Exact Tuya Local forward-only brightness fallback observed on
+                # XLD-CL002: a missing DP value is presented as brightness 0.
+                # Runtime applies this only while reading; writes stay numeric.
+                brightness_null_value = 0
+            else:
                 raise ConversionError("light_brightness_mapping")
-            brightness_step = step
         if brightness.get("step") not in (None, 1):
             raise ConversionError("light_brightness_step")
         minimum, maximum = _raw_integer_range(brightness, "light_brightness")
@@ -1026,6 +1040,8 @@ def _convert_light(
         )
         if brightness_step != 1:
             config["brightness_step"] = brightness_step
+        if brightness_null_value is not None:
+            config["brightness_null_value"] = brightness_null_value
         _merge_membership(required, optional, brightness)
 
     color_temp = dps.get("color_temp")
