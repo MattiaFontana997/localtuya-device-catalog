@@ -47,3 +47,48 @@ jobs:
           for reason in sorted(groups, key=lambda r:(-len(groups[r]), r)):
               print(f"GAP {reason} {len(groups[reason])}: " + ", ".join(groups[reason]))
           PY
+      - name: Classify advanced mapping blockers
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from collections import Counter, defaultdict
+          from pathlib import Path
+          import yaml
+
+          report=json.load(open('/tmp/report.json', encoding='utf-8'))
+          advanced={item['file'] for item in report['results'] if item['status']=='skipped' and 'advanced_mapping' in item['reasons']}
+          root=Path('upstream-tuya-local/custom_components/tuya_local/devices')
+          advanced_keys={'available','conditions','constraint','invalid','mapping','value_mirror','value_redirect'}
+          shapes=Counter()
+          files=defaultdict(list)
+          key_counts=Counter()
+          for name in sorted(advanced):
+              profile=yaml.safe_load((root/name).read_text(encoding='utf-8'))
+              for entity in profile.get('entities', []):
+                  platform=entity.get('entity','?')
+                  for dp in entity.get('dps', []):
+                      mapping=dp.get('mapping')
+                      if not isinstance(mapping,list):
+                          continue
+                      keys=set()
+                      for rule in mapping:
+                          if not isinstance(rule,dict):
+                              continue
+                          keys.update(set(rule)&advanced_keys)
+                          for cond in rule.get('conditions',[]) if isinstance(rule.get('conditions'),list) else []:
+                              if isinstance(cond,dict):
+                                  keys.update(set(cond)&advanced_keys)
+                      if not keys:
+                          continue
+                      shape=f"{platform}:{dp.get('name','?')}:{','.join(sorted(keys))}"
+                      shapes[shape]+=1
+                      files[shape].append(name)
+                      key_counts.update(keys)
+          print('ADVANCED KEY COUNTS')
+          for key,count in key_counts.most_common():
+              print(f"ADVKEY {key} {count}")
+          print('ADVANCED SHAPES')
+          for shape,count in sorted(shapes.items(), key=lambda item:(-item[1],item[0])):
+              print(f"ADVSHAPE {count} {shape}: " + ', '.join(files[shape]))
+          PY
