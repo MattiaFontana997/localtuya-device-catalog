@@ -19,7 +19,7 @@ if new_store not in text:
 
 path.write_text(text, encoding="utf-8")
 
-# Permanent regressions.
+# Permanent regressions in the extended productless suite.
 test_path = Path("tests/test_import_tuya_local_productless.py")
 test = test_path.read_text(encoding="utf-8")
 old_expect = '''        self.assertEqual(config["mapped_extra_state_attributes_dps"], {"description": 2})\n        self.assertEqual(\n            config["advanced_mapping_by_dp"]["2"],\n            [{"dps_val": "x", "value": "friendly"}],\n        )\n'''
@@ -36,6 +36,17 @@ if 'test_multidp_bitfield_description_uses_scoped_ordered_bitmask_mapping' not i
     if idx < 0:
         raise SystemExit("bitfield test insertion anchor missing")
     test = test[:idx] + method + test[idx:]
-
 test_path.write_text(test, encoding="utf-8")
+
+# Update the dedicated mapped-extra regression to the new scoped contract.
+mapped_test_path = Path("tests/test_productless_mapped_extras.py")
+mapped_test = mapped_test_path.read_text(encoding="utf-8")
+old_mapped_expect = '''        self.assertEqual(config["mapped_extra_state_attributes_dps"], {"unit": 23})\n        self.assertNotIn("extra_state_attributes_dps", config)\n        self.assertEqual(advanced["23"], [\n            {"dps_val": "c", "value": "C"},\n            {"dps_val": "f", "value": "F"},\n        ])\n        self.assertIn(23, required)\n'''
+new_mapped_expect = '''        self.assertEqual(config["mapped_extra_state_attributes_dps"], {"unit": 23})\n        self.assertNotIn("extra_state_attributes_dps", config)\n        self.assertEqual(config["mapped_extra_state_attribute_mappings"]["unit"], [\n            {"dps_val": "c", "value": "C"},\n            {"dps_val": "f", "value": "F"},\n        ])\n        self.assertEqual(advanced, {})\n        self.assertIn(23, required)\n'''
+if new_mapped_expect not in mapped_test:
+    if old_mapped_expect not in mapped_test:
+        raise SystemExit("dedicated mapped-extra test anchor missing")
+    mapped_test = mapped_test.replace(old_mapped_expect, new_mapped_expect, 1)
+mapped_test_path.write_text(mapped_test, encoding="utf-8")
+
 print("bitfield description importer patch applied")
