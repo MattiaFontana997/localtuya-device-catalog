@@ -95,20 +95,35 @@ if '_prepare_runtime_flags' not in text:
 
 old = '''    def wrapped(entity: dict[str, Any], *args, **kwargs) -> base.Converted:\n        prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(\n            entity, platform\n        )\n        single, extras = _split_simple_multi_dp_entity(prepared, platform)\n        converted, required, optional = converter(single, *args, **kwargs)'''
 new = '''    def wrapped(entity: dict[str, Any], *args, **kwargs) -> base.Converted:\n        flagged, disabled_default, hidden_extra_names, non_persistent_dps = (\n            _prepare_runtime_flags(entity, platform)\n        )\n        prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(\n            flagged, platform\n        )\n        single, extras = _split_simple_multi_dp_entity(prepared, platform)\n        converted, required, optional = converter(single, *args, **kwargs)'''
-if old not in text:
+if old in text:
+    text = text.replace(old, new, 1)
+elif new not in text:
     raise SystemExit('wrapper start marker not found')
-text = text.replace(old, new, 1)
 
 old = '''        if not advanced_by_dp:\n            return converted, required, optional\n\n        converted["config"]["advanced_mapping_by_dp"] = advanced_by_dp'''
 new = '''        _apply_runtime_flags(\n            converted,\n            disabled_default=disabled_default,\n            hidden_extra_names=hidden_extra_names,\n            non_persistent_dps=non_persistent_dps,\n        )\n\n        if not advanced_by_dp:\n            return converted, required, optional\n\n        converted["config"]["advanced_mapping_by_dp"] = advanced_by_dp'''
-if old not in text:
+if old in text:
+    text = text.replace(old, new, 1)
+elif new not in text:
     raise SystemExit('wrapper return marker not found')
-text = text.replace(old, new, 1)
 
 old = '''base._CONVERTERS.update({\n    "time": _convert_time,\n    "event": _convert_event,\n})'''
 new = '''base._CONVERTERS.update({\n    "time": _advanced_wrapper("time", _convert_time),\n    "event": _advanced_wrapper("event", _convert_event),\n})'''
-if old not in text:
+if old in text:
+    text = text.replace(old, new, 1)
+elif new not in text:
     raise SystemExit('time/event converter marker not found')
-text = text.replace(old, new, 1)
 
 path.write_text(text, encoding='utf-8')
+
+# Batch G intentionally failed closed on force before Batch I established that
+# every retained catalog DP is already explicitly requested by LocalTuya.
+test_path = Path('tests/test_import_tuya_local_productless.py')
+test_text = test_path.read_text(encoding='utf-8')
+old_test = '''    def test_multidp_extra_force_stays_fail_closed(self):\n        with self.assertRaisesRegex(ConversionError, "sensor_extra_semantics:calibration"):\n            self._convert([\n                {\n                    "entity": "sensor",\n                    "dps": [\n                        {"id": 1, "name": "sensor", "type": "integer"},\n                        {"id": 2, "name": "calibration", "type": "integer", "force": True},\n                    ],\n                }\n            ])\n'''
+new_test = '''    def test_multidp_extra_force_is_preserved_as_requested_attribute(self):\n        result = self._convert([\n            {\n                "entity": "sensor",\n                "dps": [\n                    {"id": 1, "name": "sensor", "type": "integer"},\n                    {"id": 2, "name": "calibration", "type": "integer", "force": True},\n                ],\n            }\n        ])\n        self.assertEqual(\n            result["entities"][0]["config"]["extra_state_attributes_dps"],\n            {"calibration": 2},\n        )\n        self.assertEqual(result["match"]["required_dps"], [1, 2])\n'''
+if old_test in test_text:
+    test_text = test_text.replace(old_test, new_test, 1)
+elif new_test not in test_text:
+    raise SystemExit('Batch G force test marker not found')
+test_path.write_text(test_text, encoding='utf-8')
