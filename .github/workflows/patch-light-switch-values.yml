@@ -1,0 +1,58 @@
+name: Patch light switch values
+
+on:
+  push:
+    paths:
+      - .github/workflows/patch-light-switch-values.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Patch importer and tests
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('tools/import_tuya_local.py')
+          s = p.read_text()
+          anchor = '''def _convert_light(\n'''
+          helper = '''def _light_power_raw_value(dp_type: str, value: Any, reason: str) -> Any:\n    """Validate one exact raw light-power mapping value."""\n    if dp_type == "boolean":\n        if not isinstance(value, bool):\n            raise ConversionError(reason)\n        return value\n    if dp_type == "string":\n        if not isinstance(value, str):\n            raise ConversionError(reason)\n        return value\n    if dp_type == "integer":\n        if isinstance(value, bool) or not isinstance(value, int):\n            raise ConversionError(reason)\n        return value\n    raise ConversionError(reason)\n\n\ndef _light_power_mapping(dp: dict[str, Any], config: dict[str, Any]) -> None:\n    """Preserve lossless Tuya Local light switch mappings."""\n    reason = "light_switch_mapping"\n    dp_type = _dp_type(dp)\n    rules = _mapping_rules(dp)\n\n    if not rules:\n        if dp_type != "boolean":\n            raise ConversionError("light_switch_non_boolean")\n        return\n\n    # Tuya Local forward-maps this rule only on read. Reverse writes skip null\n    # dps_val entries, so keep normal boolean writes and apply a read fallback.\n    if (\n        dp_type == "boolean"\n        and len(rules) == 1\n        and set(rules[0]) == {"dps_val", "value"}\n        and rules[0]["dps_val"] is None\n        and rules[0]["value"] is False\n    ):\n        config["light_null_value"] = False\n        return\n\n    if len(rules) != 2:\n        raise ConversionError(reason)\n\n    by_state: dict[bool, Any] = {}\n    raw_values: list[Any] = []\n    for rule in rules:\n        if set(rule) != {"dps_val", "value"}:\n            raise ConversionError(reason)\n        state = rule["value"]\n        if not isinstance(state, bool) or state in by_state:\n            raise ConversionError(reason)\n        raw = _light_power_raw_value(dp_type, rule["dps_val"], reason)\n        if any(type(raw) is type(existing) and raw == existing for existing in raw_values):\n            raise ConversionError(reason)\n        by_state[state] = raw\n        raw_values.append(raw)\n\n    if set(by_state) != {False, True}:\n        raise ConversionError(reason)\n\n    raw_on = by_state[True]\n    raw_off = by_state[False]\n    if not (dp_type == "boolean" and raw_on is True and raw_off is False):\n        config["light_on_value"] = raw_on\n        config["light_off_value"] = raw_off\n\n\n'''
+          if anchor not in s:
+              raise SystemExit('convert light anchor missing')
+          s = s.replace(anchor, helper + anchor, 1)
+
+          old = '''    _check_common_dp_semantics(switch, writable=True)\n    if _dp_type(switch) != "boolean":\n        raise ConversionError("light_switch_non_boolean")\n    _identity_boolean_mapping(switch, "light_switch_mapping")\n\n    dp_id = _dp_id(switch)\n    required, optional = _dp_membership(switch)\n    config: dict[str, Any] = {\n        "id": dp_id,\n        "platform": "light",\n        "music_mode": False,\n    }\n'''
+          new = '''    _check_common_dp_semantics(switch, writable=True)\n\n    dp_id = _dp_id(switch)\n    required, optional = _dp_membership(switch)\n    config: dict[str, Any] = {\n        "id": dp_id,\n        "platform": "light",\n        "music_mode": False,\n    }\n    _light_power_mapping(switch, config)\n'''
+          if old not in s:
+              raise SystemExit('switch conversion anchor missing')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          Path('tests/test_import_tuya_local_light_switch_values.py').write_text('''"""Tests for exact Tuya Local light switch mapping conversion."""\n\nfrom __future__ import annotations\n\nimport unittest\n\nfrom tools.import_tuya_local import ConversionError, convert_profile\n\n\nclass TuyaLocalLightSwitchValueTests(unittest.TestCase):\n    @staticmethod\n    def _convert(dp):\n        return convert_profile(\n            {"products": [{"id": "light"}], "entities": [{"entity": "light", "dps": [dp]}]},\n            source_file="light_switch.yaml",\n        )["entities"][0]["config"]\n\n    def test_inverted_boolean_mapping_converts(self):\n        config = self._convert({\n            "id": 102, "type": "boolean", "name": "switch",\n            "mapping": [{"dps_val": False, "value": True}, {"dps_val": True, "value": False}],\n        })\n        self.assertIs(config["light_on_value"], False)\n        self.assertIs(config["light_off_value"], True)\n\n    def test_string_mapping_converts_exact_values(self):\n        config = self._convert({\n            "id": 106, "type": "string", "name": "switch",\n            "mapping": [{"dps_val": "normal", "value": True}, {"dps_val": "slient", "value": False}],\n        })\n        self.assertEqual(config["light_on_value"], "normal")\n        self.assertEqual(config["light_off_value"], "slient")\n\n    def test_null_false_boolean_rule_is_read_fallback_only(self):\n        config = self._convert({\n            "id": 20, "type": "boolean", "name": "switch", "optional": True,\n            "mapping": [{"dps_val": None, "value": False}],\n        })\n        self.assertIs(config["light_null_value"], False)\n        self.assertNotIn("light_on_value", config)\n        self.assertNotIn("light_off_value", config)\n\n    def test_partial_mapping_stays_fail_closed(self):\n        with self.assertRaisesRegex(ConversionError, "light_switch_mapping"):\n            self._convert({\n                "id": 1, "type": "string", "name": "switch",\n                "mapping": [{"dps_val": "on", "value": True}],\n            })\n\n    def test_wrong_raw_type_stays_fail_closed(self):\n        with self.assertRaisesRegex(ConversionError, "light_switch_mapping"):\n            self._convert({\n                "id": 1, "type": "boolean", "name": "switch",\n                "mapping": [{"dps_val": 0, "value": False}, {"dps_val": 1, "value": True}],\n            })\n\n    def test_non_boolean_unmapped_switch_stays_fail_closed(self):\n        with self.assertRaisesRegex(ConversionError, "light_switch_non_boolean"):\n            self._convert({"id": 1, "type": "string", "name": "switch"})\n\n\nif __name__ == "__main__":\n    unittest.main()\n''')
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Run targeted importer tests
+        run: |
+          python -m unittest tests.test_import_tuya_local_light_switch_values tests.test_import_tuya_local_light -v
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local.py tests/test_import_tuya_local_light_switch_values.py
+          git diff --cached --check
+          git commit -m "Import exact light power mappings"
+          git push origin HEAD:develop
