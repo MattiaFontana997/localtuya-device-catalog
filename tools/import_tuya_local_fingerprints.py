@@ -1,7 +1,8 @@
 """Import productless Tuya Local profiles as fail-closed DPS fingerprints.
 
 This is deliberately separate from the product-ID importer. It reuses the
-lossless platform conversion logic, but productless output is never considered
+lossless platform conversion logic, plus explicitly reviewed productless-only
+converters for newer LocalTuya runtimes. Productless output is never considered
 verified and is only usable by LocalTuya's schema-v3 exact-DPS matcher.
 
 A generated fingerprint says only: all required DPS are present and every
@@ -25,7 +26,7 @@ try:
 except ImportError as err:  # pragma: no cover
     raise SystemExit("PyYAML is required: python -m pip install 'PyYAML>=6,<7'") from err
 
-from import_tuya_local import (
+from import_tuya_local_productless import (
     ConversionError,
     SOURCE_LICENSE,
     SOURCE_REPOSITORY,
@@ -67,7 +68,7 @@ def convert_productless_profile(
     source_file: str,
     revision: str | None = None,
 ) -> dict[str, Any]:
-    """Convert one no-product profile using existing lossless converters."""
+    """Convert one no-product profile using reviewed lossless converters."""
     if not isinstance(profile, dict):
         raise ConversionError("profile_not_object")
     if _product_ids(profile):
