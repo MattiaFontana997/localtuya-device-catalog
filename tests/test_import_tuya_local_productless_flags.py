@@ -72,40 +72,54 @@ class ProductlessRuntimeFlagTests(unittest.TestCase):
         self.assertIn(8, result["match"]["optional_dps"])
 
     def test_persist_false_primary_becomes_runtime_cache_policy(self):
-        result = self._convert([{
-            "entity": "sensor",
-            "dps": [{
-                "id": 3,
-                "name": "sensor",
-                "type": "integer",
-                "persist": False,
-                "optional": True,
-                "mapping": [{"scale": 1000}],
-            }],
-        }])
+        result = self._convert([
+            {
+                "entity": "sensor",
+                "dps": [{
+                    "id": 3,
+                    "name": "sensor",
+                    "type": "integer",
+                    "persist": False,
+                    "optional": True,
+                    "mapping": [{"scale": 1000}],
+                }],
+            },
+            {
+                "entity": "switch",
+                "dps": [{"id": 1, "name": "switch", "type": "boolean"}],
+            },
+        ])
         config = result["entities"][0]["config"]
         self.assertEqual(config["non_persistent_dps"], [3])
         self.assertIn(3, result["match"]["optional_dps"])
+        self.assertIn(1, result["match"]["required_dps"])
 
     def test_persist_false_bitfield_keeps_batch_h_mapping(self):
-        result = self._convert([{
-            "entity": "binary_sensor",
-            "dps": [{
-                "id": 12,
-                "name": "sensor",
-                "type": "bitfield",
-                "persist": False,
-                "optional": True,
-                "mapping": [
-                    {"dps_val": 0, "value": False},
-                    {"dps_val": None, "value": False},
-                    {"value": True},
-                ],
-            }],
-        }])
+        result = self._convert([
+            {
+                "entity": "binary_sensor",
+                "dps": [{
+                    "id": 12,
+                    "name": "sensor",
+                    "type": "bitfield",
+                    "persist": False,
+                    "optional": True,
+                    "mapping": [
+                        {"dps_val": 0, "value": False},
+                        {"dps_val": None, "value": False},
+                        {"value": True},
+                    ],
+                }],
+            },
+            {
+                "entity": "switch",
+                "dps": [{"id": 1, "name": "switch", "type": "boolean"}],
+            },
+        ])
         config = result["entities"][0]["config"]
         self.assertIs(config["binary_sensor_bitfield"], True)
         self.assertEqual(config["non_persistent_dps"], [12])
+        self.assertIn(1, result["match"]["required_dps"])
 
 
 if __name__ == "__main__":
