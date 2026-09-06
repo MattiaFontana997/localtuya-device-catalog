@@ -65,7 +65,7 @@ class SafeFingerprintBuilderTests(unittest.TestCase):
         ])
         self.assertEqual([item["id"] for item in safe], ["strong"])
         weak = next(item for item in blocked if item.mapping_id == "weak")
-        self.assertEqual(weak.reason, "ambiguous")
+        self.assertEqual(weak.reason, "shadowed")
 
     def test_duplicate_platform_primary_dp_is_blocked_before_scoring(self):
         bad = fp("bad", [1, 2])
