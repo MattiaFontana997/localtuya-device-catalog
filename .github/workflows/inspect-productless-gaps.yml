@@ -47,7 +47,7 @@ jobs:
           for reason in sorted(groups, key=lambda r:(-len(groups[r]), r)):
               print(f"GAP {reason} {len(groups[reason])}: " + ", ".join(groups[reason]))
           PY
-      - name: Classify advanced mapping blockers
+      - name: Classify remaining advanced mapping blockers
         shell: bash
         run: |
           python - <<'PY'
@@ -57,7 +57,12 @@ jobs:
           import yaml
 
           report=json.load(open('/tmp/report.json', encoding='utf-8'))
-          advanced={item['file'] for item in report['results'] if item['status']=='skipped' and 'advanced_mapping' in item['reasons']}
+          advanced={
+              item['file']
+              for item in report['results']
+              if item['status']=='skipped'
+              and any(reason.startswith('advanced_mapping') for reason in item['reasons'])
+          }
           root=Path('upstream-tuya-local/custom_components/tuya_local/devices')
           advanced_keys={'available','conditions','constraint','invalid','mapping','value_mirror','value_redirect'}
           shapes=Counter()
@@ -85,6 +90,7 @@ jobs:
                       shapes[shape]+=1
                       files[shape].append(name)
                       key_counts.update(keys)
+          print(f'ADVANCED BLOCKED PROFILES {len(advanced)}')
           print('ADVANCED KEY COUNTS')
           for key,count in key_counts.most_common():
               print(f"ADVKEY {key} {count}")
