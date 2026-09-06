@@ -30,7 +30,7 @@
     "lock_direct_control_required": 1,
     "multi_dp_mapped_extra:unit": 1,
     "select_complex_mapping": 6,
-    "sensor_dp_type": 2,
+    "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
     "switch_non_boolean": 3,
     "switch_non_identity_mapping": 3,
@@ -1608,7 +1608,7 @@
     },
     {
       "file": "asip_0622_planter.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-asip_0622_planter-52e7da50d1",
       "name": "Planter",
       "platforms": [
         "switch",
@@ -1619,10 +1619,8 @@
         "number",
         "button"
       ],
-      "reasons": [
-        "sensor_dp_type"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "aspen_asp200_fan.yaml",
@@ -26942,9 +26940,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 153,
+    "convertible_fingerprint": 154,
     "not_productless": 1526,
-    "skipped": 58
+    "skipped": 57
   },
   "target_schema": 3
 }

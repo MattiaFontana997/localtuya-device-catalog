@@ -565,7 +565,7 @@
     }
   ],
   "blocked_candidates": 38,
-  "generated_candidates": 153,
+  "generated_candidates": 154,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -574,6 +574,7 @@
     "fingerprint-arlec_fan-7d3eaf9f7f",
     "fingerprint-arlec_fan_light-b0b18fd315",
     "fingerprint-arlec_lve160ha_balllights-c9d4994e3a",
+    "fingerprint-asip_0622_planter-52e7da50d1",
     "fingerprint-atomi_string_lights-863b5f9ad0",
     "fingerprint-avatto_curtain_switch-84c1f88992",
     "fingerprint-avonflow_afd14h_radiator-943a51e261",
@@ -683,5 +684,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 115
+  "safe_candidates": 116
 }
