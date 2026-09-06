@@ -1172,6 +1172,36 @@ def _prepare_typed_productless_select(
     return transformed, {str(base._dp_id(option)): runtime_rules}
 
 
+def _prepare_productless_unix_timestamp_sensor(
+    entity: dict[str, Any],
+) -> tuple[dict[str, Any], bool]:
+    """Project Tuya Local ``unixtime`` Sensor values onto explicit runtime support.
+
+    Tuya Local defines ``unixtime`` as integer Unix seconds converted to a
+    datetime.  Only timestamp-class Sensor entities with one untransformed
+    primary sensor DP are accepted; richer shapes remain fail-closed.
+    """
+    if entity.get("entity") != "sensor" or entity.get("class") != "timestamp":
+        return entity, False
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity, False
+    sensor_dp = next(
+        (dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "sensor"),
+        None,
+    )
+    if sensor_dp is None or base._dp_type(sensor_dp) != "unixtime":
+        return entity, False
+    if len(dps) != 1 or _raw_mapping(sensor_dp) or sensor_dp.get("precision") is not None:
+        raise ConversionError("sensor_unixtime_semantics")
+    if sensor_dp.get("unit") is not None or sensor_dp.get("class") is not None:
+        raise ConversionError("sensor_unixtime_semantics")
+    transformed = copy.deepcopy(entity)
+    transformed_dp = transformed["dps"][0]
+    transformed_dp["type"] = "integer"
+    return transformed, True
+
+
 def _prepare_runtime_flags(
     entity: dict[str, Any], platform: str
 ) -> tuple[dict[str, Any], bool, set[str], set[int]]:
@@ -1265,7 +1295,10 @@ def _advanced_wrapper(
         climate_limit_precisions: dict[str, float] = {}
         climate_dynamic_target_range = False
         typed_select_mapping: dict[str, list[dict[str, Any]]] = {}
-        if platform == "climate":
+        sensor_unix_timestamp = False
+        if platform == "sensor":
+            flagged, sensor_unix_timestamp = _prepare_productless_unix_timestamp_sensor(flagged)
+        elif platform == "climate":
             flagged = _normalize_climate_temperature_unit(flagged)
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
             flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
@@ -1286,6 +1319,8 @@ def _advanced_wrapper(
         )
         single, extras = _split_simple_multi_dp_entity(prepared, platform)
         converted, required, optional = converter(single, *args, **kwargs)
+        if sensor_unix_timestamp:
+            converted["config"]["sensor_unix_timestamp"] = True
         if climate_limit_precisions:
             converted["config"].update(climate_limit_precisions)
         if climate_dynamic_target_range:
