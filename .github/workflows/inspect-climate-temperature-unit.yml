@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   PYTHONPATH: tools
@@ -31,44 +31,24 @@ jobs:
           ref: 38347807cfc81ae8789974d98532eb928f42f174
           path: upstream-tuya-local
           fetch-depth: 1
-      - name: Measure exact unit support
+      - name: Generate pinned candidates
         run: |
           rm -rf /tmp/unit-generated
-          python tools/import_tuya_local_fingerprints.py upstream-tuya-local --revision "$UPSTREAM_REV" --output-dir /tmp/unit-generated --json /tmp/report.json | tee /tmp/summary.txt
-          python - <<'PY'
-          import json
-          from collections import Counter
-          report=json.load(open('/tmp/report.json',encoding='utf-8'))
-          print('CORPUS_COUNTS', dict(sorted(Counter(i['status'] for i in report['results']).items())))
-          targets={
-              'kogan_kawfpac12ya_airconditioner.yaml',
-              'kogan_kawfpac16pya_airconditioner.yaml',
-              'nashone_mts700wb_thermostat.yaml',
-              'saswell_t29utk_thermostat.yaml',
-              'steinbach_silent_mini_heatpump.yaml',
-              'tesla_aux_airconditioner.yaml',
-              'woods_cortina_airconditioner.yaml',
-          }
-          for item in report['results']:
-              if item['file'] in targets:
-                  print('TARGET_RESULT', item['file'], item['status'], item.get('reasons', []))
-          blockers=Counter()
-          for item in report['results']:
-              if item['status']=='skipped':
-                  blockers.update(item.get('reasons', []))
-          print('UNIT_BLOCKER_COUNT', blockers.get('climate_temperature_unit_mapping',0))
-          for reason,count in blockers.most_common(30):
-              print('BLOCKER', count, reason)
-          PY
-      - name: Measure global safe catalog
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local --revision "$UPSTREAM_REV" --output-dir /tmp/unit-generated --json /tmp/report.json
+      - name: Build and validate global safe catalog
         run: |
           python tools/build_safe_fingerprint_catalog.py --catalog catalog.json --generated-dir /tmp/unit-generated --output /tmp/catalog.json --report /tmp/productless-fingerprint-import-report.json
           python tools/validate_catalog.py /tmp/catalog.json
-          python - <<'PY'
-          import json
-          c=json.load(open('/tmp/catalog.json',encoding='utf-8'))
-          r=json.load(open('/tmp/productless-fingerprint-import-report.json',encoding='utf-8'))
-          product=sum(bool(m.get('match',{}).get('product_ids')) for m in c['mappings'])
-          fp=sum(m.get('match',{}).get('product_ids') == [] and m.get('match',{}).get('fingerprint') == {'mode':'exact_dps'} for m in c['mappings'])
-          print('SAFE_COUNTS', {'generated':r['generated_candidates'],'safe':r['safe_candidates'],'blocked':r['blocked_candidates'],'total_mappings':len(c['mappings']),'product_id_mappings':product,'productless_fingerprints':fp})
-          PY
+          cp /tmp/catalog.json catalog.json
+          cp /tmp/productless-fingerprint-import-report.json docs/productless-fingerprint-import-report.json
+      - name: Commit refreshed catalog
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add catalog.json docs/productless-fingerprint-import-report.json
+          if git diff --cached --quiet; then
+            echo 'SAFE_CATALOG_UNCHANGED'
+            exit 0
+          fi
+          git commit -m 'Refresh safe catalog after temperature unit support'
+          git push origin HEAD:develop
