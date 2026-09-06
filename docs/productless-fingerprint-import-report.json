@@ -477,7 +477,7 @@
     }
   ],
   "blocked_candidates": 33,
-  "generated_candidates": 124,
+  "generated_candidates": 125,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -518,6 +518,7 @@
     "fingerprint-grid_connect_usb_double_power_point-2b2f90440f",
     "fingerprint-grid_connect_usb_power_point-c199df8546",
     "fingerprint-haozee_rbsrain01_rainsensor-bbe3491b99",
+    "fingerprint-hellnar_heatpump-3500920f8e",
     "fingerprint-himox_h05_purifier-c17b3f9f28",
     "fingerprint-himox_h06_purifier-42cdcaa424",
     "fingerprint-hiniso_rm10s_dehumidifier-80076ad273",
@@ -571,5 +572,5 @@
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 91
+  "safe_candidates": 92
 }

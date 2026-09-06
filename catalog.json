@@ -4612,6 +4612,164 @@
       }
     },
     {
+      "id": "fingerprint-hellnar_heatpump-3500920f8e",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          18,
+          20,
+          105,
+          110,
+          113,
+          114,
+          119,
+          120,
+          123,
+          126,
+          127,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "heat_cool": "heat_cool",
+              "cool": "cool",
+              "heat": "heat",
+              "fan_only": "fan_only",
+              "dry": "dry"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 0.1,
+            "temperature_step": 0.1,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "maybe_fan_mode": 5,
+              "unknown_18": 18,
+              "unknown_20": 20,
+              "unknown_105": 105,
+              "unknown_110": 110,
+              "unknown_113": 113,
+              "unknown_114": 114,
+              "unknown_119": 119,
+              "unknown_120": 120,
+              "maybe_swing_mode": 123,
+              "unknown_126": 126,
+              "unknown_127": 127,
+              "unknown_128": 128,
+              "unknown_129": 129,
+              "maybe_eco_temp": 130,
+              "unknown_131": 131,
+              "unknown_132": 132,
+              "unknown_133": 133,
+              "unknown_134": 134
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    },
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "wind",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "wet",
+                      "value": "dry"
+                    }
+                  ]
+                }
+              ],
+              "2": [
+                {
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "cold",
+                      "range": {
+                        "min": 170,
+                        "max": 300
+                      }
+                    },
+                    {
+                      "dps_val": "auto",
+                      "range": {
+                        "min": 170,
+                        "max": 300
+                      }
+                    },
+                    {
+                      "dps_val": "hot",
+                      "range": {
+                        "min": 0,
+                        "max": 300
+                      }
+                    },
+                    {
+                      "dps_val": "wet",
+                      "invalid": true
+                    },
+                    {
+                      "dps_val": "wind",
+                      "invalid": true
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/hellnar_heatpump.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-himox_h05_purifier-c17b3f9f28",
       "confidence": "experimental",
       "match": {
