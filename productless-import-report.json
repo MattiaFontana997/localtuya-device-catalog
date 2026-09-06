@@ -1,9 +1,8 @@
 {
   "profiles": 1737,
   "reason_counts": {
-    "advanced_mapping_condition_semantics": 3,
     "advanced_mapping_empty_rule": 1,
-    "advanced_mapping_redirect_target_mapping": 4,
+    "advanced_mapping_redirect_target_mapping": 1,
     "advanced_mapping_rule_semantics": 1,
     "advanced_mapping_rule_transform_semantics": 1,
     "binary_sensor_duplicate_dp_id": 1,
@@ -30,7 +29,7 @@
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
     "multi_dp_mapped_extra:unit": 1,
-    "select_complex_mapping": 3,
+    "select_complex_mapping": 5,
     "select_device_class": 1,
     "select_non_string_mapping": 2,
     "sensor_dp_type": 2,
@@ -42,7 +41,8 @@
     "unsupported_platform:siren": 1,
     "vacuum_activate_mapping": 1,
     "vacuum_optional_status": 1,
-    "valve_position_mapping": 1
+    "valve_position_mapping": 1,
+    "water_heater_temperature_unit": 1
   },
   "results": [
     {
@@ -5528,7 +5528,7 @@
     },
     {
       "file": "devola_patio_heater.yaml",
-      "mapping_id": "fingerprint-devola_patio_heater-cc3ceed031",
+      "mapping_id": "fingerprint-devola_patio_heater-3d83ca734b",
       "name": "Devola patio heater",
       "platforms": [
         "climate",
@@ -5935,7 +5935,7 @@
         "number"
       ],
       "reasons": [
-        "advanced_mapping_condition_semantics"
+        "select_complex_mapping"
       ],
       "status": "skipped"
     },
@@ -6496,7 +6496,7 @@
     },
     {
       "file": "eberg_cooly_c35hd.yaml",
-      "mapping_id": "fingerprint-eberg_cooly_c35hd-7d80fadd0b",
+      "mapping_id": "fingerprint-eberg_cooly_c35hd-9bad09e3e6",
       "name": "Heat pump",
       "platforms": [
         "climate",
@@ -6688,7 +6688,7 @@
         "number"
       ],
       "reasons": [
-        "advanced_mapping_redirect_target_mapping"
+        "select_complex_mapping"
       ],
       "status": "skipped"
     },
@@ -7105,7 +7105,7 @@
     },
     {
       "file": "electriq_ecosilent12wap_aircon.yaml",
-      "mapping_id": "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
+      "mapping_id": "fingerprint-electriq_ecosilent12wap_aircon-5c2517bb60",
       "name": "Air conditioner",
       "platforms": [
         "climate",
@@ -7118,7 +7118,7 @@
     },
     {
       "file": "electriq_ecosilent14hpw_aircon.yaml",
-      "mapping_id": "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2",
+      "mapping_id": "fingerprint-electriq_ecosilent14hpw_aircon-50f32dd6a8",
       "name": "Air conditioner",
       "platforms": [
         "climate",
@@ -8579,7 +8579,7 @@
         "time"
       ],
       "reasons": [
-        "advanced_mapping_condition_semantics"
+        "water_heater_temperature_unit"
       ],
       "status": "skipped"
     },
@@ -9425,16 +9425,14 @@
     },
     {
       "file": "goldair_fan.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-goldair_fan-b39cad5f5b",
       "name": "Fan",
       "platforms": [
         "fan",
         "light"
       ],
-      "reasons": [
-        "advanced_mapping_condition_semantics"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "goldair_geco_heater.yaml",
@@ -15545,7 +15543,7 @@
     },
     {
       "file": "me80_thermostat.yaml",
-      "mapping_id": "fingerprint-me80_thermostat-1c7cae21c3",
+      "mapping_id": "fingerprint-me80_thermostat-64f73b117b",
       "name": "Thermostat",
       "platforms": [
         "climate",
@@ -15853,7 +15851,7 @@
     },
     {
       "file": "minco_mh1823d_thermostat.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-minco_mh1823d_thermostat-c09a894cd3",
       "name": "Thermostat",
       "platforms": [
         "climate",
@@ -15863,10 +15861,8 @@
         "lock",
         "switch"
       ],
-      "reasons": [
-        "advanced_mapping_redirect_target_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "minib_public_litterbox.yaml",
@@ -19347,7 +19343,7 @@
     },
     {
       "file": "princess_panel_heater.yaml",
-      "mapping_id": "fingerprint-princess_panel_heater-e5d132a5f1",
+      "mapping_id": "fingerprint-princess_panel_heater-abd8dd026e",
       "name": "Panel heater",
       "platforms": [
         "climate",
@@ -23040,7 +23036,7 @@
     },
     {
       "file": "swimfun_inverboost_poolheatpump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-swimfun_inverboost_poolheatpump-d36788c501",
       "name": "Pool heat pump",
       "platforms": [
         "climate",
@@ -23050,10 +23046,8 @@
         "number",
         "button"
       ],
-      "reasons": [
-        "advanced_mapping_redirect_target_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "sws01_weather_station.yaml",
@@ -26782,7 +26776,7 @@
     },
     {
       "file": "zmp71sh_pool_pump.yaml",
-      "mapping_id": "fingerprint-zmp71sh_pool_pump-05843f201e",
+      "mapping_id": "fingerprint-zmp71sh_pool_pump-f2337f5301",
       "name": "Pool pump",
       "platforms": [
         "switch",
@@ -26954,9 +26948,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 148,
+    "convertible_fingerprint": 151,
     "not_productless": 1526,
-    "skipped": 63
+    "skipped": 60
   },
   "target_schema": 3
 }

@@ -172,10 +172,10 @@
         102
       ],
       "best_matches": [
-        "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
-        "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2"
+        "fingerprint-electriq_ecosilent12wap_aircon-5c2517bb60",
+        "fingerprint-electriq_ecosilent14hpw_aircon-50f32dd6a8"
       ],
-      "mapping_id": "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
+      "mapping_id": "fingerprint-electriq_ecosilent12wap_aircon-5c2517bb60",
       "reason": "ambiguous"
     },
     {
@@ -191,10 +191,10 @@
         102
       ],
       "best_matches": [
-        "fingerprint-electriq_ecosilent12wap_aircon-9b159d65b2",
-        "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2"
+        "fingerprint-electriq_ecosilent12wap_aircon-5c2517bb60",
+        "fingerprint-electriq_ecosilent14hpw_aircon-50f32dd6a8"
       ],
-      "mapping_id": "fingerprint-electriq_ecosilent14hpw_aircon-980b9817c2",
+      "mapping_id": "fingerprint-electriq_ecosilent14hpw_aircon-50f32dd6a8",
       "reason": "ambiguous"
     },
     {
@@ -565,7 +565,7 @@
     }
   ],
   "blocked_candidates": 38,
-  "generated_candidates": 148,
+  "generated_candidates": 151,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -588,12 +588,12 @@
     "fingerprint-catit_pet_feeder-bb92e37192",
     "fingerprint-comfortzone_cztf423s_towerfan-7e0f8a179e",
     "fingerprint-deta_fan-6d17ecc425",
-    "fingerprint-devola_patio_heater-cc3ceed031",
+    "fingerprint-devola_patio_heater-3d83ca734b",
     "fingerprint-digma_disenseg1_gassensor-f8a2ab8b77",
     "fingerprint-digoo_dgsp01_dual_nightlight_switch-433cbe9173",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
-    "fingerprint-eberg_cooly_c35hd-7d80fadd0b",
+    "fingerprint-eberg_cooly_c35hd-9bad09e3e6",
     "fingerprint-ecostrad_accentiq_heater-2165e760f6",
     "fingerprint-electriq_12wminv_heatpump-744a833331",
     "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
@@ -607,6 +607,7 @@
     "fingerprint-flinq_breeze_pedestalfan-de82776322",
     "fingerprint-generic_5speed_fanregulator-d227ade2b6",
     "fingerprint-gidrolock_standard_wifi-36bbcd865c",
+    "fingerprint-goldair_fan-b39cad5f5b",
     "fingerprint-goldair_geco_heater-2cb3bd4135",
     "fingerprint-goldair_gpcv405_heater-0060b0107f",
     "fingerprint-goldair_gpcv_heater-f1bfe362d4",
@@ -638,7 +639,8 @@
     "fingerprint-m027_curtain-09d85a1ed9",
     "fingerprint-makegood_double_power_point_with_energy-96f4bff3fc",
     "fingerprint-mantra_fan-d520778154",
-    "fingerprint-me80_thermostat-1c7cae21c3",
+    "fingerprint-me80_thermostat-64f73b117b",
+    "fingerprint-minco_mh1823d_thermostat-c09a894cd3",
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
@@ -649,7 +651,7 @@
     "fingerprint-orion_ptc2000_heater-1d6c159639",
     "fingerprint-pgst_climate_sensor-ce4b9c73f8",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
-    "fingerprint-princess_panel_heater-e5d132a5f1",
+    "fingerprint-princess_panel_heater-abd8dd026e",
     "fingerprint-prosto_ptc2000_heater-2106dd93c1",
     "fingerprint-purline_m100_heater-7591ca90d2",
     "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
@@ -665,6 +667,7 @@
     "fingerprint-smartplugv3-18b61a5fa7",
     "fingerprint-soho_air_purifier-0e5e36514c",
     "fingerprint-somgom_double_switch-9388e4f5a7",
+    "fingerprint-swimfun_inverboost_poolheatpump-d36788c501",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
     "fingerprint-tesla_aux_airconditioner-65805bea52",
     "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
@@ -676,7 +679,7 @@
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
     "fingerprint-zemismart_spm01_d2tw_energymeter-9a02e5ac3f",
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
-    "fingerprint-zmp71sh_pool_pump-05843f201e"
+    "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 110
+  "safe_candidates": 113
 }
