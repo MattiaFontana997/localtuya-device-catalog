@@ -1,0 +1,56 @@
+name: Inspect Select Non String
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - '.github/workflows/inspect-select-non-string.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: tools
+  UPSTREAM_REV: 38347807cfc81ae8789974d98532eb928f42f174
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install 'PyYAML>=6,<7'
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Inspect blockers
+        run: |
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local --revision "$UPSTREAM_REV" --json /tmp/report.json >/tmp/summary.txt
+          cat /tmp/summary.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import yaml
+          report=json.load(open('/tmp/report.json',encoding='utf-8'))
+          files=[i['file'] for i in report['results'] if i['status']=='skipped' and 'select_non_string' in i.get('reasons',[])]
+          print('SELECT_NON_STRING_FILES', len(files), ', '.join(files))
+          root=Path('upstream-tuya-local/custom_components/tuya_local/devices')
+          for name in files:
+              profile=yaml.safe_load((root/name).read_text(encoding='utf-8'))
+              print('PROFILE', name)
+              for ei,entity in enumerate(profile.get('entities',[])):
+                  if isinstance(entity,dict) and entity.get('entity')=='select':
+                      print(' SELECT', ei, 'translation_key=', entity.get('translation_key'))
+                      for dp in entity.get('dps',[]):
+                          if isinstance(dp,dict):
+                              print('  DP', json.dumps(dp, sort_keys=True))
+          PY
+# trigger
