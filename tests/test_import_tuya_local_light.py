@@ -705,30 +705,30 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(mapping["match"]["required_dps"], [20])
         self.assertEqual(mapping["match"]["optional_dps"], [22])
 
-    def test_bare_scene_mode_requires_scene_data(self):
-        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):
-            convert_profile(
-                {
-                    "products": [{"id": "scene-light"}],
-                    "entities": [
-                        {
-                            "entity": "light",
-                            "dps": [
-                                {"id": 20, "type": "boolean", "name": "switch"},
-                                {
-                                    "id": 21,
-                                    "type": "string",
-                                    "name": "color_mode",
-                                    "mapping": [
-                                        {"dps_val": "scene", "value": "Scene"}
-                                    ],
-                                },
-                            ],
-                        }
-                    ],
-                },
-                source_file="scene_light.yaml",
-            )
+    def test_bare_scene_mode_converts_as_color_mode_effect(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "scene-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 20, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 21,
+                                "type": "string",
+                                "name": "color_mode",
+                                "mapping": [{"dps_val": "scene", "value": "Scene"}],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="scene_light.yaml",
+        )
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["scene_values"], {"Scene": "scene"})
+        self.assertEqual(config["color_mode"], 21)
 
     def test_mode_only_scenes_convert_to_scene_values(self):
         mapping = convert_profile(
@@ -764,6 +764,55 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
             },
         )
         self.assertEqual(config["color_mode"], 21)
+
+    def test_scene_without_underscore_converts_as_mode_effect(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "atomi-like"}],
+                "entities": [{
+                    "entity": "light",
+                    "dps": [
+                        {"id": 20, "type": "boolean", "name": "switch"},
+                        {
+                            "id": 21, "type": "string", "name": "color_mode",
+                            "mapping": [
+                                {"dps_val": "scene1", "value": "Strobe"},
+                                {"dps_val": "scene9", "value": "Multi"},
+                            ],
+                        },
+                    ],
+                }],
+            },
+            source_file="atomi_like.yaml",
+        )
+        self.assertEqual(mapping["entities"][0]["config"]["scene_values"], {"Strobe": "scene1", "Multi": "scene9"})
+
+    def test_residual_plain_light_extras_are_preserved(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "residual-light"}],
+                "entities": [{
+                    "entity": "light",
+                    "dps": [
+                        {"id": 1, "type": "boolean", "name": "switch"},
+                        {"id": 4, "type": "integer", "name": "unknown_4"},
+                        {"id": 31, "type": "base64", "name": "sleep_mode", "optional": True},
+                        {"id": 32, "type": "hex", "name": "unknown_32", "optional": True},
+                        {"id": 33, "type": "hex", "name": "unknown_33", "optional": True},
+                        {"id": 34, "type": "hex", "name": "unknown_34", "optional": True},
+                        {"id": 35, "type": "hex", "name": "unknown_35", "optional": True},
+                        {"id": 36, "type": "hex", "name": "unknown_36", "optional": True},
+                    ],
+                }],
+            },
+            source_file="residual_light.yaml",
+        )
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["extra_state_attributes_dps"]["unknown_4"], 4)
+        self.assertEqual(config["extra_state_attributes_dps"]["sleep_mode"], 31)
+        self.assertEqual(config["extra_state_attributes_dps"]["unknown_36"], 36)
+        self.assertEqual(mapping["match"]["required_dps"], [1, 4])
+        self.assertEqual(mapping["match"]["optional_dps"], [31, 32, 33, 34, 35, 36])
 
     def test_simple_music_mode_is_preserved(self):
         mapping = convert_profile(
@@ -1330,7 +1379,7 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertEqual(mapping["match"]["optional_dps"], [25])
 
     def test_scene_context_requires_matching_hidden_transport(self):
-        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):
+        with self.assertRaisesRegex(ConversionError, "entity_hidden"):
             convert_profile(
                 {
                     "products": [{"id": "mismatched-scene-data"}],

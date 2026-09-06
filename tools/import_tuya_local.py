@@ -588,6 +588,14 @@ def _light_dps(entity: dict[str, Any]) -> dict[str, dict[str, Any]]:
     "mode",
     "music_devicedata",
     "rhythm_mode",
+    "sleep_mode",
+    "wakeup_mode",
+    "unknown_4",
+    "unknown_32",
+    "unknown_33",
+    "unknown_34",
+    "unknown_35",
+    "unknown_36",
     "scene_list",
     "splitter_setting",
     "std_switch",
@@ -656,6 +664,14 @@ LIGHT_RAW_EXTRA_DP_NAMES = {
     "mode",
     "music_devicedata",
     "rhythm_mode",
+    "sleep_mode",
+    "wakeup_mode",
+    "unknown_4",
+    "unknown_32",
+    "unknown_33",
+    "unknown_34",
+    "unknown_35",
+    "unknown_36",
     "scene_list",
     "splitter_setting",
     "std_switch",
@@ -674,7 +690,10 @@ def _preserve_simple_light_extra_attribute(
 
     # TuyaLocalEntity._init_end exposes these values through get_value(), which
     # leaves plain string-like DPS unchanged when there is no mapping/mask.
-    if _dp_type(dp) not in {"string", "hex", "base64"}:
+    allowed_types = {"string", "hex", "base64"}
+    if name.startswith("unknown_") and name[len("unknown_") :].isdigit():
+        allowed_types.add("integer")
+    if _dp_type(dp) not in allowed_types:
         raise ConversionError(f"light_extra_attribute_type:{name}")
     if _mapping_rules(dp):
         raise ConversionError(f"light_extra_attribute_mapping:{name}")
@@ -1258,7 +1277,11 @@ def _convert_light(
                 observed[raw] = value
                 continue
 
-            if raw.startswith("scene_"):
+            if raw == "scene" and scene_dp is not None and configured_scene_values:
+                observed[raw] = value
+                continue
+
+            if raw.startswith("scene"):
                 friendly = value.strip()
                 if not friendly or friendly in configured_scene_values:
                     raise ConversionError("light_color_mode_duplicate")
@@ -1268,12 +1291,6 @@ def _convert_light(
 
             if raw == "music" and value.strip().casefold() == "music":
                 config["music_mode"] = True
-                observed[raw] = value
-                continue
-
-            if raw == "scene":
-                if scene_dp is None or not configured_scene_values:
-                    raise ConversionError("light_scene_data_required")
                 observed[raw] = value
                 continue
 
