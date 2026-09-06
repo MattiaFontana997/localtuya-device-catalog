@@ -145,10 +145,9 @@ def _translate_advanced_mapping(
     translated: list[dict[str, Any]] = []
     references: set[str] = set()
     writable_source = dp.get("readonly") is not True
+    transform_keys = {"scale", "invert", "step", "range", "target_range"}
 
     for source in rules:
-        if not (set(source) & (_ADVANCED_SOURCE_KEYS | _UNSUPPORTED_ADVANCED_KEYS)):
-            continue
         unsupported = set(source) & _UNSUPPORTED_ADVANCED_KEYS
         if unsupported:
             raise ConversionError(
@@ -167,6 +166,8 @@ def _translate_advanced_mapping(
         }
         if set(source) - allowed_source:
             raise ConversionError("advanced_mapping_rule_semantics")
+        if set(source) & transform_keys:
+            raise ConversionError("advanced_mapping_rule_transform_semantics")
 
         rule: dict[str, Any] = {}
         for key in ("dps_val", "value"):
@@ -260,24 +261,54 @@ def _translate_advanced_mapping(
 
 
 def _project_mapping_for_base(dp: dict[str, Any]) -> dict[str, Any]:
+    """Project an advanced-mapped raw DP into its HA-facing value domain."""
     projected = copy.deepcopy(dp)
     rules = _raw_mapping(dp)
-    if not rules:
-        return projected
-    output: list[dict[str, Any]] = []
+    outputs: list[Any] = []
+    missing = object()
+
+    def add_output(value: Any) -> None:
+        if value is missing:
+            raise ConversionError("advanced_mapping_unbounded_output")
+        value = _runtime_scalar(value, "advanced_mapping_projection_scalar")
+        if value is None:
+            raise ConversionError("advanced_mapping_projection_none")
+        if not any(value == seen and type(value) is type(seen) for seen in outputs):
+            outputs.append(value)
+
     for source in rules:
-        rule = {
-            key: copy.deepcopy(value)
-            for key, value in source.items()
-            if key not in _BASE_PROJECTION_DROP
-            and key not in _UNSUPPORTED_ADVANCED_KEYS
-        }
-        if rule:
-            output.append(rule)
-    if output:
-        projected["mapping"] = output
+        if source.get("invalid") is True or source.get("hidden") is True:
+            continue
+        conditions = source.get("conditions")
+        if isinstance(conditions, list) and conditions:
+            for condition in conditions:
+                if not isinstance(condition, dict):
+                    raise ConversionError("advanced_mapping_condition")
+                if condition.get("invalid") is True or condition.get("hidden") is True:
+                    continue
+                add_output(condition.get(
+                    "value", source.get("value", source.get("dps_val", missing))
+                ))
+        else:
+            add_output(source.get("value", source.get("dps_val", missing)))
+
+    if not outputs:
+        raise ConversionError("advanced_mapping_empty_projection")
+    kinds = {bool if isinstance(v, bool) else type(v) for v in outputs}
+    if len(kinds) != 1:
+        raise ConversionError("advanced_mapping_mixed_output_types")
+    kind = next(iter(kinds))
+    if kind is str:
+        projected["type"] = "string"
+    elif kind is bool:
+        projected["type"] = "boolean"
+    elif kind is int:
+        projected["type"] = "integer"
     else:
-        projected.pop("mapping", None)
+        raise ConversionError("advanced_mapping_projection_type")
+    projected["mapping"] = [
+        {"dps_val": value, "value": value} for value in outputs
+    ]
     return projected
 
 
