@@ -1,0 +1,163 @@
+{
+  "blockers": {
+    "advanced_mapping_condition_semantics": [
+      "dr_heater_dr008_thermostat.yaml",
+      "fiesta_dk1g_kettle.yaml",
+      "goldair_fan.yaml"
+    ],
+    "advanced_mapping_empty_rule": [
+      "ampbolt_portable_evcharger.yaml"
+    ],
+    "advanced_mapping_redirect_target_mapping": [
+      "ecostrad_iq_heating_element.yaml",
+      "minco_mh1823d_thermostat.yaml",
+      "qlima_d820a_dehumidifier.yaml",
+      "swimfun_inverboost_poolheatpump.yaml"
+    ],
+    "advanced_mapping_rule_semantics": [
+      "saswell_t29utk_thermostat.yaml"
+    ],
+    "advanced_mapping_rule_transform_semantics": [
+      "prestige_m3_ceilingfanlight.yaml"
+    ],
+    "binary_sensor_duplicate_dp_id": [
+      "fairland_rmic06_heatpump.yaml"
+    ],
+    "button_duplicate_primary_dp": [
+      "klarstein_amazonia_dishwasher.yaml"
+    ],
+    "climate_duplicate_dp_id": [
+      "goldair_gpph_heater.yaml",
+      "nulite_nlb245_heatpump.yaml",
+      "t5e_wf_thermostat.yaml",
+      "woods_cortina_airconditioner.yaml"
+    ],
+    "climate_hvac_action_mapping": [
+      "bht002_galw_thermostat.yaml"
+    ],
+    "climate_hvac_mode_mapping": [
+      "madimack_heatpump.yaml"
+    ],
+    "climate_hvac_mode_missing_off": [
+      "electriq_sc16hpw_aircon.yaml",
+      "miheat_th11wf_thermostat.yaml"
+    ],
+    "climate_preset_mapping": [
+      "beok_tol47_thermostat.yaml",
+      "vtaplus_axial_fanheater.yaml"
+    ],
+    "climate_temperature_unit_mapping": [
+      "nashone_mts700wb_thermostat.yaml",
+      "steinbach_silent_mini_heatpump.yaml"
+    ],
+    "cover_action_friendly": [
+      "aosd_garagedoorwithlight.yaml"
+    ],
+    "dp_readonly": [
+      "aquatech_x6_water_heater.yaml"
+    ],
+    "entity_hidden_unavailable": [
+      "hiniso_dehumidifier.yaml",
+      "rgbcw_lightbulb_xld_cl002.yaml",
+      "windcalm_fan.yaml"
+    ],
+    "event_duplicate_dp_id": [
+      "wlrtcz05z_presencesensor.yaml"
+    ],
+    "fan_direction_mapping": [
+      "aspen_asp200_fan.yaml"
+    ],
+    "fan_missing_switch": [
+      "airwoods_av_htpf_fresh_air_heat_pump.yaml"
+    ],
+    "fan_preset_hidden": [
+      "webber_apg7800_airpurifier.yaml"
+    ],
+    "humidifier_mode_mapping": [
+      "probreeze_pb20.yaml"
+    ],
+    "humidifier_switch_type": [
+      "inventor_atmospherexl_dehumidifier.yaml"
+    ],
+    "light_color_temp_nonzero_min": [
+      "amico_smart_ceiling_fan.yaml"
+    ],
+    "light_color_temp_step": [
+      "arlec_fan_light.yaml"
+    ],
+    "light_missing_switch": [
+      "wetair_wch750_heater.yaml"
+    ],
+    "light_rgbhsv_format": [
+      "dekala_lumos_alarm_clock.yaml",
+      "digoo_dgsp01_dual_nightlight_switch.yaml",
+      "moes_rgb_socket.yaml"
+    ],
+    "light_switch_non_boolean": [
+      "fujicool_yuzu_heatpump.yaml",
+      "starlight_heatpump.yaml"
+    ],
+    "light_unsupported_dp:effects_disabled": [
+      "advancedfires_1500_fireplace.yaml"
+    ],
+    "light_unsupported_dp:main_switch": [
+      "orison_jst_fanrgbwlight.yaml"
+    ],
+    "light_unsupported_dp:named_color": [
+      "blitzwolf_bwsh2_humidifier.yaml"
+    ],
+    "lock_direct_control_required": [
+      "orion_smart_lock.yaml"
+    ],
+    "multi_dp_mapped_extra:unit": [
+      "inkbird_iaqm129w_airqualitymonitor.yaml"
+    ],
+    "select_complex_mapping": [
+      "ecostrad_iqceramic_radiator.yaml",
+      "essentials_purifier.yaml",
+      "jiahong_et44w_thermostat.yaml"
+    ],
+    "select_non_string_mapping": [
+      "djive_arc_fan.yaml",
+      "hdmi_sync_light.yaml"
+    ],
+    "sensor_dp_type": [
+      "asip_0622_planter.yaml",
+      "inkbird_int12bw_thermometer.yaml"
+    ],
+    "sensor_value_mapping_semantics": [
+      "wdyk_3phase_energymonitor.yaml",
+      "wdyk_4p100a_energymeter.yaml"
+    ],
+    "switch_non_boolean": [
+      "wouej_evcharger.yaml"
+    ],
+    "switch_non_identity_mapping": [
+      "goldair_gpoc2415_oilheater.yaml",
+      "pv28aw_co2detector.yaml"
+    ],
+    "time_device_class": [
+      "space_dog_music_lamp.yaml"
+    ],
+    "unsupported_platform:alarm_control_panel": [
+      "aixishs_big_siren.yaml"
+    ],
+    "unsupported_platform:media_player": [
+      "ekaza_minipad_controlpanel.yaml"
+    ],
+    "unsupported_platform:siren": [
+      "sirena_ws902plus_siren.yaml"
+    ],
+    "vacuum_activate_mapping": [
+      "rowenta_xplorer75s_vacuum.yaml"
+    ],
+    "vacuum_optional_status": [
+      "parkside_ppwd30a1_vacuum.yaml"
+    ],
+    "valve_position_mapping": [
+      "qoto_03_sprinkler.yaml"
+    ]
+  },
+  "convertible_fingerprint": 144,
+  "skipped": 67
+}
