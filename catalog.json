@@ -532,6 +532,270 @@
       }
     },
     {
+      "id": "fingerprint-electriq_pd45e_dehumidifier-228b4116db",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          11,
+          106,
+          107,
+          108,
+          110
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "humidifier",
+          "config": {
+            "id": 1,
+            "platform": "humidifier",
+            "device_class": "dehumidifier",
+            "humidifier_switch_dp": 1,
+            "humidifier_switch_on": true,
+            "humidifier_switch_off": false,
+            "humidifier_current_humidity_dp": 3,
+            "humidifier_target_humidity_dp": 4,
+            "humidifier_humidity_min": 35.0,
+            "humidifier_humidity_max": 80.0,
+            "humidifier_humidity_step": 5.0,
+            "humidifier_mode_dp": 2,
+            "humidifier_mode_values": {
+              "normal": "1",
+              "laundry": "2",
+              "purify": "3"
+            },
+            "extra_state_attributes_dps": {
+              "unknown_11": 11,
+              "unknown_106": 106,
+              "unknown_107": 107,
+              "unknown_108": 108
+            }
+          }
+        },
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 6,
+            "fan_speed_ordered_list": "1,2",
+            "fan_dps_type": "str",
+            "fan_oscillating_control": 8
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 110,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 11,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": 2
+              },
+              {
+                "value": false
+              }
+            ],
+            "binary_sensor_bitfield": true
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 108,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/electriq_pd45e_dehumidifier.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-eurom_600_heater-86f6faca72",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          5,
+          6
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 0.0,
+            "max_temperature_const": 37.0,
+            "current_temperature_dp": 5,
+            "precision": 1.0,
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 6
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/eurom_600_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-eurom_601_heater-8978109e06",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          6,
+          13
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 0.0,
+            "max_temperature_const": 37.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 6,
+            "preset_values": {
+              "comfort": false,
+              "eco": true
+            },
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 13,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 13
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/eurom_601_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-ezvalo_smart_desklamp-7d6c378897",
       "confidence": "experimental",
       "match": {
@@ -594,6 +858,171 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/ezvalo_smart_desklamp.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-fisher_ervq_hd_hrv-23a935de72",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          6,
+          8,
+          9,
+          11,
+          18,
+          103,
+          104,
+          105,
+          108
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_preset_dp": 2,
+            "fan_preset_values": {
+              "Manual": "0",
+              "auto": "1",
+              "sleep": "2",
+              "Pure L": "3",
+              "Pure M": "4",
+              "Pure H": "5"
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 3,
+            "platform": "sensor",
+            "unit_of_measurement": "μg/m³",
+            "state_class": "measurement",
+            "device_class": "pm25"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 6,
+            "platform": "sensor",
+            "unit_of_measurement": "ppm",
+            "state_class": "measurement",
+            "device_class": "carbon_dioxide"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 8,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "humidity"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 9,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 11,
+            "platform": "sensor",
+            "unit_of_measurement": "d",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 18,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 18
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 103,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 8.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 104,
+            "platform": "number",
+            "min_value": 1.0,
+            "max_value": 8.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 105,
+            "platform": "select",
+            "options": "0;1;2;3",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "90 days;120 days;150 days;180 days"
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 108,
+            "platform": "button",
+            "button_press_value": true
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/fisher_ervq_hd_hrv.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -756,6 +1185,105 @@
       }
     },
     {
+      "id": "fingerprint-goldair_geco_heater-2cb3bd4135",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 3,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 4,
+            "precision": 1.0,
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 2,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 5,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 24.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "h",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 6
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/goldair_geco_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-goldair_gpcv405_heater-0060b0107f",
       "confidence": "experimental",
       "match": {
@@ -839,6 +1367,111 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/goldair_gpcv405_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-goldair_gpcv_heater-f1bfe362d4",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 3,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 4,
+            "precision": 1.0,
+            "preset_dp": 7,
+            "preset_values": {
+              "eco": "Low",
+              "boost": "High"
+            },
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 2,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 5,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 24.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "h",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 6
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/goldair_gpcv_heater.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -1075,6 +1708,99 @@
       }
     },
     {
+      "id": "fingerprint-haozee_rbsrain01_rainsensor-bbe3491b99",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          4,
+          101,
+          102,
+          103,
+          105
+        ],
+        "optional_dps": [
+          104
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 1,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": "alarm"
+              },
+              {
+                "value": false
+              }
+            ],
+            "device_class": "moisture"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 4,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "battery"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "unit_of_measurement": "mV",
+            "state_class": "measurement",
+            "device_class": "voltage",
+            "extra_state_attributes_dps": {
+              "average": 102,
+              "peak": 103
+            }
+          }
+        },
+        {
+          "platform": "event",
+          "config": {
+            "id": 104,
+            "platform": "event",
+            "event_dp": 104,
+            "event_types": {
+              "need_clean": true,
+              "is_clean": false
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 105,
+            "platform": "sensor",
+            "unit_of_measurement": "mV",
+            "state_class": "measurement",
+            "device_class": "voltage"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/haozee_rbsrain01_rainsensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-himox_h05_purifier-c17b3f9f28",
       "confidence": "experimental",
       "match": {
@@ -1285,6 +2011,113 @@
       }
     },
     {
+      "id": "fingerprint-hjz_radiator-3cfc2e1b57",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          4,
+          7,
+          10,
+          19,
+          21
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 50.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "comfort": "0",
+              "eco": "1",
+              "away": "2"
+            },
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 7,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 10,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 19,
+            "platform": "select",
+            "options": "cancel;1h;2h;3h;4h;5h;6h",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 21,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 21
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/hjz_radiator.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-intec_ceilingfanlight-4cd24c5989",
       "confidence": "experimental",
       "match": {
@@ -1470,6 +2303,132 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/kogan_garage_opener.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-kogan_heater_fan-bc33e8eea6",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          5,
+          13,
+          20,
+          21,
+          22,
+          23,
+          24,
+          101,
+          102
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 3,
+            "fan_speed_min": 1,
+            "fan_speed_max": 9,
+            "fan_dps_type": "int",
+            "fan_preset_dp": 2,
+            "fan_preset_values": {
+              "none": "normal",
+              "boost": "strong"
+            },
+            "fan_oscillating_control": 5
+          }
+        },
+        {
+          "platform": "climate",
+          "config": {
+            "id": 101,
+            "platform": "climate",
+            "hvac_mode_dp": 101,
+            "hvac_mode_values": {
+              "off": false,
+              "heat": true
+            },
+            "target_temperature_dp": 20,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 15.0,
+            "max_temperature_const": 35.0,
+            "current_temperature_dp": 21,
+            "precision": 1.0,
+            "preset_dp": 102,
+            "preset_values": {
+              "low": 0,
+              "medium": 1,
+              "high": 2
+            },
+            "temperature_unit": "celsius"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 13,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 22,
+            "platform": "select",
+            "options": "cancel;1h;2h;3h;4h;5h;6h",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 23,
+            "platform": "sensor",
+            "unit_of_measurement": "min",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 24,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 24
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/kogan_heater_fan.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -1714,6 +2673,61 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/konlen_wf96l_waterlevel_controller.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-kyvol_ea200_humidifier-c561e79164",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          22,
+          23
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "fan",
+          "config": {
+            "id": 1,
+            "platform": "fan",
+            "fan_speed_control": 23,
+            "fan_speed_ordered_list": "level_1,level_2,level_3,level_4,level_5,level_6,level_7,level_8,level_9,level_10,level_11,level_12,level_13,level_14,level_15,level_16,level_17,level_18,level_19,level_20",
+            "fan_dps_type": "str"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 22,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "extra_state_attributes_dps": {
+              "fault_code": 22
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/kyvol_ea200_humidifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -2014,6 +3028,167 @@
       }
     },
     {
+      "id": "fingerprint-moes_presencesensor-a21e4bda9f",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          101,
+          102,
+          104,
+          107,
+          108
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 1,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": "presence"
+              },
+              {
+                "value": false
+              }
+            ],
+            "device_class": "occupancy",
+            "extra_state_attributes_dps": {
+              "selftest_result": 6
+            }
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 2,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 9.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 3,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 9.5,
+            "step_size": 0.01,
+            "scaling": 0.01,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "m",
+            "device_class": "distance"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 4,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 9.5,
+            "step_size": 0.01,
+            "scaling": 0.01,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "m",
+            "device_class": "distance"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 101,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 50.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "s",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 102,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 1500.0,
+            "step_size": 0.1,
+            "scaling": 0.1,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "s",
+            "device_class": "duration"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 104,
+            "platform": "sensor",
+            "unit_of_measurement": "lx",
+            "state_class": "measurement",
+            "device_class": "illuminance"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 107,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 3.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 108,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 3.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/moes_presencesensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-moesgo_dimmer-fde463382e",
       "confidence": "experimental",
       "match": {
@@ -2184,6 +3359,112 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/nedis_htpl20f_heater.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-nwt_wdh06em_dehumidifier-b8006d8ac2",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          5,
+          6,
+          16,
+          19,
+          101,
+          102
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "humidifier",
+          "config": {
+            "id": 1,
+            "platform": "humidifier",
+            "device_class": "dehumidifier",
+            "humidifier_switch_dp": 1,
+            "humidifier_switch_on": true,
+            "humidifier_switch_off": false,
+            "humidifier_current_humidity_dp": 6,
+            "humidifier_target_humidity_dp": 2,
+            "humidifier_humidity_min": 40.0,
+            "humidifier_humidity_max": 70.0,
+            "humidifier_humidity_step": 10.0,
+            "humidifier_mode_dp": 5,
+            "humidifier_mode_values": {
+              "auto": "dehumidify",
+              "continuous": "continuous",
+              "laundry": "dry"
+            }
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 16,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 19,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 19
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 101,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 102,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/nwt_wdh06em_dehumidifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -3599,6 +4880,446 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/thb2_temperature_and_humidity_sensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-weaja_s9_gasalarm-f95cc8239c",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          2,
+          5,
+          6,
+          12,
+          20
+        ],
+        "optional_dps": [
+          3,
+          14
+        ],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 2,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": "alarm"
+              },
+              {
+                "value": false
+              }
+            ],
+            "device_class": "gas"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 3,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 60.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "min",
+            "device_class": "duration",
+            "extra_state_attributes_dps": {
+              "switch": 12
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 5,
+            "platform": "sensor",
+            "scaling": 0.1,
+            "unit_of_measurement": "% LEL",
+            "state_class": "measurement"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": true,
+                "dps_val": "alarm"
+              },
+              {
+                "value": false
+              }
+            ],
+            "device_class": "gas"
+          }
+        },
+        {
+          "platform": "button",
+          "config": {
+            "id": 14,
+            "platform": "button",
+            "button_press_value": false
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 20,
+            "platform": "sensor",
+            "unit_of_measurement": "ppm",
+            "state_class": "measurement",
+            "device_class": "carbon_monoxide"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/weaja_s9_gasalarm.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-weau_pool_heatpump-586b2d4561",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "heat": "heat",
+              "cool": "cool",
+              "heat_cool": "heat_cool"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 7.0,
+            "max_temperature_const": 60.0,
+            "current_temperature_dp": 3,
+            "precision": 0.1,
+            "preset_dp": 4,
+            "preset_values": {
+              "quick_heat": "hot",
+              "quiet_heat": "eco",
+              "quiet_cool": "cold",
+              "auto": "auto"
+            },
+            "temperature_unit": "celsius",
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "eco",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 6
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/weau_pool_heatpump.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "heat": "heat",
+              "cool": "cool",
+              "heat_cool": "heat_cool"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 1.0,
+            "temperature_step": 1.0,
+            "min_temperature_const": 7.0,
+            "max_temperature_const": 60.0,
+            "current_temperature_dp": 3,
+            "precision": 1.0,
+            "preset_dp": 4,
+            "preset_values": {
+              "quick_heat": "hot",
+              "quiet_heat": "eco",
+              "quiet_cool": "cold",
+              "auto": "auto"
+            },
+            "temperature_unit": "celsius",
+            "extra_state_attributes_dps": {
+              "unknown_101": 101,
+              "unknown_103": 103,
+              "unknown_106": 106,
+              "unknown_110": 110,
+              "unknown_111": 111,
+              "unknown_113": 113,
+              "unknown_114": 114,
+              "unknown_117": 117,
+              "unknown_118": 118
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "eco",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 6,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 6
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 102,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 104,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 105,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 107,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 108,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 109,
+            "platform": "sensor",
+            "unit_of_measurement": "°C",
+            "state_class": "measurement",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 112,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 115,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 116,
+            "platform": "binary_sensor",
+            "state_on": "True",
+            "state_off": "False"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/weau_pool_heatpump13kW.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
