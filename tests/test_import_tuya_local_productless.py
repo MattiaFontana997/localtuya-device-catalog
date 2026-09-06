@@ -125,6 +125,175 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
                 }
             ])
 
+    def test_advanced_constraint_redirect_resolves_names_to_dp_ids(self):
+        result = self._convert([
+            {
+                "entity": "sensor",
+                "dps": [
+                    {
+                        "id": 1,
+                        "name": "sensor",
+                        "type": "integer",
+                        "readonly": True,
+                        "mapping": [
+                            {
+                                "constraint": "unit",
+                                "conditions": [
+                                    {"dps_val": "f", "value_redirect": "sensor_f"},
+                                    {"dps_val": "c"},
+                                ],
+                            }
+                        ],
+                    },
+                    {"id": 2, "name": "unit", "type": "string", "readonly": True, "hidden": True},
+                    {"id": 3, "name": "sensor_f", "type": "integer", "readonly": True, "hidden": True},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(
+            config["advanced_mapping_by_dp"],
+            {
+                "1": [
+                    {
+                        "constraint_dp": 2,
+                        "conditions": [
+                            {"dps_val": "f", "value_redirect_dp": 3},
+                            {"dps_val": "c"},
+                        ],
+                    }
+                ]
+            },
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 2, 3])
+
+    def test_advanced_condition_can_set_external_constraint(self):
+        result = self._convert([
+            {
+                "entity": "switch",
+                "dps": [
+                    {
+                        "id": 1,
+                        "name": "switch",
+                        "type": "boolean",
+                        "mapping": [
+                            {
+                                "constraint": "mode",
+                                "conditions": [
+                                    {"dps_val": "enabled", "value": True},
+                                    {"dps_val": "disabled", "value": False},
+                                ],
+                            }
+                        ],
+                    },
+                    {"id": 2, "name": "mode", "type": "string", "hidden": True},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["advanced_mapping_by_dp"]["1"][0]["constraint_dp"], 2)
+        self.assertEqual(
+            config["advanced_mapping_by_dp"]["1"][0]["conditions"],
+            [
+                {"dps_val": "enabled", "value": True},
+                {"dps_val": "disabled", "value": False},
+            ],
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 2])
+
+    def test_advanced_value_mirror_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "advanced_mapping_unsupported:value_mirror"):
+            self._convert([
+                {
+                    "entity": "sensor",
+                    "dps": [
+                        {
+                            "id": 1,
+                            "name": "sensor",
+                            "type": "integer",
+                            "mapping": [{"value_mirror": "other"}],
+                        },
+                        {"id": 2, "name": "other", "type": "integer"},
+                    ],
+                }
+            ])
+
+    def test_advanced_missing_constraint_reference_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "advanced_mapping_constraint_missing:unit"):
+            self._convert([
+                {
+                    "entity": "sensor",
+                    "dps": [
+                        {
+                            "id": 1,
+                            "name": "sensor",
+                            "type": "integer",
+                            "mapping": [
+                                {
+                                    "constraint": "unit",
+                                    "conditions": [{"dps_val": "f", "value": 1}],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ])
+
+    def test_writable_redirect_with_target_mapping_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "advanced_mapping_redirect_target_mapping"):
+            self._convert([
+                {
+                    "entity": "number",
+                    "dps": [
+                        {
+                            "id": 1,
+                            "name": "value",
+                            "type": "integer",
+                            "range": {"min": 0, "max": 100},
+                            "mapping": [
+                                {
+                                    "constraint": "unit",
+                                    "conditions": [
+                                        {"dps_val": "f", "value_redirect": "value_f"}
+                                    ],
+                                }
+                            ],
+                        },
+                        {"id": 2, "name": "unit", "type": "string", "hidden": True},
+                        {
+                            "id": 3,
+                            "name": "value_f",
+                            "type": "integer",
+                            "hidden": True,
+                            "range": {"min": 32, "max": 212},
+                            "mapping": [{"scale": 10}],
+                        },
+                    ],
+                }
+            ])
+
+    def test_dynamic_condition_scale_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "advanced_mapping_condition_semantics"):
+            self._convert([
+                {
+                    "entity": "sensor",
+                    "dps": [
+                        {
+                            "id": 1,
+                            "name": "sensor",
+                            "type": "integer",
+                            "mapping": [
+                                {
+                                    "constraint": "unit",
+                                    "conditions": [{"dps_val": "f", "scale": 10}],
+                                }
+                            ],
+                        },
+                        {"id": 2, "name": "unit", "type": "string", "hidden": True},
+                    ],
+                }
+            ])
+
 
 if __name__ == "__main__":
     unittest.main()
