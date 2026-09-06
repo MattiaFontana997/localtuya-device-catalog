@@ -17,6 +17,7 @@
     "cover_action_friendly": 1,
     "dp_readonly": 1,
     "entity_hidden_unavailable": 3,
+    "entity_mode": 1,
     "event_duplicate_dp_id": 1,
     "fan_direction_mapping": 1,
     "fan_missing_switch": 1,
@@ -24,23 +25,18 @@
     "has_product_id": 1526,
     "humidifier_mode_mapping": 1,
     "humidifier_switch_type": 1,
-    "light_color_temp_nonzero_min": 1,
-    "light_color_temp_step": 1,
-    "light_missing_switch": 1,
-    "light_rgbhsv_format": 3,
-    "light_switch_non_boolean": 2,
     "light_unsupported_dp:effects_disabled": 1,
     "light_unsupported_dp:main_switch": 1,
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
     "multi_dp_mapped_extra:unit": 1,
     "select_complex_mapping": 3,
+    "select_device_class": 1,
     "select_non_string_mapping": 2,
     "sensor_dp_type": 2,
     "sensor_value_mapping_semantics": 2,
-    "switch_non_boolean": 1,
-    "switch_non_identity_mapping": 2,
-    "time_device_class": 1,
+    "switch_non_boolean": 3,
+    "switch_non_identity_mapping": 3,
     "unsupported_platform:alarm_control_panel": 1,
     "unsupported_platform:media_player": 1,
     "unsupported_platform:siren": 1,
@@ -907,17 +903,15 @@
     },
     {
       "file": "amico_smart_ceiling_fan.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-amico_smart_ceiling_fan-b9ecd0c3b5",
       "name": "Ceiling fan",
       "platforms": [
         "fan",
         "light",
         "select"
       ],
-      "reasons": [
-        "light_color_temp_nonzero_min"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "amos_cyb06erw_radiator.yaml",
@@ -1414,17 +1408,15 @@
     },
     {
       "file": "arlec_fan_light.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-arlec_fan_light-b0b18fd315",
       "name": "Fan with light",
       "platforms": [
         "fan",
         "light",
         "select"
       ],
-      "reasons": [
-        "light_color_temp_step"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "arlec_lve160ha_balllights.yaml",
@@ -5380,7 +5372,7 @@
         "sensor"
       ],
       "reasons": [
-        "light_rgbhsv_format"
+        "entity_mode"
       ],
       "status": "skipped"
     },
@@ -5610,16 +5602,14 @@
     },
     {
       "file": "digoo_dgsp01_dual_nightlight_switch.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-digoo_dgsp01_dual_nightlight_switch-433cbe9173",
       "name": "Switch with nightlight",
       "platforms": [
         "switch",
         "light"
       ],
-      "reasons": [
-        "light_rgbhsv_format"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "digoo_dgsp202.yaml",
@@ -8937,7 +8927,7 @@
         "sensor"
       ],
       "reasons": [
-        "light_switch_non_boolean"
+        "switch_non_boolean"
       ],
       "status": "skipped"
     },
@@ -16228,7 +16218,7 @@
     },
     {
       "file": "moes_rgb_socket.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-moes_rgb_socket-076c826a83",
       "name": "RGB socket",
       "platforms": [
         "switch",
@@ -16236,10 +16226,8 @@
         "time",
         "sensor"
       ],
-      "reasons": [
-        "light_rgbhsv_format"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "moes_single_watertimer.yaml",
@@ -22580,7 +22568,7 @@
         "number"
       ],
       "reasons": [
-        "time_device_class"
+        "switch_non_identity_mapping"
       ],
       "status": "skipped"
     },
@@ -22771,7 +22759,7 @@
         "binary_sensor"
       ],
       "reasons": [
-        "light_switch_non_boolean"
+        "switch_non_boolean"
       ],
       "status": "skipped"
     },
@@ -25626,7 +25614,7 @@
         "sensor"
       ],
       "reasons": [
-        "light_missing_switch"
+        "select_device_class"
       ],
       "status": "skipped"
     },
@@ -26966,9 +26954,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 144,
+    "convertible_fingerprint": 148,
     "not_productless": 1526,
-    "skipped": 67
+    "skipped": 63
   },
   "target_schema": 3
 }

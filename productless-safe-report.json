@@ -565,12 +565,14 @@
     }
   ],
   "blocked_candidates": 38,
-  "generated_candidates": 144,
+  "generated_candidates": 148,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
+    "fingerprint-amico_smart_ceiling_fan-b9ecd0c3b5",
     "fingerprint-apricus_heat_pump_water_heater-bb9dc49aec",
     "fingerprint-arlec_fan-7d3eaf9f7f",
+    "fingerprint-arlec_fan_light-b0b18fd315",
     "fingerprint-arlec_lve160ha_balllights-c9d4994e3a",
     "fingerprint-atomi_string_lights-863b5f9ad0",
     "fingerprint-avatto_curtain_switch-84c1f88992",
@@ -588,6 +590,7 @@
     "fingerprint-deta_fan-6d17ecc425",
     "fingerprint-devola_patio_heater-cc3ceed031",
     "fingerprint-digma_disenseg1_gassensor-f8a2ab8b77",
+    "fingerprint-digoo_dgsp01_dual_nightlight_switch-433cbe9173",
     "fingerprint-digoo_dgsp202-4ab5fc769b",
     "fingerprint-dual_power_monitor_smartplug-75eb68215c",
     "fingerprint-eberg_cooly_c35hd-7d80fadd0b",
@@ -639,6 +642,7 @@
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
+    "fingerprint-moes_rgb_socket-076c826a83",
     "fingerprint-moesgo_dimmer-fde463382e",
     "fingerprint-nedis_htpl20f_heater-40b5de8922",
     "fingerprint-nwt_wdh06em_dehumidifier-b8006d8ac2",
@@ -674,5 +678,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 106
+  "safe_candidates": 110
 }
