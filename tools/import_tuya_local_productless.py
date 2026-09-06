@@ -1033,6 +1033,49 @@ def _preserve_simple_multi_dp_extras(
 
 
 
+def _normalize_string_select_raw_mapping(entity: dict[str, Any]) -> dict[str, Any]:
+    """Normalize YAML scalar mapping keys for Tuya string Select DPS.
+
+    Tuya Local compares non-bitfield mapping keys using ``str`` and coerces
+    outbound values to the declared DP type before writing. For a string DP,
+    an unquoted YAML scalar such as ``1`` therefore behaves exactly as ``"1"``
+    on both read and write. Normalize only finite scalar values; null and
+    container forms remain fail-closed in the mature Select converter.
+    """
+    if entity.get("entity") != "select":
+        return entity
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity
+    option = next(
+        (dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "option"),
+        None,
+    )
+    if option is None or base._dp_type(option) != "string":
+        return entity
+    rules = _raw_mapping(option)
+    if not rules:
+        return entity
+
+    transformed = copy.deepcopy(entity)
+    transformed_option = next(
+        dp for dp in transformed.get("dps", [])
+        if isinstance(dp, dict) and dp.get("name") == "option"
+    )
+    changed = False
+    for rule in _raw_mapping(transformed_option):
+        if "dps_val" not in rule:
+            continue
+        raw = rule.get("dps_val")
+        if isinstance(raw, str) or raw is None or isinstance(raw, (list, dict)):
+            continue
+        if isinstance(raw, float) and not math.isfinite(raw):
+            continue
+        rule["dps_val"] = str(raw)
+        changed = True
+    return transformed if changed else entity
+
+
 def _prepare_typed_productless_select(
     entity: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]]]:
@@ -1206,6 +1249,7 @@ def _advanced_wrapper(
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
             flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
         elif platform == "select":
+            flagged = _normalize_string_select_raw_mapping(flagged)
             flagged, typed_select_mapping = _prepare_typed_productless_select(flagged)
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             flagged, platform
