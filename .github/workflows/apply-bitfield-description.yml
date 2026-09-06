@@ -37,7 +37,7 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py
+          git add tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py tests/test_productless_mapped_extras.py
           if git diff --cached --quiet; then
             echo 'Importer already current'
             exit 0
