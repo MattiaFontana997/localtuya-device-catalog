@@ -932,6 +932,81 @@ def _preserve_simple_multi_dp_extras(
 
 
 
+def _prepare_typed_productless_select(
+    entity: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]]]:
+    """Project finite boolean/integer selects onto string HA options losslessly.
+
+    Home Assistant Select options are strings, while Tuya Local permits a
+    boolean or integer raw DP with an explicit friendly string mapping. Keep the
+    device-facing values typed in ``advanced_mapping_by_dp`` and give the mature
+    LocalTuya select converter an identity string projection. Reads therefore
+    map typed raw -> friendly string, and writes reverse-map that friendly string
+    back to the exact typed raw value.
+    """
+    if entity.get("entity") != "select":
+        return entity, {}
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity, {}
+    option = next(
+        (dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "option"),
+        None,
+    )
+    if option is None:
+        return entity, {}
+
+    raw_type = base._dp_type(option)
+    if raw_type == "string":
+        return entity, {}
+    if raw_type not in {"boolean", "integer"}:
+        return entity, {}
+
+    rules = _raw_mapping(option)
+    if not rules or len(rules) > 64:
+        raise ConversionError("select_non_string_mapping")
+
+    runtime_rules: list[dict[str, Any]] = []
+    identity_rules: list[dict[str, str]] = []
+    seen_raw: list[Any] = []
+    seen_friendly: set[str] = set()
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError("select_non_string_mapping")
+        raw = rule.get("dps_val")
+        friendly = rule.get("value")
+        if raw_type == "boolean":
+            if not isinstance(raw, bool):
+                raise ConversionError("select_non_string_mapping")
+        else:
+            if isinstance(raw, bool) or not isinstance(raw, int):
+                raise ConversionError("select_non_string_mapping")
+        if (
+            not isinstance(friendly, str)
+            or not friendly
+            or friendly != friendly.strip()
+            or ";" in friendly
+        ):
+            raise ConversionError("select_non_string_mapping")
+        if any(raw == previous and type(raw) is type(previous) for previous in seen_raw):
+            raise ConversionError("select_duplicate_option")
+        if friendly in seen_friendly:
+            raise ConversionError("select_duplicate_option")
+        seen_raw.append(raw)
+        seen_friendly.add(friendly)
+        runtime_rules.append({"dps_val": raw, "value": friendly})
+        identity_rules.append({"dps_val": friendly, "value": friendly})
+
+    transformed = copy.deepcopy(entity)
+    transformed_option = next(
+        dp for dp in transformed.get("dps", [])
+        if isinstance(dp, dict) and dp.get("name") == "option"
+    )
+    transformed_option["type"] = "string"
+    transformed_option["mapping"] = identity_rules
+    return transformed, {str(base._dp_id(option)): runtime_rules}
+
+
 def _prepare_runtime_flags(
     entity: dict[str, Any], platform: str
 ) -> tuple[dict[str, Any], bool, set[str], set[int]]:
@@ -1024,13 +1099,21 @@ def _advanced_wrapper(
         )
         climate_limit_precisions: dict[str, float] = {}
         climate_dynamic_target_range = False
+        typed_select_mapping: dict[str, list[dict[str, Any]]] = {}
         if platform == "climate":
             flagged = _normalize_climate_temperature_unit(flagged)
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
             flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
+        elif platform == "select":
+            flagged, typed_select_mapping = _prepare_typed_productless_select(flagged)
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             flagged, platform
         )
+        for dp_id, rules in typed_select_mapping.items():
+            existing = advanced_by_dp.get(dp_id)
+            if existing is not None and existing != rules:
+                raise ConversionError("select_advanced_mapping_conflict")
+            advanced_by_dp[dp_id] = copy.deepcopy(rules)
         prepared, complex_mapped_extras = _prepare_complex_mapped_extras(
             prepared, platform
         )

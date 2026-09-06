@@ -807,5 +807,103 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
             ])
 
 
+    def test_integer_select_projects_friendly_options_and_keeps_typed_raw_mapping(self):
+        result = self._convert([
+            {
+                "entity": "select",
+                "dps": [{
+                    "id": 102,
+                    "name": "option",
+                    "type": "integer",
+                    "mapping": [
+                        {"dps_val": 0, "value": "Internal"},
+                        {"dps_val": 1, "value": "External"},
+                        {"dps_val": 2, "value": "Both"},
+                    ],
+                }],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["options"], "Internal;External;Both")
+        self.assertNotIn("options_friendly", config)
+        self.assertEqual(config["advanced_mapping_by_dp"]["102"], [
+            {"dps_val": 0, "value": "Internal"},
+            {"dps_val": 1, "value": "External"},
+            {"dps_val": 2, "value": "Both"},
+        ])
+        self.assertEqual(result["match"]["required_dps"], [102])
+
+    def test_boolean_select_preserves_boolean_raw_values(self):
+        result = self._convert([
+            {
+                "entity": "select",
+                "translation_key": "temperature_unit",
+                "dps": [{
+                    "id": 10,
+                    "name": "option",
+                    "type": "boolean",
+                    "mapping": [
+                        {"dps_val": True, "value": "fahrenheit"},
+                        {"dps_val": False, "value": "celsius"},
+                    ],
+                }],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["options"], "fahrenheit;celsius")
+        self.assertIs(config["advanced_mapping_by_dp"]["10"][0]["dps_val"], True)
+        self.assertIs(config["advanced_mapping_by_dp"]["10"][1]["dps_val"], False)
+
+    def test_large_integer_select_with_negative_raw_is_bounded_and_lossless(self):
+        mapping = [
+            {"dps_val": value, "value": f"Plant {value}"}
+            for value in range(-1, 59)
+        ]
+        result = self._convert([
+            {
+                "entity": "select",
+                "dps": [{
+                    "id": 105,
+                    "name": "option",
+                    "type": "integer",
+                    "mapping": mapping,
+                }],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(len(config["options"].split(";")), 60)
+        self.assertEqual(config["advanced_mapping_by_dp"]["105"][0]["dps_val"], -1)
+        self.assertEqual(config["advanced_mapping_by_dp"]["105"][-1]["dps_val"], 58)
+
+    def test_typed_select_rejects_non_exact_or_oversized_mapping(self):
+        with self.assertRaisesRegex(ConversionError, "select_non_string_mapping"):
+            self._convert([
+                {
+                    "entity": "select",
+                    "dps": [{
+                        "id": 1,
+                        "name": "option",
+                        "type": "integer",
+                        "mapping": [{"dps_val": 0, "value": "Zero", "hidden": True}],
+                    }],
+                }
+            ])
+        with self.assertRaisesRegex(ConversionError, "select_non_string_mapping"):
+            self._convert([
+                {
+                    "entity": "select",
+                    "dps": [{
+                        "id": 1,
+                        "name": "option",
+                        "type": "integer",
+                        "mapping": [
+                            {"dps_val": value, "value": f"V{value}"}
+                            for value in range(65)
+                        ],
+                    }],
+                }
+            ])
+
+
 if __name__ == "__main__":
     unittest.main()
