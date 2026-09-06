@@ -11,6 +11,8 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: tools
     steps:
       - uses: actions/checkout@v7
         with:
