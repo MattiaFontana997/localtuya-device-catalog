@@ -1,5 +1,5 @@
 {
-  "skipped_count": 60,
+  "skipped_count": 59,
   "by_reason": {
     "advanced_mapping_empty_rule": [
       "ampbolt_portable_evcharger.yaml"
@@ -95,14 +95,11 @@
       "ecostrad_iq_heating_element.yaml",
       "ecostrad_iqceramic_radiator.yaml",
       "essentials_purifier.yaml",
+      "hdmi_sync_light.yaml",
       "jiahong_et44w_thermostat.yaml"
     ],
     "select_device_class": [
       "wetair_wch750_heater.yaml"
-    ],
-    "select_non_string_mapping": [
-      "djive_arc_fan.yaml",
-      "hdmi_sync_light.yaml"
     ],
     "sensor_dp_type": [
       "asip_0622_planter.yaml",
@@ -315,20 +312,6 @@
       ]
     },
     {
-      "file": "djive_arc_fan.yaml",
-      "name": "Humidifying fan",
-      "platforms": [
-        "fan",
-        "select",
-        "binary_sensor",
-        "switch",
-        "sensor"
-      ],
-      "reasons": [
-        "select_non_string_mapping"
-      ]
-    },
-    {
       "file": "dr_heater_dr008_thermostat.yaml",
       "name": "Floor thermostat",
       "platforms": [
@@ -493,7 +476,7 @@
         "time"
       ],
       "reasons": [
-        "select_non_string_mapping"
+        "select_complex_mapping"
       ]
     },
     {
