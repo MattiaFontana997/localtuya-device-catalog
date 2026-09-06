@@ -1741,5 +1741,125 @@ base._CONVERTERS.update({
 })
 
 
-def convert_profile(*args, **kwargs):
-    return base.convert_profile(*args, **kwargs)
+def _exact_temperature_unit_select_mapping(
+    entity: dict[str, Any], dp_id: int, *, optional: bool
+) -> list[dict[str, Any]] | None:
+    """Return an exact sibling temperature-unit select map for one raw DP.
+
+    Cross-entity reuse is intentionally narrow: same numeric DP, string option,
+    same optional membership, exactly two explicit raw mappings, and a complete
+    Celsius/Fahrenheit friendly domain. Nothing is inferred from naming/case.
+    """
+    if entity.get("entity") != "select" or entity.get("translation_key") != "temperature_unit":
+        return None
+    dps = entity.get("dps")
+    if not isinstance(dps, list) or len(dps) != 1 or not isinstance(dps[0], dict):
+        return None
+    dp = dps[0]
+    try:
+        if base._dp_id(dp) != dp_id or base._dp_type(dp) != "string":
+            return None
+    except ConversionError:
+        return None
+    if dp.get("name") != "option" or bool(dp.get("optional")) != optional:
+        return None
+    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
+        return None
+    rules = _raw_mapping(dp)
+    if len(rules) != 2:
+        return None
+
+    aliases = {
+        "C": "celsius", "°C": "celsius", "celsius": "celsius",
+        "F": "fahrenheit", "°F": "fahrenheit", "fahrenheit": "fahrenheit",
+    }
+    normalized: list[dict[str, Any]] = []
+    friendly_seen: set[str] = set()
+    raw_seen: set[str] = set()
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            return None
+        raw = rule.get("dps_val")
+        friendly = rule.get("value")
+        if not isinstance(raw, str) or not isinstance(friendly, str) or friendly not in aliases:
+            return None
+        friendly = aliases[friendly]
+        if raw in raw_seen or friendly in friendly_seen:
+            return None
+        raw_seen.add(raw)
+        friendly_seen.add(friendly)
+        normalized.append({"dps_val": raw, "value": friendly})
+    if friendly_seen != {"celsius", "fahrenheit"}:
+        return None
+    return normalized
+
+
+def _hydrate_climate_temperature_unit_from_sibling(profile: Any) -> Any:
+    """Reuse an exact same-DP temperature-unit select map for Climate.
+
+    Some Tuya Local profiles deliberately keep the Climate unit DP unmapped (or
+    use a forward default) while a sibling ``temperature_unit`` select on the
+    exact same raw DP carries the reversible C/F mapping. The sibling mapping is
+    authoritative device evidence, so copying it into the Climate projection is
+    lossless. Profiles without that evidence remain unchanged/fail-closed.
+    """
+    if not isinstance(profile, dict):
+        return profile
+    entities = profile.get("entities")
+    if not isinstance(entities, list):
+        return profile
+
+    hydrated = copy.deepcopy(profile)
+    hydrated_entities = hydrated.get("entities", [])
+    changed = False
+    for entity in hydrated_entities:
+        if not isinstance(entity, dict) or entity.get("entity") != "climate":
+            continue
+        dps = entity.get("dps")
+        if not isinstance(dps, list):
+            continue
+        unit = next(
+            (
+                dp for dp in dps
+                if isinstance(dp, dict) and dp.get("name") == "temperature_unit"
+            ),
+            None,
+        )
+        if unit is None:
+            continue
+        try:
+            unit_id = base._dp_id(unit)
+        except ConversionError:
+            continue
+        if base._dp_type(unit) != "string":
+            continue
+
+        # Leave an already complete exact Climate map alone. The existing
+        # normalizer remains the sole validator for it.
+        rules = _raw_mapping(unit)
+        if rules and all(
+            isinstance(rule, dict) and "dps_val" in rule and "value" in rule
+            for rule in rules
+        ):
+            continue
+
+        candidates: list[list[dict[str, Any]]] = []
+        for sibling in hydrated_entities:
+            if sibling is entity or not isinstance(sibling, dict):
+                continue
+            candidate = _exact_temperature_unit_select_mapping(
+                sibling, unit_id, optional=bool(unit.get("optional"))
+            )
+            if candidate is not None:
+                candidates.append(candidate)
+        if len(candidates) != 1:
+            continue
+        unit["mapping"] = candidates[0]
+        changed = True
+
+    return hydrated if changed else profile
+
+
+def convert_profile(profile, *args, **kwargs):
+    profile = _hydrate_climate_temperature_unit_from_sibling(profile)
+    return base.convert_profile(profile, *args, **kwargs)
