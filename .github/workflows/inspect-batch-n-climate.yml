@@ -24,7 +24,7 @@ jobs:
           ref: 38347807cfc81ae8789974d98532eb928f42f174
           path: upstream-tuya-local
           fetch-depth: 1
-      - name: Inspect current Climate blockers after HVAC action support
+      - name: Inspect current blockers after mapped-extra support
         run: |
           rm -rf /tmp/batch-n-generated
           python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
@@ -39,6 +39,11 @@ jobs:
           reasons=Counter(y for x in r['results'] if x['status']=='skipped' for y in x['reasons'])
           print('BATCH_N_COUNTS',dict(sorted(counts.items())))
           for k,v in reasons.most_common(): print('GAP',k,v)
+          print('TARGETED')
+          for x in r['results']:
+            low=x['file'].lower()
+            if 'tr8b' in low or any('extra_mapping' in y for y in x.get('reasons',[])):
+              print(x['file'],x['status'],','.join(x.get('reasons',[])))
           print('CLIMATE_SKIPPED')
           for x in r['results']:
             hits=[y for y in x.get('reasons',[]) if y.startswith('climate_') or y.startswith('advanced_mapping')]
