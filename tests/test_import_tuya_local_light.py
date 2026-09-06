@@ -77,6 +77,59 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertFalse(config["color_temp_reverse"])
         self.assertEqual(mapping["match"]["required_dps"], [20, 22, 23])
 
+    def test_brightness_mapping_step_converts_losslessly(self):
+        mapping = convert_profile(
+            {
+                "products": [{"id": "stepped-light"}],
+                "entities": [
+                    {
+                        "entity": "light",
+                        "dps": [
+                            {"id": 1, "type": "boolean", "name": "switch"},
+                            {
+                                "id": 2,
+                                "type": "integer",
+                                "name": "brightness",
+                                "range": {"min": 10, "max": 1000},
+                                "mapping": [{"step": 10}],
+                            },
+                        ],
+                    }
+                ],
+            },
+            source_file="stepped_light.yaml",
+        )
+
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["brightness"], 2)
+        self.assertEqual(config["brightness_lower"], 10)
+        self.assertEqual(config["brightness_upper"], 1000)
+        self.assertEqual(config["brightness_step"], 10)
+
+    def test_brightness_mapping_non_step_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "light_brightness_mapping"):
+            convert_profile(
+                {
+                    "products": [{"id": "mapped-light"}],
+                    "entities": [
+                        {
+                            "entity": "light",
+                            "dps": [
+                                {"id": 1, "type": "boolean", "name": "switch"},
+                                {
+                                    "id": 2,
+                                    "type": "integer",
+                                    "name": "brightness",
+                                    "range": {"min": 10, "max": 1000},
+                                    "mapping": [{"dps_val": None, "value": 0}],
+                                },
+                            ],
+                        }
+                    ],
+                },
+                source_file="mapped_light.yaml",
+            )
+
     def test_inverted_cct_mapping_sets_reverse(self):
         mapping = convert_profile(
             {

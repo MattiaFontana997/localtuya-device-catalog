@@ -999,11 +999,24 @@ def _convert_light(
         _check_common_dp_semantics(brightness, writable=True)
         if _dp_type(brightness) != "integer":
             raise ConversionError("light_brightness_type")
-        if _mapping_rules(brightness):
-            raise ConversionError("light_brightness_mapping")
+        brightness_step = 1
+        rules = _mapping_rules(brightness)
+        if rules:
+            if len(rules) != 1 or set(rules[0]) != {"step"}:
+                raise ConversionError("light_brightness_mapping")
+            step = rules[0].get("step")
+            if isinstance(step, bool) or not isinstance(step, int) or step <= 0:
+                raise ConversionError("light_brightness_mapping")
+            brightness_step = step
         if brightness.get("step") not in (None, 1):
             raise ConversionError("light_brightness_step")
         minimum, maximum = _raw_integer_range(brightness, "light_brightness")
+        # Tuya Local applies mapping.step only on writes: step * round(raw / step).
+        # Keep the exact raw range for reads and pass the write quantizer to runtime.
+        if brightness_step * round(minimum / brightness_step) < minimum:
+            raise ConversionError("light_brightness_step_range")
+        if brightness_step * round(maximum / brightness_step) > maximum:
+            raise ConversionError("light_brightness_step_range")
         config.update(
             {
                 "brightness": _dp_id(brightness),
@@ -1011,6 +1024,8 @@ def _convert_light(
                 "brightness_upper": maximum,
             }
         )
+        if brightness_step != 1:
+            config["brightness_step"] = brightness_step
         _merge_membership(required, optional, brightness)
 
     color_temp = dps.get("color_temp")
