@@ -1,0 +1,74 @@
+name: Build Batch N Safe Catalog
+
+on:
+  push:
+    branches: [develop]
+    paths: [".github/workflows/build-batch-n-safe-catalog.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: tools
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install "jsonschema>=4.23,<5" "PyYAML>=6,<7"
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Generate pinned productless candidates
+        run: |
+          rm -rf /tmp/batch-n-generated
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/batch-n-generated \
+            --json /tmp/batch-n-import.json
+      - name: Build globally safe Catalog V3
+        run: |
+          python tools/build_safe_fingerprint_catalog.py \
+            --catalog catalog.json \
+            --generated-dir /tmp/batch-n-generated \
+            --output /tmp/catalog.json \
+            --report /tmp/productless-fingerprint-import-report.json
+          cp /tmp/catalog.json catalog.json
+          cp /tmp/productless-fingerprint-import-report.json docs/productless-fingerprint-import-report.json
+      - name: Validate resulting catalog
+        run: |
+          python tools/validate_catalog.py catalog.json
+          python - <<'PY'
+          import json
+          c=json.load(open('catalog.json',encoding='utf-8'))
+          r=json.load(open('docs/productless-fingerprint-import-report.json',encoding='utf-8'))
+          product=sum(bool(m.get('match',{}).get('product_ids')) for m in c['mappings'])
+          fp=sum(m.get('match',{}).get('product_ids') == [] and m.get('match',{}).get('fingerprint') == {'mode':'exact_dps'} for m in c['mappings'])
+          print('FINAL_COUNTS', {
+            'generated': r['generated_candidates'],
+            'safe': r['safe_candidates'],
+            'blocked': r['blocked_candidates'],
+            'total_mappings': len(c['mappings']),
+            'product_id_mappings': product,
+            'productless_fingerprints': fp,
+          })
+          PY
+      - name: Commit refreshed safe catalog
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add catalog.json docs/productless-fingerprint-import-report.json
+          if git diff --cached --quiet; then
+            echo "Safe catalog already current"
+            exit 0
+          fi
+          git commit -m "Refresh safe productless catalog after Batch N"
+          git push origin HEAD:develop
