@@ -1,0 +1,51 @@
+name: Inspect Batch N Climate Residuals
+
+on:
+  push:
+    branches: [develop]
+    paths: [".github/workflows/inspect-batch-n-climate.yml"]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: tools
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install "jsonschema>=4.23,<5" "PyYAML>=6,<7"
+      - uses: actions/checkout@v7
+        with:
+          repository: make-all/tuya-local
+          ref: 38347807cfc81ae8789974d98532eb928f42f174
+          path: upstream-tuya-local
+          fetch-depth: 1
+      - name: Inspect current climate blockers
+        run: |
+          rm -rf /tmp/batch-n-generated
+          python tools/import_tuya_local_fingerprints.py upstream-tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/batch-n-generated \
+            --json /tmp/batch-n.json >/tmp/batch-n-summary.txt
+          python - <<'PY'
+          import json, pathlib, yaml
+          from collections import Counter
+          r=json.load(open('/tmp/batch-n.json',encoding='utf-8'))
+          reasons=Counter(y for x in r['results'] if x['status']=='skipped' for y in x['reasons'])
+          wanted={k for k in reasons if k.startswith('climate_')}
+          print('CLIMATE_REASON_COUNTS', {k:reasons[k] for k in sorted(wanted)})
+          root=pathlib.Path('upstream-tuya-local/custom_components/tuya_local/devices')
+          for item in r['results']:
+            hits=[x for x in item.get('reasons',[]) if x.startswith('climate_')]
+            if not hits: continue
+            f=root/item['file']
+            data=yaml.safe_load(f.read_text(encoding='utf-8'))
+            print('\n===',item['file'],'===',','.join(hits))
+            for ent in data.get('entities',[]):
+              if ent.get('entity')=='climate':
+                print(yaml.safe_dump(ent,sort_keys=False).rstrip())
+          PY
