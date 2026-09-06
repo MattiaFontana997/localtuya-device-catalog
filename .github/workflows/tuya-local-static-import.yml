@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "tools/import_tuya_local.py"
+      - "tools/import_tuya_local_fingerprints.py"
       - "tests/test_import_tuya_local*.py"
       - ".github/workflows/tuya-local-static-import.yml"
   workflow_dispatch:
@@ -45,7 +46,7 @@ jobs:
         shell: bash
         run: echo "sha=$(git -C upstream-tuya-local rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Run conservative importer
+      - name: Run conservative product-ID importer
         run: |
           python tools/import_tuya_local.py \
             upstream-tuya-local \
@@ -67,7 +68,48 @@ jobs:
               errors = validate_document(path, schema)
               if errors:
                   raise SystemExit("\n".join(errors))
-          print(f"Validated {len(files)} generated mapping(s)")
+          print(f"Validated {len(files)} generated V2 mapping(s)")
+          PY
+
+      - name: Run safe productless fingerprint importer
+        run: |
+          python tools/import_tuya_local_fingerprints.py \
+            upstream-tuya-local \
+            --revision "${{ steps.upstream.outputs.sha }}" \
+            --output-dir generated-tuya-local-fingerprints \
+            --json tuya-local-fingerprint-import.json \
+            | tee tuya-local-fingerprint-import.txt
+
+      - name: Analyze fingerprint collisions
+        shell: bash
+        run: |
+          python - <<'PY' | tee tuya-local-fingerprint-collisions.txt
+          import json
+          from collections import defaultdict
+          from pathlib import Path
+
+          mappings = []
+          for path in sorted(Path("generated-tuya-local-fingerprints").glob("*.json")):
+              data = json.loads(path.read_text(encoding="utf-8"))
+              mappings.extend(data.get("mappings", []))
+
+          exact = defaultdict(list)
+          for mapping in mappings:
+              match = mapping["match"]
+              signature = (
+                  tuple(match.get("required_dps", [])),
+                  tuple(match.get("optional_dps", [])),
+                  match.get("category"),
+              )
+              exact[signature].append(mapping["id"])
+
+          duplicate_groups = [ids for ids in exact.values() if len(ids) > 1]
+          duplicate_profiles = sum(len(ids) for ids in duplicate_groups)
+          print(f"Fingerprint mappings: {len(mappings)}")
+          print(f"Exact duplicate signature groups: {len(duplicate_groups)}")
+          print(f"Profiles in exact duplicate groups: {duplicate_profiles}")
+          for ids in duplicate_groups:
+              print("DUPLICATE " + ", ".join(ids))
           PY
 
       - name: Publish summary
@@ -78,12 +120,19 @@ jobs:
             echo
             echo "Upstream revision: \`${{ steps.upstream.outputs.sha }}\`"
             echo
+            echo "### Product-ID mappings"
             echo '```text'
             cat tuya-local-static-import.txt
             echo '```'
+            echo
+            echo "### Productless fingerprints"
+            echo '```text'
+            cat tuya-local-fingerprint-import.txt
+            cat tuya-local-fingerprint-collisions.txt
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload import report and generated mappings
+      - name: Upload product-ID import report and mappings
         uses: actions/upload-artifact@v4
         with:
           name: tuya-local-static-import
@@ -91,4 +140,15 @@ jobs:
             tuya-local-static-import.json
             tuya-local-static-import.txt
             generated-tuya-local/*.json
+          if-no-files-found: error
+
+      - name: Upload productless fingerprint report and mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuya-local-fingerprint-import
+          path: |
+            tuya-local-fingerprint-import.json
+            tuya-local-fingerprint-import.txt
+            tuya-local-fingerprint-collisions.txt
+            generated-tuya-local-fingerprints/*.json
           if-no-files-found: error
