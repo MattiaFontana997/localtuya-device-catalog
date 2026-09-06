@@ -275,6 +275,7 @@ def _project_mapping_for_base(
             "hvac_mode", "preset_mode", "fan_mode", "swing_mode",
             "swing_horizontal_mode", "hvac_action", "temperature_unit",
         },
+        "water_heater": {"operation_mode", "temperature_unit"},
     }
     if name not in enum_names.get(platform, set()):
         projected = copy.deepcopy(dp)
@@ -342,6 +343,8 @@ def _project_mapping_for_base(
     projected["mapping"] = [
         {"dps_val": value, "value": value} for value in outputs
     ]
+    if platform == "water_heater" and name == "operation_mode":
+        projected["_productless_source_type"] = base._dp_type(dp)
     return projected
 
 
@@ -1000,6 +1003,232 @@ def _convert_fan_productless(entity: dict[str, Any]) -> base.Converted:
     return {"platform": "fan", "config": config}, required, optional
 
 
+
+def _water_heater_raw_matches_type(value: Any, raw_type: str) -> bool:
+    if raw_type == "boolean":
+        return isinstance(value, bool)
+    if raw_type == "integer":
+        return isinstance(value, int) and not isinstance(value, bool)
+    if raw_type == "string":
+        return isinstance(value, str)
+    return False
+
+
+def _water_heater_mode_values(dp: dict[str, Any]) -> tuple[dict[str, Any], str]:
+    base._check_common_dp_semantics(dp, writable=True)
+    raw_type = base._dp_type(dp)
+    source_type = dp.get("_productless_source_type", raw_type)
+    if source_type not in {"boolean", "integer", "string"}:
+        raise ConversionError("water_heater_operation_mode_type")
+    if raw_type not in {"boolean", "integer", "string"}:
+        raise ConversionError("water_heater_operation_mode_type")
+    rules = base._mapping_rules(dp)
+    if not rules:
+        if raw_type == "boolean":
+            return {"off": False, "on": True}, source_type
+        raise ConversionError("water_heater_operation_mode_mapping")
+    values: dict[str, Any] = {}
+    seen_raw: list[Any] = []
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError("water_heater_operation_mode_mapping")
+        raw = rule["dps_val"]
+        friendly = rule["value"]
+        if not _water_heater_raw_matches_type(raw, raw_type):
+            raise ConversionError("water_heater_operation_mode_mapping")
+        if not isinstance(friendly, str) or not friendly.strip():
+            raise ConversionError("water_heater_operation_mode_mapping")
+        friendly = friendly.strip()
+        if friendly in values or any(raw == previous and type(raw) is type(previous) for previous in seen_raw):
+            raise ConversionError("water_heater_operation_mode_duplicate")
+        values[friendly] = raw
+        seen_raw.append(raw)
+    return values, source_type
+
+
+def _water_heater_numeric(
+    dp: dict[str, Any], *, writable: bool, require_range: bool, reason: str
+) -> tuple[float, dict[str, Any] | None, float]:
+    base._check_common_dp_semantics(dp, writable=writable)
+    if base._dp_type(dp) != "integer":
+        raise ConversionError(f"{reason}_type")
+    precision = dp.get("precision")
+    if precision not in (None, 0):
+        raise ConversionError(f"{reason}_precision")
+    if writable:
+        scaling, rule = base._numeric_rule(dp)
+    else:
+        scaling = base._default_scale_rule(dp)
+        rule = {}
+    range_config = rule.get("range", dp.get("range"))
+    if require_range and not isinstance(range_config, dict):
+        raise ConversionError(f"{reason}_range")
+    if range_config is not None:
+        if not isinstance(range_config, dict) or "min" not in range_config or "max" not in range_config:
+            raise ConversionError(f"{reason}_range")
+        minimum = base._range_value(range_config["min"], scaling, f"{reason}_range")
+        maximum = base._range_value(range_config["max"], scaling, f"{reason}_range")
+        if maximum < minimum:
+            raise ConversionError(f"{reason}_range")
+    raw_step = rule.get("step", dp.get("step", 1))
+    step = base._range_value(raw_step, scaling, f"{reason}_step")
+    if step <= 0:
+        raise ConversionError(f"{reason}_step")
+    return scaling, range_config, step
+
+
+def _water_heater_unit(value: Any) -> str:
+    if value in {"C", "°C"}:
+        return "°C"
+    if value in {"F", "°F"}:
+        return "°F"
+    raise ConversionError("water_heater_temperature_unit")
+
+
+def _water_heater_temperature_unit_values(dp: dict[str, Any]) -> dict[str, Any]:
+    base._check_common_dp_semantics(dp, writable=True)
+    raw_type = base._dp_type(dp)
+    if raw_type not in {"string", "integer"}:
+        raise ConversionError("water_heater_temperature_unit_type")
+    rules = base._mapping_rules(dp)
+    if not rules:
+        raise ConversionError("water_heater_temperature_unit_mapping")
+    values: dict[str, Any] = {}
+    seen_raw: list[Any] = []
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError("water_heater_temperature_unit_mapping")
+        raw = rule["dps_val"]
+        if not _water_heater_raw_matches_type(raw, raw_type):
+            raise ConversionError("water_heater_temperature_unit_mapping")
+        friendly = _water_heater_unit(rule["value"])
+        if friendly in values or any(raw == previous and type(raw) is type(previous) for previous in seen_raw):
+            raise ConversionError("water_heater_temperature_unit_duplicate")
+        values[friendly] = raw
+        seen_raw.append(raw)
+    return values
+
+
+def _convert_water_heater_productless(entity: dict[str, Any]) -> base.Converted:
+    """Convert lossless Tuya Local water-heater semantics for Catalog V3."""
+    if entity.get("class") is not None:
+        raise ConversionError("water_heater_device_class")
+    base._entity_metadata(entity, {})
+    dps = _named_dps(entity, "water_heater")
+    primary = next(
+        (dps[name] for name in ("operation_mode", "temperature", "current_temperature") if name in dps),
+        None,
+    )
+    if primary is None:
+        raise ConversionError("water_heater_missing_functional_dp")
+
+    config: dict[str, Any] = {"id": base._dp_id(primary), "platform": "water_heater"}
+    required: set[int] = set()
+    optional: set[int] = set()
+    consumed: set[str] = set()
+    scales: list[float] = []
+    static_units: set[str] = set()
+
+    operation = dps.get("operation_mode")
+    if operation is not None:
+        mode_values, source_type = _water_heater_mode_values(operation)
+        dp_id = base._dp_id(operation)
+        config["water_heater_mode_dp"] = dp_id
+        config["water_heater_mode_values"] = mode_values
+        if source_type == "boolean":
+            config["water_heater_power_dp"] = dp_id
+            config["water_heater_power_on"] = True
+            config["water_heater_power_off"] = False
+        base._merge_membership(required, optional, operation)
+        consumed.add("operation_mode")
+
+    target = dps.get("temperature")
+    if target is not None:
+        scaling, range_config, step = _water_heater_numeric(
+            target, writable=True, require_range=True, reason="water_heater_temperature"
+        )
+        scales.append(scaling)
+        dp_id = base._dp_id(target)
+        config["water_heater_target_temperature_dp"] = dp_id
+        assert range_config is not None
+        config["water_heater_temperature_min"] = base._range_value(
+            range_config["min"], scaling, "water_heater_temperature_range"
+        )
+        config["water_heater_temperature_max"] = base._range_value(
+            range_config["max"], scaling, "water_heater_temperature_range"
+        )
+        config["water_heater_temperature_step"] = step
+        if target.get("unit") is not None:
+            static_units.add(_water_heater_unit(target.get("unit")))
+        base._merge_membership(required, optional, target)
+        consumed.add("temperature")
+
+    current = dps.get("current_temperature")
+    if current is not None:
+        scaling, _, _ = _water_heater_numeric(
+            current, writable=False, require_range=False, reason="water_heater_current_temperature"
+        )
+        scales.append(scaling)
+        config["water_heater_current_temperature_dp"] = base._dp_id(current)
+        if current.get("unit") is not None:
+            static_units.add(_water_heater_unit(current.get("unit")))
+        base._merge_membership(required, optional, current)
+        consumed.add("current_temperature")
+
+    if scales:
+        first = scales[0]
+        if any(abs(scale - first) > 1e-12 for scale in scales[1:]):
+            raise ConversionError("water_heater_temperature_scale_mismatch")
+        if first != 1.0:
+            config["water_heater_temperature_scaling"] = first
+
+    unit_dp = dps.get("temperature_unit")
+    if unit_dp is not None:
+        config["water_heater_temperature_unit_dp"] = base._dp_id(unit_dp)
+        config["water_heater_temperature_unit_values"] = _water_heater_temperature_unit_values(unit_dp)
+        base._merge_membership(required, optional, unit_dp)
+        consumed.add("temperature_unit")
+    elif static_units:
+        if len(static_units) != 1:
+            raise ConversionError("water_heater_temperature_unit_mismatch")
+        config["water_heater_temperature_unit"] = next(iter(static_units))
+
+    for name, config_key in (
+        ("min_temperature", "water_heater_min_temperature_dp"),
+        ("max_temperature", "water_heater_max_temperature_dp"),
+    ):
+        dp = dps.get(name)
+        if dp is None:
+            continue
+        scaling, _, _ = _water_heater_numeric(
+            dp, writable=False, require_range=False, reason=f"water_heater_{name}"
+        )
+        if scales and abs(scaling - scales[0]) > 1e-12:
+            raise ConversionError("water_heater_temperature_scale_mismatch")
+        config[config_key] = base._dp_id(dp)
+        base._merge_membership(required, optional, dp)
+        consumed.add(name)
+
+    away = dps.get("away_mode")
+    if away is not None:
+        base._check_common_dp_semantics(away, writable=True)
+        if base._dp_type(away) != "boolean":
+            raise ConversionError("water_heater_away_type")
+        base._identity_boolean_mapping(away, "water_heater_away_mapping")
+        config["water_heater_away_dp"] = base._dp_id(away)
+        config["water_heater_away_on"] = True
+        config["water_heater_away_off"] = False
+        base._merge_membership(required, optional, away)
+        consumed.add("away_mode")
+
+    for name, dp in dps.items():
+        if name in consumed:
+            continue
+        base._preserve_core_extra("water_heater", name, dp, config, required, optional)
+
+    return {"platform": "water_heater", "config": config}, required, optional
+
+
 def _convert_binary_sensor_productless(entity: dict[str, Any]) -> base.Converted:
     """Extend binary sensors with ordered exact/bitfield/catch-all mappings.
 
@@ -1077,11 +1306,12 @@ def _convert_sensor_productless(entity: dict[str, Any]) -> base.Converted:
 # Extend only the productless conversion surface. Keep the mature product-ID
 # importer unchanged while wrapping its converters for Batch F on this module's
 # develop-only path.
-base.SUPPORTED_PLATFORMS.update({"time", "event"})
+base.SUPPORTED_PLATFORMS.update({"time", "event", "water_heater"})
 _original_converters = dict(base._CONVERTERS)
 _original_converters["binary_sensor"] = _convert_binary_sensor_productless
 _original_converters["sensor"] = _convert_sensor_productless
 _original_converters["fan"] = _convert_fan_productless
+_original_converters["water_heater"] = _convert_water_heater_productless
 for _platform, _converter in _original_converters.items():
     base._CONVERTERS[_platform] = _advanced_wrapper(_platform, _converter)
 
