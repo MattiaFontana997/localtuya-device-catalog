@@ -1,0 +1,52 @@
+name: Fix Batch F wrapper
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/fix-batch-f-wrapper.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - name: Make advanced wrapper transparent
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tools/import_tuya_local_productless.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def _advanced_wrapper(
+              platform: str, converter: Callable[[dict[str, Any]], base.Converted]
+          ) -> Callable[[dict[str, Any]], base.Converted]:
+              def wrapped(entity: dict[str, Any]) -> base.Converted:
+                  prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
+                      entity, platform
+                  )
+                  converted, required, optional = converter(prepared)
+          '''
+          new = '''def _advanced_wrapper(
+              platform: str, converter: Callable[..., base.Converted]
+          ) -> Callable[..., base.Converted]:
+              def wrapped(entity: dict[str, Any], *args, **kwargs) -> base.Converted:
+                  prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
+                      entity, platform
+                  )
+                  converted, required, optional = converter(prepared, *args, **kwargs)
+          '''
+          if old not in text:
+              raise SystemExit('expected wrapper block not found')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py
+          git commit -m "Fix Batch F converter wrapper arguments"
+          git push origin HEAD:develop
