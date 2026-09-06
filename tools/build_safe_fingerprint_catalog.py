@@ -2,9 +2,9 @@
 
 The builder consumes mappings emitted by import_tuya_local_fingerprints.py and
 mirrors LocalTuya's exact-DPS fingerprint ranking. A candidate is publishable
-only when it is the unique best match for every device state allowed by its own
-required/optional DPS declaration. Candidates that tie or lose for any allowed
-optional-DP combination fail closed and are omitted.
+only when it is structurally usable and the unique best match for every device
+state allowed by its own required/optional DPS declaration. Candidates that
+tie, lose, or would create duplicate HA entities fail closed and are omitted.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ FINGERPRINT_MODE = {"mode": "exact_dps"}
 
 @dataclass(frozen=True, slots=True)
 class BlockedFingerprint:
-    """One fingerprint excluded because a legal DPS state is ambiguous."""
+    """One fingerprint excluded from automatic catalog publication."""
 
     mapping_id: str
     available_dps: tuple[int, ...]
@@ -64,28 +64,56 @@ def _allowed_states(mapping: dict[str, Any]) -> Iterable[set[int]]:
     match = mapping["match"]
     required = set(match.get("required_dps", []))
     optional = sorted(set(match.get("optional_dps", [])))
-    # Current source profiles have small optional sets. Keep the analysis
-    # explicitly bounded rather than allowing a malicious input to explode.
+    # Keep combinatorial analysis explicitly bounded for untrusted generated data.
     if len(optional) > 16:
         raise ValueError(f"{mapping['id']}: too many optional DPS to analyze safely")
     for mask in itertools.product((False, True), repeat=len(optional)):
         yield required | {dp for dp, present in zip(optional, mask) if present}
 
 
+def _structural_failure(mapping: dict[str, Any]) -> BlockedFingerprint | None:
+    """Reject entity layouts that cannot have stable HA identities."""
+    seen_entities: set[tuple[str, int]] = set()
+    for entity in mapping.get("entities", []):
+        try:
+            key = (str(entity["platform"]), int(entity["config"]["id"]))
+        except (KeyError, TypeError, ValueError):
+            return BlockedFingerprint(mapping["id"], (), (), "invalid_entity")
+        if key in seen_entities:
+            return BlockedFingerprint(
+                mapping["id"],
+                tuple(mapping["match"].get("required_dps", [])),
+                (),
+                "duplicate_entity_primary_dp",
+            )
+        seen_entities.add(key)
+    return None
+
+
 def classify_fingerprints(
     mappings: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[BlockedFingerprint]]:
-    """Return candidates that remain uniquely identifiable in every state."""
+    """Return candidates that remain structurally valid and uniquely identifiable."""
     safe: list[dict[str, Any]] = []
     blocked: list[BlockedFingerprint] = []
+    eligible: list[dict[str, Any]] = []
 
-    for candidate in mappings:
+    # Invalid candidates must not participate in ambiguity scoring: they will
+    # never be published and therefore cannot legitimately shadow a valid one.
+    for mapping in mappings:
+        failure = _structural_failure(mapping)
+        if failure is None:
+            eligible.append(mapping)
+        else:
+            blocked.append(failure)
+
+    for candidate in eligible:
         candidate_id = candidate["id"]
         failure: BlockedFingerprint | None = None
         for available in _allowed_states(candidate):
             scored = [
                 (score, mapping["id"])
-                for mapping in mappings
+                for mapping in eligible
                 if (score := _compatible_score(mapping, available)) is not None
             ]
             if not scored:
@@ -134,6 +162,7 @@ def build_catalog(
             preserved.append(mapping)
 
     safe = sorted(safe, key=lambda mapping: mapping["id"])
+    blocked = sorted(blocked, key=lambda item: item.mapping_id)
     result = {
         "schema_version": 3,
         "mappings": preserved + safe,
