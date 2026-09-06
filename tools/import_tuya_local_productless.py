@@ -11,6 +11,7 @@ import copy
 from typing import Any, Callable
 
 import import_tuya_local as base
+from sensor_mapping import validate_sensor_value_mapping
 
 
 ConversionError = base.ConversionError
@@ -857,12 +858,35 @@ def _convert_binary_sensor_productless(entity: dict[str, Any]) -> base.Converted
     return base._finish_single_entity("binary_sensor", config, dp)
 
 
+def _convert_sensor_productless(entity: dict[str, Any]) -> base.Converted:
+    """Preserve ordered raw-specific read mappings without legacy rounding."""
+    dp = base._single_named_dp(entity, "sensor")
+    rules = _raw_mapping(dp)
+    if not rules:
+        return base._convert_sensor(entity)
+    base._check_common_dp_semantics(dp, writable=False)
+    if dp.get("precision") is not None:
+        raise ConversionError("sensor_precision")
+    spec = {"raw_type": base._dp_type(dp), "rules": rules}
+    if "range" in dp:
+        spec["range"] = dp["range"]
+    normalized = validate_sensor_value_mapping(spec)
+    if normalized is None:
+        raise ConversionError("sensor_value_mapping_semantics")
+    projected = copy.deepcopy(entity)
+    projected["dps"][0].pop("mapping", None)
+    converted, required, optional = base._convert_sensor(projected)
+    converted["config"]["sensor_value_mapping"] = normalized
+    return converted, required, optional
+
+
 # Extend only the productless conversion surface. Keep the mature product-ID
 # importer unchanged while wrapping its converters for Batch F on this module's
 # develop-only path.
 base.SUPPORTED_PLATFORMS.update({"time", "event"})
 _original_converters = dict(base._CONVERTERS)
 _original_converters["binary_sensor"] = _convert_binary_sensor_productless
+_original_converters["sensor"] = _convert_sensor_productless
 for _platform, _converter in _original_converters.items():
     base._CONVERTERS[_platform] = _advanced_wrapper(_platform, _converter)
 

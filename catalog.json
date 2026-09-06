@@ -628,7 +628,7 @@
       }
     },
     {
-      "id": "fingerprint-bauhn_ap5w0624_powerstrip-fdcef8180b",
+      "id": "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -776,10 +776,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
             "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 24
             }
@@ -790,10 +797,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
             "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 22
             }
@@ -833,7 +847,7 @@
       }
     },
     {
-      "id": "fingerprint-beok_tcb38_thermostat-3e1ac0baf9",
+      "id": "fingerprint-beok_tcb38_thermostat-66874d19b0",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -1060,10 +1074,17 @@
           "config": {
             "id": 102,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "C",
             "state_class": "measurement",
-            "device_class": "temperature"
+            "device_class": "temperature",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -1304,7 +1325,7 @@
       }
     },
     {
-      "id": "fingerprint-blitzwolf_bwshp6_smartplug-bef0db68d6",
+      "id": "fingerprint-blitzwolf_bwshp6_smartplug-039ea1434c",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -1382,10 +1403,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
             "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 24
             }
@@ -1396,10 +1424,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
             "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 22
             }
@@ -1637,7 +1672,7 @@
       }
     },
     {
-      "id": "fingerprint-digoo_dgsp202-aeed881c4e",
+      "id": "fingerprint-digoo_dgsp202-4ab5fc769b",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -1682,10 +1717,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -1703,10 +1745,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -1734,7 +1783,7 @@
       }
     },
     {
-      "id": "fingerprint-dual_power_monitor_smartplug-b7358753f3",
+      "id": "fingerprint-dual_power_monitor_smartplug-75eb68215c",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -1784,10 +1833,17 @@
           "config": {
             "id": 7,
             "platform": "sensor",
-            "scaling": 0.001,
             "unit_of_measurement": "A",
             "state_class": "measurement",
-            "device_class": "current"
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 1000
+                }
+              ]
+            }
           }
         },
         {
@@ -1795,10 +1851,17 @@
           "config": {
             "id": 8,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -1806,10 +1869,17 @@
           "config": {
             "id": 9,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -2981,7 +3051,7 @@
       }
     },
     {
-      "id": "fingerprint-grid_connect_usb_double_power_point-719a508bb1",
+      "id": "fingerprint-grid_connect_usb_double_power_point-2b2f90440f",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -3089,10 +3159,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
             "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 24
             }
@@ -3103,10 +3180,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
             "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 22
             }
@@ -3749,6 +3833,124 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/hjz_radiator.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-illumanance_sensor-14877f2349",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 2,
+            "platform": "sensor",
+            "unit_of_measurement": "lx",
+            "state_class": "measurement",
+            "device_class": "illuminance"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "device_class": "enum",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "low",
+                  "value": "Low"
+                },
+                {
+                  "dps_val": "middle",
+                  "value": "Medium"
+                },
+                {
+                  "dps_val": "high",
+                  "value": "High"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/illumanance_sensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-illumanance_v2_sensor-7252c8eb46",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          6,
+          7
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 7,
+            "platform": "sensor",
+            "unit_of_measurement": "lx",
+            "state_class": "measurement",
+            "device_class": "illuminance"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 6,
+            "platform": "sensor",
+            "device_class": "enum",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "low",
+                  "value": "Low"
+                },
+                {
+                  "dps_val": "middle",
+                  "value": "Medium"
+                },
+                {
+                  "dps_val": "high",
+                  "value": "High"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/illumanance_v2_sensor.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }
@@ -4639,7 +4841,7 @@
       }
     },
     {
-      "id": "fingerprint-makegood_double_power_point_with_energy-a99a9f203f",
+      "id": "fingerprint-makegood_double_power_point_with_energy-96f4bff3fc",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -4684,10 +4886,17 @@
           "config": {
             "id": 6,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -4705,10 +4914,17 @@
           "config": {
             "id": 5,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -5430,6 +5646,159 @@
       }
     },
     {
+      "id": "fingerprint-pgst_climate_sensor-ce4b9c73f8",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          9,
+          10,
+          11,
+          12,
+          13,
+          23,
+          24
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 1,
+            "platform": "sensor",
+            "unit_of_measurement": "C",
+            "state_class": "measurement",
+            "device_class": "temperature",
+            "extra_state_attributes_dps": {
+              "unknown_23": 23,
+              "unknown_24": 24
+            }
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 2,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "state_class": "measurement",
+            "device_class": "humidity"
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 3,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "device_class": "battery",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "low",
+                  "value": 20
+                },
+                {
+                  "dps_val": "middle",
+                  "value": 50
+                },
+                {
+                  "dps_val": "high",
+                  "value": 80
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 9,
+            "platform": "select",
+            "options": "f;c",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "fahrenheit;celsius"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 10,
+            "platform": "number",
+            "min_value": -20.0,
+            "max_value": 70.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 11,
+            "platform": "number",
+            "min_value": -20.0,
+            "max_value": 70.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "C",
+            "device_class": "temperature"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 12,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 100.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%",
+            "device_class": "humidity"
+          }
+        },
+        {
+          "platform": "number",
+          "config": {
+            "id": 13,
+            "platform": "number",
+            "min_value": 0.0,
+            "max_value": 100.0,
+            "step_size": 1.0,
+            "scaling": 1.0,
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "unit_of_measurement": "%",
+            "device_class": "humidity"
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/pgst_climate_sensor.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
       "confidence": "experimental",
       "match": {
@@ -5745,7 +6114,7 @@
       }
     },
     {
-      "id": "fingerprint-pziot_e01_energymeter-ce77107ea2",
+      "id": "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -5770,10 +6139,17 @@
           "config": {
             "id": 109,
             "platform": "sensor",
-            "scaling": 0.01,
             "unit_of_measurement": "kWh",
             "state_class": "total_increasing",
             "device_class": "energy",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "unknown_104": 104,
               "unknown_105": 105,
@@ -5786,10 +6162,17 @@
           "config": {
             "id": 101,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -5797,10 +6180,17 @@
           "config": {
             "id": 102,
             "platform": "sensor",
-            "scaling": 0.01,
             "unit_of_measurement": "A",
             "state_class": "measurement",
-            "device_class": "current"
+            "device_class": "current",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
           }
         },
         {
@@ -5808,10 +6198,17 @@
           "config": {
             "id": 103,
             "platform": "sensor",
-            "scaling": 0.01,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 100
+                }
+              ]
+            }
           }
         }
       ],
@@ -5953,7 +6350,7 @@
       }
     },
     {
-      "id": "fingerprint-rgb_nightlight_outlet-de6ee3d17c",
+      "id": "fingerprint-rgb_nightlight_outlet-196a003dd8",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -6032,10 +6429,17 @@
           "config": {
             "id": 5,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -6043,10 +6447,17 @@
           "config": {
             "id": 6,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -6562,7 +6973,7 @@
       }
     },
     {
-      "id": "fingerprint-smartplugv2_childlock-ac7b780602",
+      "id": "fingerprint-smartplugv2_childlock-35ee6690e1",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -6637,10 +7048,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
-            "device_class": "power"
+            "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -6648,10 +7066,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
-            "device_class": "voltage"
+            "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -6700,7 +7125,7 @@
       }
     },
     {
-      "id": "fingerprint-smartplugv3-8f8f59a9e1",
+      "id": "fingerprint-smartplugv3-18b61a5fa7",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -6771,10 +7196,17 @@
           "config": {
             "id": 19,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "W",
             "state_class": "measurement",
             "device_class": "power",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 24
             }
@@ -6785,10 +7217,17 @@
           "config": {
             "id": 20,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "V",
             "state_class": "measurement",
             "device_class": "voltage",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            },
             "extra_state_attributes_dps": {
               "calibration": 22
             }
@@ -6974,7 +7413,7 @@
       }
     },
     {
-      "id": "fingerprint-thb2_temperature_and_humidity_sensor-e3ffcee317",
+      "id": "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -7005,10 +7444,17 @@
           "config": {
             "id": 1,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "C",
             "state_class": "measurement",
-            "device_class": "temperature"
+            "device_class": "temperature",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -7163,7 +7609,7 @@
       }
     },
     {
-      "id": "fingerprint-weaja_s9_gasalarm-f95cc8239c",
+      "id": "fingerprint-weaja_s9_gasalarm-d4005d41a2",
       "confidence": "experimental",
       "match": {
         "product_ids": [],
@@ -7224,9 +7670,16 @@
           "config": {
             "id": 5,
             "platform": "sensor",
-            "scaling": 0.1,
             "unit_of_measurement": "% LEL",
-            "state_class": "measurement"
+            "state_class": "measurement",
+            "sensor_value_mapping": {
+              "raw_type": "integer",
+              "rules": [
+                {
+                  "scale": 10
+                }
+              ]
+            }
           }
         },
         {
@@ -7598,6 +8051,133 @@
       "provenance": {
         "source": "make-all/tuya-local",
         "path": "custom_components/tuya_local/devices/weau_pool_heatpump13kW.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
+      "id": "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          5,
+          8,
+          13,
+          14,
+          22,
+          24,
+          25,
+          29,
+          101
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "humidifier",
+          "config": {
+            "id": 1,
+            "platform": "humidifier",
+            "device_class": "humidifier",
+            "humidifier_switch_dp": 1,
+            "humidifier_switch_on": true,
+            "humidifier_switch_off": false,
+            "humidifier_current_humidity_dp": 14,
+            "humidifier_target_humidity_dp": 13,
+            "humidifier_humidity_min": 30.0,
+            "humidifier_humidity_max": 80.0,
+            "humidifier_humidity_step": 1.0,
+            "humidifier_mode_dp": 24,
+            "humidifier_mode_values": {
+              "auto": "AUTO",
+              "normal": "MIDDLE",
+              "boost": "HIGH",
+              "sleep": "SLEEP"
+            },
+            "extra_state_attributes_dps": {
+              "unknown_22": 22
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 5,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 8,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "sensor",
+          "config": {
+            "id": 101,
+            "platform": "sensor",
+            "unit_of_measurement": "%",
+            "sensor_value_mapping": {
+              "raw_type": "string",
+              "rules": [
+                {
+                  "dps_val": "No_water",
+                  "icon": "mdi:cup-outline",
+                  "value": 0
+                },
+                {
+                  "dps_val": "Have_water",
+                  "icon": "mdi:cup-water",
+                  "value": 50
+                },
+                {
+                  "dps_val": "Full_water",
+                  "icon": "mdi:cup",
+                  "value": 100
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 25,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "lock",
+          "config": {
+            "id": 29,
+            "platform": "lock",
+            "lock_command_values": {
+              "lock": true,
+              "unlock": false
+            },
+            "lock_state_values": {
+              "locked": true,
+              "unlocked": false
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/wetair_wawh1210lw_humidifier.yaml",
         "license": "MIT",
         "revision": "38347807cfc81ae8789974d98532eb928f42f174"
       }

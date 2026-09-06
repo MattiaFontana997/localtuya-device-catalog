@@ -11,6 +11,10 @@ from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
+try:
+    from .sensor_mapping import validate_sensor_value_mapping
+except ImportError:  # Direct script execution.
+    from sensor_mapping import validate_sensor_value_mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -295,6 +299,10 @@ def validate_semantics(data: dict[str, Any], source: Path) -> list[str]:
         for entity in mapping["entities"]:
             platform = entity["platform"]
             config = entity["config"]
+            if "sensor_value_mapping" in config:
+                if (platform != "sensor" or validate_sensor_value_mapping(config["sensor_value_mapping"]) is None
+                        or any(key in config for key in ("scaling", "advanced_mapping", "advanced_mapping_by_dp"))):
+                    errors.append(f"{source}: mapping {mapping_id!r} invalid sensor value mapping")
             override_keys = entity.get("override_keys", [])
 
             for override_key in override_keys:

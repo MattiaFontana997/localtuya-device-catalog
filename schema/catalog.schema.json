@@ -229,6 +229,9 @@
             },
             "platform": {
               "type": "string"
+            },
+            "sensor_value_mapping": {
+              "$ref": "#/$defs/sensor_value_mapping"
             }
           }
         },
@@ -298,6 +301,95 @@
           }
         }
       ]
+    },
+    "sensor_value_mapping": {
+      "type": "object",
+      "required": [
+        "raw_type",
+        "rules"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "raw_type": {
+          "enum": [
+            "string",
+            "integer",
+            "float",
+            "boolean"
+          ]
+        },
+        "range": {
+          "type": "object",
+          "required": [
+            "min",
+            "max"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          }
+        },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "dps_val": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "invert": {
+                "type": "boolean"
+              },
+              "target_range": {
+                "type": "object",
+                "required": [
+                  "min",
+                  "max"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  }
+                }
+              },
+              "icon": {
+                "type": "string",
+                "pattern": "^mdi:"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "allOf": [

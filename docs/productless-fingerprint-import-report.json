@@ -37,7 +37,7 @@
       "best_matches": [
         "fingerprint-goldair_geco_heater-2cb3bd4135"
       ],
-      "mapping_id": "fingerprint-cesmarthome_monitoring_smartplug-1a5a5adf4c",
+      "mapping_id": "fingerprint-cesmarthome_monitoring_smartplug-1531700114",
       "reason": "shadowed"
     },
     {
@@ -47,10 +47,10 @@
         19
       ],
       "best_matches": [
-        "fingerprint-co2v1_co2_sensor-55bc270b48",
+        "fingerprint-co2v1_co2_sensor-ba56c09aac",
         "fingerprint-inkbird_pth9cw_airquality-9a7420d762"
       ],
-      "mapping_id": "fingerprint-co2v1_co2_sensor-55bc270b48",
+      "mapping_id": "fingerprint-co2v1_co2_sensor-ba56c09aac",
       "reason": "ambiguous"
     },
     {
@@ -171,7 +171,7 @@
         19
       ],
       "best_matches": [
-        "fingerprint-co2v1_co2_sensor-55bc270b48",
+        "fingerprint-co2v1_co2_sensor-ba56c09aac",
         "fingerprint-inkbird_pth9cw_airquality-9a7420d762"
       ],
       "mapping_id": "fingerprint-inkbird_pth9cw_airquality-9a7420d762",
@@ -320,7 +320,7 @@
     }
   ],
   "blocked_candidates": 23,
-  "generated_candidates": 98,
+  "generated_candidates": 102,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -328,15 +328,15 @@
     "fingerprint-arlec_lve160ha_balllights-c9d4994e3a",
     "fingerprint-avatto_curtain_switch-84c1f88992",
     "fingerprint-avonflow_afd14h_radiator-943a51e261",
-    "fingerprint-bauhn_ap5w0624_powerstrip-fdcef8180b",
-    "fingerprint-beok_tcb38_thermostat-3e1ac0baf9",
+    "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
+    "fingerprint-beok_tcb38_thermostat-66874d19b0",
     "fingerprint-blitzwill_ceilingfanlight-36c798b498",
-    "fingerprint-blitzwolf_bwshp6_smartplug-bef0db68d6",
+    "fingerprint-blitzwolf_bwshp6_smartplug-039ea1434c",
     "fingerprint-brizlabs_string_lights-29eaa9cea7",
     "fingerprint-catit_pet_feeder-bb92e37192",
     "fingerprint-comfortzone_cztf423s_towerfan-7e0f8a179e",
-    "fingerprint-digoo_dgsp202-aeed881c4e",
-    "fingerprint-dual_power_monitor_smartplug-b7358753f3",
+    "fingerprint-digoo_dgsp202-4ab5fc769b",
+    "fingerprint-dual_power_monitor_smartplug-75eb68215c",
     "fingerprint-electriq_cd12pw_dehumidifier-87f8238902",
     "fingerprint-electriq_pd45e_dehumidifier-228b4116db",
     "fingerprint-eurom_600_heater-86f6faca72",
@@ -351,13 +351,15 @@
     "fingerprint-goldair_gpcv_heater-f1bfe362d4",
     "fingerprint-gorilla_fan_v2-2d169b1109",
     "fingerprint-grid_connect_double_switch-d7bb749eef",
-    "fingerprint-grid_connect_usb_double_power_point-719a508bb1",
+    "fingerprint-grid_connect_usb_double_power_point-2b2f90440f",
     "fingerprint-grid_connect_usb_power_point-c199df8546",
     "fingerprint-haozee_rbsrain01_rainsensor-bbe3491b99",
     "fingerprint-himox_h05_purifier-c17b3f9f28",
     "fingerprint-himox_h06_purifier-42cdcaa424",
     "fingerprint-hiniso_rm10s_dehumidifier-80076ad273",
     "fingerprint-hjz_radiator-3cfc2e1b57",
+    "fingerprint-illumanance_sensor-14877f2349",
+    "fingerprint-illumanance_v2_sensor-7252c8eb46",
     "fingerprint-intec_ceilingfanlight-4cd24c5989",
     "fingerprint-klarstein_wonderwall_irheater-e13bfcf103",
     "fingerprint-kogan_garage_opener-387738bf9b",
@@ -367,7 +369,7 @@
     "fingerprint-kyvol_ea200_humidifier-c561e79164",
     "fingerprint-logicom_powerstrip-c1fe992975",
     "fingerprint-m027_curtain-09d85a1ed9",
-    "fingerprint-makegood_double_power_point_with_energy-a99a9f203f",
+    "fingerprint-makegood_double_power_point_with_energy-96f4bff3fc",
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
     "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
@@ -375,28 +377,30 @@
     "fingerprint-nedis_htpl20f_heater-40b5de8922",
     "fingerprint-nwt_wdh06em_dehumidifier-b8006d8ac2",
     "fingerprint-orion_ptc2000_heater-1d6c159639",
+    "fingerprint-pgst_climate_sensor-ce4b9c73f8",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
     "fingerprint-prosto_ptc2000_heater-2106dd93c1",
     "fingerprint-purline_m100_heater-40ff05fbc4",
-    "fingerprint-pziot_e01_energymeter-ce77107ea2",
+    "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
-    "fingerprint-rgb_nightlight_outlet-de6ee3d17c",
+    "fingerprint-rgb_nightlight_outlet-196a003dd8",
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
     "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
     "fingerprint-simple_quad_switch-727a0f9b0f",
     "fingerprint-simple_rgbcw_lightbulb-e884ae361d",
     "fingerprint-simple_switch-bee53020a2",
-    "fingerprint-smartplugv2_childlock-ac7b780602",
-    "fingerprint-smartplugv3-8f8f59a9e1",
+    "fingerprint-smartplugv2_childlock-35ee6690e1",
+    "fingerprint-smartplugv3-18b61a5fa7",
     "fingerprint-somgom_double_switch-9388e4f5a7",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
-    "fingerprint-thb2_temperature_and_humidity_sensor-e3ffcee317",
-    "fingerprint-weaja_s9_gasalarm-f95cc8239c",
+    "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
+    "fingerprint-weaja_s9_gasalarm-d4005d41a2",
     "fingerprint-weau_pool_heatpump-586b2d4561",
     "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
+    "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51"
   ],
-  "safe_candidates": 75
+  "safe_candidates": 79
 }
