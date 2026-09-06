@@ -3,7 +3,7 @@ name: Inspect Productless Importer Gaps
 on:
   push:
     branches:
-      - expand-productless-importer-batch-1
+      - develop
     paths:
       - ".github/workflows/inspect-productless-gaps.yml"
       - "tools/import_tuya_local_fingerprints.py"
