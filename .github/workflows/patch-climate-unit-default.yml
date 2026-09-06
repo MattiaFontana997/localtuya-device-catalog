@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
-      - name: Apply patch
+      - name: Apply corrected patch
         run: python .github/scripts/patch_climate_unit_default.py
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5" pytest
