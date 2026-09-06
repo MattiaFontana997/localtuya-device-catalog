@@ -260,8 +260,35 @@ def _translate_advanced_mapping(
     return translated, references
 
 
-def _project_mapping_for_base(dp: dict[str, Any]) -> dict[str, Any]:
-    """Project an advanced-mapped raw DP into its HA-facing value domain."""
+def _project_mapping_for_base(
+    dp: dict[str, Any], platform: str, name: str
+) -> dict[str, Any]:
+    """Project mappings only when a base converter needs a finite HA enum domain."""
+    enum_names = {
+        "climate": {
+            "hvac_mode", "preset_mode", "fan_mode", "swing_mode",
+            "swing_horizontal_mode", "hvac_action", "temperature_unit",
+        },
+    }
+    if name not in enum_names.get(platform, set()):
+        projected = copy.deepcopy(dp)
+        rules = _raw_mapping(dp)
+        output: list[dict[str, Any]] = []
+        for source in rules:
+            rule = {
+                key: copy.deepcopy(value)
+                for key, value in source.items()
+                if key not in _BASE_PROJECTION_DROP
+                and key not in _UNSUPPORTED_ADVANCED_KEYS
+            }
+            if rule:
+                output.append(rule)
+        if output:
+            projected["mapping"] = output
+        else:
+            projected.pop("mapping", None)
+        return projected
+
     projected = copy.deepcopy(dp)
     rules = _raw_mapping(dp)
     outputs: list[Any] = []
@@ -356,7 +383,7 @@ def _prepare_advanced_entity(
             advanced_by_dp[str(base._dp_id(original_dp))] = translated
             referenced_names.update(references)
             transformed_by_name[name].clear()
-            transformed_by_name[name].update(_project_mapping_for_base(original_dp))
+            transformed_by_name[name].update(_project_mapping_for_base(original_dp, platform, name))
 
     if not advanced_by_dp:
         return entity, {}, set()
