@@ -1,0 +1,104 @@
+name: Patch select string raw mappings
+
+on:
+  push:
+    paths:
+      - .github/workflows/patch-select-string-raw.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply lossless select string raw normalization
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tools/import_tuya_local_productless.py')
+          text = path.read_text()
+          anchor = 'def _prepare_typed_productless_select(\n'
+          if text.count(anchor) != 1:
+              raise SystemExit(f'expected one typed select helper anchor, found {text.count(anchor)}')
+          helper = '''def _normalize_string_select_raw_mapping(entity: dict[str, Any]) -> dict[str, Any]:
+    """Normalize YAML scalar mapping keys for Tuya string Select DPS.
+
+    Tuya Local compares non-bitfield mapping keys using ``str`` and coerces
+    outbound values to the declared DP type before writing. For a string DP,
+    an unquoted YAML scalar such as ``1`` therefore behaves exactly as ``"1"``
+    on both read and write. Normalize only finite scalar values; null and
+    container forms remain fail-closed in the mature Select converter.
+    """
+    if entity.get("entity") != "select":
+        return entity
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity
+    option = next(
+        (dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "option"),
+        None,
+    )
+    if option is None or base._dp_type(option) != "string":
+        return entity
+    rules = _raw_mapping(option)
+    if not rules:
+        return entity
+
+    transformed = copy.deepcopy(entity)
+    transformed_option = next(
+        dp for dp in transformed.get("dps", [])
+        if isinstance(dp, dict) and dp.get("name") == "option"
+    )
+    changed = False
+    for rule in _raw_mapping(transformed_option):
+        if "dps_val" not in rule:
+            continue
+        raw = rule.get("dps_val")
+        if isinstance(raw, str) or raw is None or isinstance(raw, (list, dict)):
+            continue
+        if isinstance(raw, float) and not math.isfinite(raw):
+            continue
+        rule["dps_val"] = str(raw)
+        changed = True
+    return transformed if changed else entity
+
+
+'''
+          text = text.replace(anchor, helper + anchor)
+
+          old = '''        elif platform == "select":
+            flagged, typed_select_mapping = _prepare_typed_productless_select(flagged)
+'''
+          new = '''        elif platform == "select":
+            flagged = _normalize_string_select_raw_mapping(flagged)
+            flagged, typed_select_mapping = _prepare_typed_productless_select(flagged)
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one select wrapper block, found {text.count(old)}')
+          text = text.replace(old, new)
+          path.write_text(text)
+
+          test = Path('tests/test_productless_select_string_mapping.py')
+          test.write_text('''"""Lossless string-select mapping normalization regressions."""\n\nimport math\nimport sys\nimport unittest\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))\n\nimport import_tuya_local as base\nimport import_tuya_local_productless as productless\n\n\nclass ProductlessStringSelectMappingTests(unittest.TestCase):\n    def test_numeric_yaml_raw_values_follow_tuya_string_semantics(self):\n        entity = {\n            "entity": "select",\n            "name": "Humidifier",\n            "dps": [{\n                "id": 105,\n                "type": "string",\n                "name": "option",\n                "mapping": [\n                    {"dps_val": "close", "value": "off"},\n                    {"dps_val": 1, "value": "low"},\n                    {"dps_val": 2, "value": "medium"},\n                    {"dps_val": 3, "value": "high"},\n                    {"dps_val": "auto", "value": "auto"},\n                ],\n            }],\n        }\n        converted, required, optional = productless._CONVERTERS["select"](entity)\n        self.assertEqual(converted["config"]["options"], "close;1;2;3;auto")\n        self.assertEqual(converted["config"]["options_friendly"], "off;low;medium;high;auto")\n        self.assertEqual(required, {105})\n        self.assertEqual(optional, set())\n\n    def test_large_integer_raw_token_is_preserved_as_exact_decimal_string(self):\n        token = 80000000000000000000000000000000\n        entity = {\n            "entity": "select",\n            "dps": [{\n                "id": 25,\n                "type": "string",\n                "name": "option",\n                "mapping": [\n                    {"dps_val": token, "value": "Screen - Movie"},\n                    {"dps_val": 97000000000000000000000000000000, "value": "Color Scene - Pure"},\n                ],\n            }],\n        }\n        converted, _, _ = productless._CONVERTERS["select"](entity)\n        self.assertEqual(\n            converted["config"]["options"],\n            "80000000000000000000000000000000;97000000000000000000000000000000",\n        )\n\n    def test_duplicate_after_string_coercion_stays_fail_closed(self):\n        entity = {\n            "entity": "select",\n            "dps": [{\n                "id": 1,\n                "type": "string",\n                "name": "option",\n                "mapping": [\n                    {"dps_val": 1, "value": "one"},\n                    {"dps_val": "1", "value": "other"},\n                ],\n            }],\n        }\n        with self.assertRaisesRegex(base.ConversionError, "select_duplicate_option"):\n            productless._CONVERTERS["select"](entity)\n\n    def test_null_and_container_raw_values_are_not_normalized(self):\n        for raw in (None, [1]):\n            with self.subTest(raw=raw):\n                entity = {\n                    "entity": "select",\n                    "dps": [{\n                        "id": 1,\n                        "type": "string",\n                        "name": "option",\n                        "mapping": [{"dps_val": raw, "value": "x"}],\n                    }],\n                }\n                with self.assertRaisesRegex(base.ConversionError, "select_non_string_mapping"):\n                    productless._CONVERTERS["select"](entity)\n\n\nif __name__ == "__main__":\n    unittest.main()\n''')
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5" pytest
+      - name: Run targeted tests
+        run: python -m pytest -q tests/test_productless_select_string_mapping.py tests/test_import_tuya_local_productless.py
+      - name: Commit importer changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_productless_select_string_mapping.py
+          git diff --cached --check
+          git commit -m "Normalize scalar raw values for string selects"
+          git push origin HEAD:develop
