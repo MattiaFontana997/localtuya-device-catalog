@@ -24,7 +24,7 @@ jobs:
       - run: python tools/_apply_batch_n_hidden_swing.py
       - run: python -m py_compile tools/import_tuya_local_productless.py tests/test_productless_climate_hidden_swing.py
       - name: Run focused tests
-        run: python -m unittest tests.test_productless_climate_hidden_swing tests.test_productless_advanced_mapping -v
+        run: python -m unittest tests.test_productless_climate_hidden_swing -v
       - name: Run full catalog suite
         run: python -m unittest discover -s tests -v
       - name: Commit importer and tests
