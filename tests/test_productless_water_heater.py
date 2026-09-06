@@ -1,6 +1,10 @@
 """Batch L productless water-heater importer tests."""
 
+import sys
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 import import_tuya_local as base
 import import_tuya_local_productless as productless
