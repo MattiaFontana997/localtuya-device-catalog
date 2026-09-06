@@ -24,79 +24,54 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          path = Path('tools/import_tuya_local.py')
-          text = path.read_text()
+          p = Path('tools/import_tuya_local.py')
+          s = p.read_text()
 
-          # Allow strict unknown_N light datapoints through the name gate.
-          old = '''        if name not in supported:\n            raise ConversionError(f"light_unsupported_dp:{name}")\n'''
-          new = '''        if name not in supported and not _is_light_unknown_dp_name(name):\n            raise ConversionError(f"light_unsupported_dp:{name}")\n'''
-          if old not in text:
-              raise SystemExit('light name gate anchor not found')
-          text = text.replace(old, new, 1)
+          # Exact residual raw attributes present in the pinned corpus.
+          for name in ('sleep_mode', 'wakeup_mode', 'unknown_4', 'unknown_32', 'unknown_33', 'unknown_34', 'unknown_35', 'unknown_36'):
+              marker = '    "scene_list",\n'
+              if marker not in s:
+                  raise SystemExit('supported/extra marker missing')
+              # There are two independent sets containing scene_list; insert in both.
+              s = s.replace(marker, f'    "{name}",\n' + marker)
 
-          # Preserve the two plain base64 modes seen on the Marpou profile.
-          for anchor in ['        "rhythm_mode",\n']:
-              if text.count(anchor) < 2:
-                  raise SystemExit('rhythm_mode anchors not found')
-          text = text.replace(
-              '        "rhythm_mode",\n',
-              '        "rhythm_mode",\n        "sleep_mode",\n        "wakeup_mode",\n',
-          )
+          # Unknown_4 is an opaque integer. Keep the named general raw-extra
+          # helper strict, and permit integer only for exact unknown_N fields.
+          old = '''    if _dp_type(dp) not in {"string", "hex", "base64"}:\n        raise ConversionError(f"light_extra_attribute_type:{name}")\n'''
+          new = '''    allowed_types = {"string", "hex", "base64"}\n    if name.startswith("unknown_") and name[len("unknown_") :].isdigit():\n        allowed_types.add("integer")\n    if _dp_type(dp) not in allowed_types:\n        raise ConversionError(f"light_extra_attribute_type:{name}")\n'''
+          if old not in s:
+              raise SystemExit('extra type anchor missing')
+          s = s.replace(old, new, 1)
 
-          # Add strict helper before the normal raw-extra helper.
-          anchor = '''def _preserve_simple_light_extra_attribute(\n'''
-          helper = '''def _is_light_unknown_dp_name(name: str) -> bool:\n    """Return whether a light DP is an exact Tuya Local unknown_N field."""\n    if not name.startswith("unknown_"):\n        return False\n    suffix = name[len("unknown_") :]\n    return bool(suffix) and suffix.isdigit()\n\n\ndef _preserve_unknown_light_extra_attribute(\n    name: str,\n    dp: dict[str, Any],\n    config: dict[str, Any],\n    required: set[int],\n    optional: set[int],\n) -> None:\n    """Preserve an opaque unknown_N DP without interpreting its value."""\n    _check_common_dp_semantics(dp, writable=False)\n    if _mapping_rules(dp):\n        raise ConversionError(f"light_unknown_mapping:{name}")\n    if _dp_type(dp) not in {\n        "boolean", "integer", "string", "bitfield", "hex", "base64"\n    }:\n        raise ConversionError(f"light_unknown_type:{name}")\n    allowed_keys = {\n        "id", "type", "name", "optional", "readonly", "hidden", "force",\n        "persist", "sensitive",\n    }\n    if set(dp) - allowed_keys:\n        raise ConversionError(f"light_unknown_semantics:{name}")\n    config.setdefault("extra_state_attributes_dps", {})[name] = _dp_id(dp)\n    _merge_membership(required, optional, dp)\n\n\n'''
-          if anchor not in text:
-              raise SystemExit('raw extra helper anchor not found')
-          text = text.replace(anchor, helper + anchor, 1)
-
-          # Consume strict unknown_N values after the normal named raw extras.
-          old = '''    for extra_name in sorted(LIGHT_RAW_EXTRA_DP_NAMES):\n        extra_dp = dps.get(extra_name)\n        if extra_dp is not None:\n            _preserve_simple_light_extra_attribute(\n                extra_name, extra_dp, config, required, optional\n            )\n\n    effect = dps.get("effect")\n'''
-          new = '''    for extra_name in sorted(LIGHT_RAW_EXTRA_DP_NAMES):\n        extra_dp = dps.get(extra_name)\n        if extra_dp is not None:\n            _preserve_simple_light_extra_attribute(\n                extra_name, extra_dp, config, required, optional\n            )\n\n    for extra_name, extra_dp in sorted(dps.items()):\n        if _is_light_unknown_dp_name(extra_name):\n            _preserve_unknown_light_extra_attribute(\n                extra_name, extra_dp, config, required, optional\n            )\n\n    effect = dps.get("effect")\n'''
-          if old not in text:
-              raise SystemExit('extra conversion anchor not found')
-          text = text.replace(old, new, 1)
-
-          # Tuya Local exposes every non-HA color mode as an effect. Scene-like
-          # raw work modes are representable directly by LocalTuya's scene list.
           old = '''            if raw.startswith("scene_"):\n                friendly = value.strip()\n                if not friendly or friendly in configured_scene_values:\n                    raise ConversionError("light_color_mode_duplicate")\n                configured_scene_values[friendly] = raw\n                observed[raw] = value\n                continue\n\n            if raw == "music" and value.strip().casefold() == "music":\n                config["music_mode"] = True\n                observed[raw] = value\n                continue\n\n            if raw == "scene":\n                if scene_dp is None or not configured_scene_values:\n                    raise ConversionError("light_scene_data_required")\n                observed[raw] = value\n                continue\n'''
-          new = '''            if raw.startswith("scene"):\n                # A validated same-DP scene transport takes precedence for the\n                # exact bare work mode. Otherwise the raw work-mode itself is\n                # the effect payload, matching Tuya Local's color_mode effects.\n                if raw == "scene" and scene_dp is not None and configured_scene_values:\n                    observed[raw] = value\n                    continue\n                friendly = value.strip()\n                if not friendly or friendly in configured_scene_values:\n                    raise ConversionError("light_color_mode_duplicate")\n                configured_scene_values[friendly] = raw\n                observed[raw] = value\n                continue\n\n            if raw == "music" and value.strip().casefold() == "music":\n                config["music_mode"] = True\n                observed[raw] = value\n                continue\n'''
-          if old not in text:
-              raise SystemExit('scene mode anchor not found')
-          text = text.replace(old, new, 1)
-          path.write_text(text)
+          new = '''            if raw == "scene" and scene_dp is not None and configured_scene_values:\n                # Exact same-DP scene transport folded by _find_light_scene_context.\n                observed[raw] = value\n                continue\n\n            if raw.startswith("scene"):\n                # Tuya Local exposes non-HA color modes as effects. Preserve\n                # the exact raw work-mode value; no synthetic scene DP is needed.\n                friendly = value.strip()\n                if not friendly or friendly in configured_scene_values:\n                    raise ConversionError("light_color_mode_duplicate")\n                configured_scene_values[friendly] = raw\n                observed[raw] = value\n                continue\n\n            if raw == "music" and value.strip().casefold() == "music":\n                config["music_mode"] = True\n                observed[raw] = value\n                continue\n'''
+          if old not in s:
+              raise SystemExit('scene branch anchor missing')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
 
-          test_path = Path('tests/test_import_tuya_local_light.py')
-          tests = test_path.read_text()
-
-          old = '''    def test_bare_scene_mode_requires_scene_data(self):\n        with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):\n            convert_profile(\n                {\n                    "products": [{"id": "scene-light"}],\n                    "entities": [\n                        {\n                            "entity": "light",\n                            "dps": [\n                                {"id": 20, "type": "boolean", "name": "switch"},\n                                {\n                                    "id": 21,\n                                    "type": "string",\n                                    "name": "color_mode",\n                                    "mapping": [\n                                        {"dps_val": "scene", "value": "Scene"}\n                                    ],\n                                },\n                            ],\n                        }\n                    ],\n                },\n                source_file="scene_light.yaml",\n            )\n'''
-          new = '''    def test_bare_scene_mode_converts_as_color_mode_effect(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "scene-light"}],\n                "entities": [\n                    {\n                        "entity": "light",\n                        "dps": [\n                            {"id": 20, "type": "boolean", "name": "switch"},\n                            {\n                                "id": 21,\n                                "type": "string",\n                                "name": "color_mode",\n                                "mapping": [\n                                    {"dps_val": "scene", "value": "Scene"}\n                                ],\n                            },\n                        ],\n                    }\n                ],\n            },\n            source_file="scene_light.yaml",\n        )\n        config = mapping["entities"][0]["config"]\n        self.assertEqual(config["scene_values"], {"Scene": "scene"})\n        self.assertEqual(config["color_mode"], 21)\n'''
-          if old not in tests:
-              raise SystemExit('bare-scene test anchor not found')
-          tests = tests.replace(old, new, 1)
-
-          # Add no-underscore mode effect and strict opaque extras tests.
-          anchor = '''    def test_simple_music_mode_is_preserved(self):\n'''
-          addition = '''    def test_scene_without_underscore_converts_as_mode_effect(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "atomi-like"}],\n                "entities": [{\n                    "entity": "light",\n                    "dps": [\n                        {"id": 20, "type": "boolean", "name": "switch"},\n                        {\n                            "id": 21,\n                            "type": "string",\n                            "name": "color_mode",\n                            "mapping": [\n                                {"dps_val": "scene1", "value": "Strobe"},\n                                {"dps_val": "scene9", "value": "Multi"},\n                            ],\n                        },\n                    ],\n                }],\n            },\n            source_file="atomi_like.yaml",\n        )\n        self.assertEqual(\n            mapping["entities"][0]["config"]["scene_values"],\n            {"Strobe": "scene1", "Multi": "scene9"},\n        )\n\n'''
-          if anchor not in tests:
-              raise SystemExit('music test anchor not found')
-          tests = tests.replace(anchor, addition + anchor, 1)
-
-          anchor = '''    def test_unknown_light_attribute_is_rejected(self):\n'''
-          addition = '''    def test_plain_sleep_and_wakeup_modes_are_preserved(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "sleep-light"}],\n                "entities": [{\n                    "entity": "light",\n                    "dps": [\n                        {"id": 20, "type": "boolean", "name": "switch"},\n                        {"id": 31, "type": "base64", "name": "sleep_mode", "optional": True},\n                        {"id": 32, "type": "base64", "name": "wakeup_mode", "optional": True},\n                    ],\n                }],\n            },\n            source_file="sleep_light.yaml",\n        )\n        config = mapping["entities"][0]["config"]\n        self.assertEqual(\n            config["extra_state_attributes_dps"],\n            {"sleep_mode": 31, "wakeup_mode": 32},\n        )\n        self.assertEqual(mapping["match"]["optional_dps"], [31, 32])\n\n    def test_unknown_numbered_light_dps_are_preserved_opaquely(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "unknown-light"}],\n                "entities": [{\n                    "entity": "light",\n                    "dps": [\n                        {"id": 1, "type": "boolean", "name": "switch"},\n                        {"id": 4, "type": "integer", "name": "unknown_4"},\n                        {"id": 32, "type": "hex", "name": "unknown_32", "optional": True},\n                    ],\n                }],\n            },\n            source_file="unknown_light.yaml",\n        )\n        config = mapping["entities"][0]["config"]\n        self.assertEqual(\n            config["extra_state_attributes_dps"],\n            {"unknown_4": 4, "unknown_32": 32},\n        )\n        self.assertEqual(mapping["match"]["required_dps"], [1, 4])\n        self.assertEqual(mapping["match"]["optional_dps"], [32])\n\n    def test_unknown_numbered_light_dp_mapping_stays_fail_closed(self):\n        with self.assertRaisesRegex(ConversionError, "light_unknown_mapping:unknown_4"):\n            convert_profile(\n                {\n                    "products": [{"id": "mapped-unknown-light"}],\n                    "entities": [{\n                        "entity": "light",\n                        "dps": [\n                            {"id": 1, "type": "boolean", "name": "switch"},\n                            {\n                                "id": 4,\n                                "type": "integer",\n                                "name": "unknown_4",\n                                "mapping": [{"dps_val": 1, "value": 2}],\n                            },\n                        ],\n                    }],\n                },\n                source_file="mapped_unknown_light.yaml",\n            )\n\n'''
-          if anchor not in tests:
-              raise SystemExit('unknown test anchor not found')
-          tests = tests.replace(anchor, addition + anchor, 1)
-
-          # The mismatched context is still rejected, but now because its hidden\n          # transport remains an unrepresentable independent hidden entity.
-          tests = tests.replace(
-              'with self.assertRaisesRegex(ConversionError, "light_scene_data_required"):\n            convert_profile(\n                {\n                    "products": [{"id": "mismatched-scene-data"}]',
-              'with self.assertRaisesRegex(ConversionError, "entity_hidden"):\n            convert_profile(\n                {\n                    "products": [{"id": "mismatched-scene-data"}]',
-              1,
+          tp = Path('tests/test_import_tuya_local_light.py')
+          t = tp.read_text()
+          pattern = re.compile(
+              r'    def test_bare_scene_mode_requires_scene_data\(self\):\n.*?(?=    def test_mode_only_scenes_convert_to_scene_values)',
+              re.S,
           )
+          replacement = '''    def test_bare_scene_mode_converts_as_color_mode_effect(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "scene-light"}],\n                "entities": [\n                    {\n                        "entity": "light",\n                        "dps": [\n                            {"id": 20, "type": "boolean", "name": "switch"},\n                            {\n                                "id": 21,\n                                "type": "string",\n                                "name": "color_mode",\n                                "mapping": [{"dps_val": "scene", "value": "Scene"}],\n                            },\n                        ],\n                    }\n                ],\n            },\n            source_file="scene_light.yaml",\n        )\n        config = mapping["entities"][0]["config"]\n        self.assertEqual(config["scene_values"], {"Scene": "scene"})\n        self.assertEqual(config["color_mode"], 21)\n\n'''
+          t2, n = pattern.subn(replacement, t, count=1)
+          if n != 1:
+              raise SystemExit(f'bare scene test replacement count={n}')
+          t = t2
 
-          test_path.write_text(tests)
+          # Add corpus-focused tests without weakening existing fail-closed cases.
+          insert = '''    def test_scene_without_underscore_converts_as_mode_effect(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "atomi-like"}],\n                "entities": [{\n                    "entity": "light",\n                    "dps": [\n                        {"id": 20, "type": "boolean", "name": "switch"},\n                        {\n                            "id": 21, "type": "string", "name": "color_mode",\n                            "mapping": [\n                                {"dps_val": "scene1", "value": "Strobe"},\n                                {"dps_val": "scene9", "value": "Multi"},\n                            ],\n                        },\n                    ],\n                }],\n            },\n            source_file="atomi_like.yaml",\n        )\n        self.assertEqual(\n            mapping["entities"][0]["config"]["scene_values"],\n            {"Strobe": "scene1", "Multi": "scene9"},\n        )\n\n    def test_residual_plain_light_extras_are_preserved(self):\n        mapping = convert_profile(\n            {\n                "products": [{"id": "residual-light"}],\n                "entities": [{\n                    "entity": "light",\n                    "dps": [\n                        {"id": 1, "type": "boolean", "name": "switch"},\n                        {"id": 4, "type": "integer", "name": "unknown_4"},\n                        {"id": 31, "type": "base64", "name": "sleep_mode", "optional": True},\n                        {"id": 32, "type": "hex", "name": "unknown_32", "optional": True},\n                        {"id": 33, "type": "hex", "name": "unknown_33", "optional": True},\n                        {"id": 34, "type": "hex", "name": "unknown_34", "optional": True},\n                        {"id": 35, "type": "hex", "name": "unknown_35", "optional": True},\n                        {"id": 36, "type": "hex", "name": "unknown_36", "optional": True},\n                    ],\n                }],\n            },\n            source_file="residual_light.yaml",\n        )\n        config = mapping["entities"][0]["config"]\n        self.assertEqual(config["extra_state_attributes_dps"]["unknown_4"], 4)\n        self.assertEqual(config["extra_state_attributes_dps"]["sleep_mode"], 31)\n        self.assertEqual(config["extra_state_attributes_dps"]["unknown_36"], 36)\n        self.assertEqual(mapping["match"]["required_dps"], [1, 4])\n        self.assertEqual(mapping["match"]["optional_dps"], [31, 32, 33, 34, 35, 36])\n\n'''
+          anchor = '    def test_simple_music_mode_is_preserved(self):\n'
+          if anchor not in t:
+              raise SystemExit('music test anchor missing')
+          t = t.replace(anchor, insert + anchor, 1)
+
+          tp.write_text(t)
           PY
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
@@ -109,5 +84,5 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add tools/import_tuya_local.py tests/test_import_tuya_local_light.py
           git diff --cached --check
-          git commit -m "Import light scene work modes and opaque extras"
+          git commit -m "Import light scene work modes and residual extras"
           git push origin HEAD:develop
