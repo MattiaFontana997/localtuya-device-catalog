@@ -450,8 +450,30 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
             {"selftest_result": 6},
         )
 
-    def test_multidp_extra_mapping_stays_fail_closed(self):
-        with self.assertRaisesRegex(ConversionError, "sensor_extra_mapping:description"):
+    def test_multidp_safe_extra_mapping_uses_mapped_attribute_channel(self):
+        result = self._convert([
+            {
+                "entity": "sensor",
+                "dps": [
+                    {"id": 1, "name": "sensor", "type": "integer"},
+                    {
+                        "id": 2,
+                        "name": "description",
+                        "type": "string",
+                        "mapping": [{"dps_val": "x", "value": "friendly"}],
+                    },
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["mapped_extra_state_attributes_dps"], {"description": 2})
+        self.assertEqual(
+            config["advanced_mapping_by_dp"]["2"],
+            [{"dps_val": "x", "value": "friendly"}],
+        )
+
+    def test_multidp_richer_extra_mapping_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "multi_dp_mapped_extra:description"):
             self._convert([
                 {
                     "entity": "sensor",
@@ -460,8 +482,8 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
                         {
                             "id": 2,
                             "name": "description",
-                            "type": "string",
-                            "mapping": [{"dps_val": "x", "value": "friendly"}],
+                            "type": "integer",
+                            "mapping": [{"scale": 10, "step": 1}],
                         },
                     ],
                 }

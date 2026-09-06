@@ -43,6 +43,13 @@ _SIMPLE_PRIMARY_NAMES = {
     "sensor": "sensor",
     "switch": "switch",
 }
+_CLIMATE_SEMANTIC_NAMES = {
+    "hvac_mode", "temperature", "current_temperature",
+    "target_temp_low", "target_temp_high", "humidity",
+    "current_humidity", "preset_mode", "fan_mode", "swing_mode",
+    "swing_horizontal_mode", "hvac_action", "temperature_unit",
+    "min_temperature", "max_temperature", "state", "available",
+}
 
 
 def _named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]:
@@ -567,14 +574,7 @@ def _prepare_advanced_entity(
     # hand them to the mature platform converter as generic extra attributes.
     # Named semantic DPS remain visible to the converter even when referenced.
     if platform == "climate" and referenced_names:
-        climate_semantic_names = {
-            "hvac_mode", "temperature", "current_temperature",
-            "target_temp_low", "target_temp_high", "humidity",
-            "current_humidity", "preset_mode", "fan_mode", "swing_mode",
-            "swing_horizontal_mode", "hvac_action", "temperature_unit",
-            "min_temperature", "max_temperature", "state", "available",
-        }
-        internal_names = referenced_names - climate_semantic_names
+        internal_names = referenced_names - _CLIMATE_SEMANTIC_NAMES
         if internal_names:
             transformed["dps"] = [
                 dp for dp in transformed.get("dps", [])
@@ -612,6 +612,131 @@ def _advanced_dependency_ids(advanced_by_dp: dict[str, list[dict[str, Any]]]) ->
                 if value is not None:
                     result.add(int(value))
     return result
+
+
+def _mapped_extra_runtime_rules(
+    dp: dict[str, Any], platform: str, name: str
+) -> list[dict[str, Any]]:
+    """Translate only extra-attribute mappings the runtime reproduces exactly."""
+    rules = _raw_mapping(dp)
+    if not rules:
+        return []
+
+    # Reuse the mature raw-extra validator after removing only the mapping.
+    # This keeps encoded/sensitive/unsupported DP semantics fail-closed while
+    # allowing the separate mapped-extra runtime channel to own value mapping.
+    probe = copy.deepcopy(dp)
+    probe.pop("mapping", None)
+    base._preserve_core_extra(platform, name, probe, {}, set(), set())
+
+    dp_type = base._dp_type(dp)
+    if len(rules) == 1 and set(rules[0]) == {"scale"}:
+        if dp_type != "integer":
+            raise ConversionError(f"{platform}_mapped_extra_scale_type:{name}")
+        scale = rules[0].get("scale")
+        if isinstance(scale, bool) or not isinstance(scale, (int, float)):
+            raise ConversionError(f"{platform}_mapped_extra_scale:{name}")
+        scale = float(scale)
+        if not math.isfinite(scale) or scale <= 0:
+            raise ConversionError(f"{platform}_mapped_extra_scale:{name}")
+        return [{"scale": scale}]
+
+    if dp_type not in {"boolean", "integer", "string"}:
+        raise ConversionError(f"{platform}_mapped_extra_type:{name}")
+
+    translated: list[dict[str, Any]] = []
+    seen_raw: list[Any] = []
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError(f"{platform}_mapped_extra_mapping:{name}")
+        raw = rule.get("dps_val")
+        if raw is None:
+            # LocalTuya's dps() treats a cached None as unknown and deliberately
+            # does not run it through advanced mapping, so null/default rules
+            # cannot be represented as mapped extra attributes yet.
+            raise ConversionError(f"{platform}_mapped_extra_null:{name}")
+        if dp_type == "boolean" and not isinstance(raw, bool):
+            raise ConversionError(f"{platform}_mapped_extra_raw_type:{name}")
+        if dp_type == "integer" and (not isinstance(raw, int) or isinstance(raw, bool)):
+            raise ConversionError(f"{platform}_mapped_extra_raw_type:{name}")
+        if dp_type == "string" and not isinstance(raw, str):
+            raise ConversionError(f"{platform}_mapped_extra_raw_type:{name}")
+        if any(raw == previous and type(raw) is type(previous) for previous in seen_raw):
+            raise ConversionError(f"{platform}_mapped_extra_duplicate_raw:{name}")
+        seen_raw.append(raw)
+        translated.append({
+            "dps_val": _runtime_scalar(raw, f"{platform}_mapped_extra_scalar:{name}"),
+            "value": _runtime_scalar(rule.get("value"), f"{platform}_mapped_extra_scalar:{name}"),
+        })
+    return translated
+
+
+def _store_mapped_extra(
+    platform: str,
+    name: str,
+    dp: dict[str, Any],
+    rules: list[dict[str, Any]],
+    advanced_by_dp: dict[str, list[dict[str, Any]]],
+    config: dict[str, Any],
+    required: set[int],
+    optional: set[int],
+) -> None:
+    """Expose one extra attribute through dps() instead of the raw status cache."""
+    dp_id = base._dp_id(dp)
+    key = str(dp_id)
+    existing = advanced_by_dp.get(key)
+    if existing is not None and existing != rules:
+        raise ConversionError(f"{platform}_mapped_extra_dp_conflict:{name}")
+    advanced_by_dp[key] = copy.deepcopy(rules)
+
+    raw_attrs = config.get("extra_state_attributes_dps", {})
+    mapped_attrs = config.setdefault("mapped_extra_state_attributes_dps", {})
+    if name in raw_attrs or name in mapped_attrs:
+        raise ConversionError(f"{platform}_mapped_extra_name_conflict:{name}")
+    if name not in {"state", "available"}:
+        if len(raw_attrs) + len(mapped_attrs) >= 32:
+            raise ConversionError("multi_dp_too_many_extra_attributes")
+        mapped_attrs[name] = dp_id
+    if not mapped_attrs:
+        config.pop("mapped_extra_state_attributes_dps", None)
+    base._merge_membership(required, optional, dp)
+
+
+def _prepare_complex_mapped_extras(
+    entity: dict[str, Any],
+    platform: str,
+) -> tuple[dict[str, Any], list[tuple[dict[str, Any], list[dict[str, Any]]]]]:
+    """Remove safe mapped extras before complex mature converters reject them."""
+    if platform != "climate":
+        return entity, []
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity, []
+
+    transformed = copy.deepcopy(entity)
+    kept: list[dict[str, Any]] = []
+    mapped: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
+    for dp in transformed.get("dps", []):
+        if not isinstance(dp, dict):
+            kept.append(dp)
+            continue
+        name = dp.get("name")
+        if not isinstance(name, str) or name in _CLIMATE_SEMANTIC_NAMES or not _raw_mapping(dp):
+            kept.append(dp)
+            continue
+        try:
+            rules = _mapped_extra_runtime_rules(dp, platform, name)
+        except ConversionError:
+            # Leave unsupported shapes untouched so the mature converter emits
+            # its normal fail-closed reason instead of silently consuming them.
+            kept.append(dp)
+            continue
+        if not rules:
+            kept.append(dp)
+            continue
+        mapped.append((copy.deepcopy(dp), rules))
+    transformed["dps"] = kept
+    return transformed, mapped
 
 
 def _split_simple_multi_dp_entity(
@@ -671,7 +796,6 @@ def _preserve_simple_multi_dp_extras(
 ) -> None:
     dependency_ids = _advanced_dependency_ids(advanced_by_dp)
     advanced_source_ids = {int(dp_id) for dp_id in advanced_by_dp}
-    exposed = len(config.get("extra_state_attributes_dps", {}))
 
     for dp in extras:
         dp_id = base._dp_id(dp)
@@ -689,11 +813,21 @@ def _preserve_simple_multi_dp_extras(
         if dp_id in advanced_source_ids:
             raise ConversionError(f"multi_dp_advanced_extra:{name}")
 
+        if _raw_mapping(dp):
+            try:
+                rules = _mapped_extra_runtime_rules(dp, platform, name)
+            except ConversionError as err:
+                raise ConversionError(f"multi_dp_mapped_extra:{name}") from err
+            _store_mapped_extra(
+                platform, name, dp, rules, advanced_by_dp, config, required, optional
+            )
+            continue
+
+        raw_attrs = config.get("extra_state_attributes_dps", {})
+        mapped_attrs = config.get("mapped_extra_state_attributes_dps", {})
         will_expose = dp.get("hidden") is not True and name not in {"state", "available"}
-        if will_expose:
-            exposed += 1
-            if exposed > 32:
-                raise ConversionError("multi_dp_too_many_extra_attributes")
+        if will_expose and len(raw_attrs) + len(mapped_attrs) >= 32:
+            raise ConversionError("multi_dp_too_many_extra_attributes")
 
         base._preserve_core_extra(
             platform, name, dp, config, required, optional
@@ -772,12 +906,13 @@ def _apply_runtime_flags(
     if disabled_default:
         config["entity_registry_enabled_default"] = False
 
-    extras = config.get("extra_state_attributes_dps")
-    if isinstance(extras, dict) and hidden_extra_names:
-        for name in hidden_extra_names:
-            extras.pop(name, None)
-        if not extras:
-            config.pop("extra_state_attributes_dps", None)
+    for key in ("extra_state_attributes_dps", "mapped_extra_state_attributes_dps"):
+        extras = config.get(key)
+        if isinstance(extras, dict) and hidden_extra_names:
+            for name in hidden_extra_names:
+                extras.pop(name, None)
+            if not extras:
+                config.pop(key, None)
 
     if non_persistent_dps:
         config["non_persistent_dps"] = sorted(non_persistent_dps)
@@ -797,10 +932,22 @@ def _advanced_wrapper(
         prepared, advanced_by_dp, membership_ids = _prepare_advanced_entity(
             flagged, platform
         )
+        prepared, complex_mapped_extras = _prepare_complex_mapped_extras(
+            prepared, platform
+        )
         single, extras = _split_simple_multi_dp_entity(prepared, platform)
         converted, required, optional = converter(single, *args, **kwargs)
         if climate_limit_precisions:
             converted["config"].update(climate_limit_precisions)
+
+        for mapped_dp, rules in complex_mapped_extras:
+            name = mapped_dp.get("name")
+            if not isinstance(name, str) or not name:
+                raise ConversionError(f"{platform}_missing_dp_name")
+            _store_mapped_extra(
+                platform, name, mapped_dp, rules, advanced_by_dp,
+                converted["config"], required, optional
+            )
 
         if extras:
             _preserve_simple_multi_dp_extras(
