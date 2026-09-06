@@ -1,4 +1,4 @@
-"""Batch M conditional metadata and enum projection tests."""
+"""Batch M/Batсh O conditional metadata and enum projection tests."""
 
 import unittest
 
@@ -41,23 +41,29 @@ class ProductlessAdvancedMappingV2Tests(unittest.TestCase):
         self.assertNotIn("scale", rules[0])
         self.assertNotIn("step", rules[0])
 
-    def test_fan_dynamic_step_remains_fail_closed(self):
+    def test_fan_dynamic_step_is_translated(self):
         dp = {
             "id": 2, "type": "integer", "name": "speed",
             "mapping": [{"constraint": "preset_mode", "conditions": [{"dps_val": "sleep", "step": 4}]}],
         }
         preset = {"id": 3, "type": "string", "name": "preset_mode"}
-        with self.assertRaisesRegex(Exception, "advanced_mapping_condition_semantics"):
-            productless._translate_advanced_mapping(dp, {"speed": dp, "preset_mode": preset}, "fan")
+        rules, refs = productless._translate_advanced_mapping(
+            dp, {"speed": dp, "preset_mode": preset}, "fan"
+        )
+        self.assertEqual(refs, {"preset_mode"})
+        self.assertEqual(rules[0]["conditions"][0]["step"], 4)
 
-    def test_condition_scale_stays_fail_closed(self):
+    def test_condition_scale_is_translated_relative_to_base_scale(self):
         dp = {
             "id": 2, "type": "integer", "name": "temperature",
             "mapping": [{"constraint": "mode", "conditions": [{"dps_val": "x", "scale": 10}]}],
         }
         mode = {"id": 3, "type": "string", "name": "mode"}
-        with self.assertRaisesRegex(Exception, "advanced_mapping_condition_semantics"):
-            productless._translate_advanced_mapping(dp, {"temperature": dp, "mode": mode}, "climate")
+        rules, refs = productless._translate_advanced_mapping(
+            dp, {"temperature": dp, "mode": mode}, "climate"
+        )
+        self.assertEqual(refs, {"mode"})
+        self.assertEqual(rules[0]["conditions"][0]["scale"], 10.0)
 
 
 if __name__ == "__main__":
