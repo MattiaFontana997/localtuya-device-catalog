@@ -329,6 +329,54 @@
         2,
         3,
         4,
+        5,
+        19,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        109,
+        110
+      ],
+      "best_matches": [
+        "fingerprint-kogan_kawfpac12ya_airconditioner-cdfd8f74be",
+        "fingerprint-kogan_kawfpac16pya_airconditioner-10a82e9898"
+      ],
+      "mapping_id": "fingerprint-kogan_kawfpac12ya_airconditioner-cdfd8f74be",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        19,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        109,
+        110
+      ],
+      "best_matches": [
+        "fingerprint-kogan_kawfpac12ya_airconditioner-cdfd8f74be",
+        "fingerprint-kogan_kawfpac16pya_airconditioner-10a82e9898"
+      ],
+      "mapping_id": "fingerprint-kogan_kawfpac16pya_airconditioner-10a82e9898",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
         7
       ],
       "best_matches": [
@@ -476,8 +524,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 33,
-  "generated_candidates": 125,
+  "blocked_candidates": 35,
+  "generated_candidates": 128,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -563,6 +611,7 @@
     "fingerprint-soho_air_purifier-0e5e36514c",
     "fingerprint-somgom_double_switch-9388e4f5a7",
     "fingerprint-teckin_ss42_sockets-94a32977b7",
+    "fingerprint-tesla_aux_airconditioner-65805bea52",
     "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
     "fingerprint-thermex_lima80v_waterheater-d02e689333",
     "fingerprint-weaja_s9_gasalarm-d4005d41a2",
@@ -572,5 +621,5 @@
     "fingerprint-woox_r4028_powerstrip-8dbe67ef51",
     "fingerprint-zmp71sh_pool_pump-05843f201e"
   ],
-  "safe_candidates": 92
+  "safe_candidates": 93
 }

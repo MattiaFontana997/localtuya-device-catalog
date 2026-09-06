@@ -9834,6 +9834,211 @@
       }
     },
     {
+      "id": "fingerprint-tesla_aux_airconditioner-65805bea52",
+      "confidence": "experimental",
+      "match": {
+        "product_ids": [],
+        "category": null,
+        "required_dps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          13,
+          19,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108
+        ],
+        "optional_dps": [],
+        "fingerprint": {
+          "mode": "exact_dps"
+        }
+      },
+      "entities": [
+        {
+          "platform": "climate",
+          "config": {
+            "id": 1,
+            "platform": "climate",
+            "hvac_mode_dp": 1,
+            "hvac_mode_values": {
+              "off": "off",
+              "cool": "cool",
+              "heat": "heat",
+              "dry": "dry",
+              "fan_only": "fan_only",
+              "heat_cool": "heat_cool"
+            },
+            "target_temperature_dp": 2,
+            "target_precision": 0.1,
+            "temperature_step": 0.5,
+            "min_temperature_const": 16.0,
+            "max_temperature_const": 32.0,
+            "current_temperature_dp": 3,
+            "precision": 0.1,
+            "hvac_fan_mode_dp": 5,
+            "hvac_fan_mode_values": {
+              "off": "mute",
+              "low": "low",
+              "medium": "mid",
+              "high": "high",
+              "auto": "auto",
+              "strong": "strength"
+            },
+            "hvac_swing_mode_dp": 105,
+            "hvac_swing_mode_values": {
+              "vertical": true,
+              "off": false
+            },
+            "temperature_unit_dp": 19,
+            "temperature_unit_values": {
+              "celsius": "C",
+              "fahrenheit": "F"
+            },
+            "extra_state_attributes_dps": {
+              "model": 108
+            },
+            "advanced_mapping_by_dp": {
+              "1": [
+                {
+                  "dps_val": false,
+                  "value": "off"
+                },
+                {
+                  "dps_val": true,
+                  "constraint_dp": 4,
+                  "conditions": [
+                    {
+                      "dps_val": "cold",
+                      "value": "cool"
+                    },
+                    {
+                      "dps_val": "hot",
+                      "value": "heat"
+                    },
+                    {
+                      "dps_val": "wet",
+                      "value": "dry"
+                    },
+                    {
+                      "dps_val": "wind",
+                      "value": "fan_only"
+                    },
+                    {
+                      "dps_val": "auto",
+                      "value": "heat_cool"
+                    }
+                  ]
+                }
+              ],
+              "2": [
+                {
+                  "constraint_dp": 19,
+                  "conditions": [
+                    {
+                      "dps_val": "F",
+                      "range": {
+                        "min": 600,
+                        "max": 900
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "platform": "light",
+          "config": {
+            "id": 13,
+            "platform": "light",
+            "music_mode": false
+          }
+        },
+        {
+          "platform": "select",
+          "config": {
+            "id": 19,
+            "platform": "select",
+            "options": "C;F",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false,
+            "options_friendly": "celsius;fahrenheit"
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 102,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 103,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 104,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "switch",
+          "config": {
+            "id": 106,
+            "platform": "switch",
+            "restore_on_reconnect": false,
+            "is_passive_entity": false
+          }
+        },
+        {
+          "platform": "binary_sensor",
+          "config": {
+            "id": 107,
+            "platform": "binary_sensor",
+            "binary_sensor_mapping": [
+              {
+                "value": false,
+                "dps_val": 0
+              },
+              {
+                "value": true
+              }
+            ],
+            "binary_sensor_bitfield": true,
+            "device_class": "problem",
+            "extra_state_attributes_dps": {
+              "fault_code": 107
+            }
+          }
+        }
+      ],
+      "provenance": {
+        "source": "make-all/tuya-local",
+        "path": "custom_components/tuya_local/devices/tesla_aux_airconditioner.yaml",
+        "license": "MIT",
+        "revision": "38347807cfc81ae8789974d98532eb928f42f174"
+      }
+    },
+    {
       "id": "fingerprint-thb2_temperature_and_humidity_sensor-22d92e6a07",
       "confidence": "experimental",
       "match": {
