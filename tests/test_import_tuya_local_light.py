@@ -326,8 +326,8 @@ class TuyaLocalLightImporterTests(unittest.TestCase):
         self.assertTrue(config["color_rgb_encoding"])
         self.assertEqual(config["brightness_lower"], 25)
         self.assertEqual(config["brightness_upper"], 255)
-        self.assertNotIn("color_brightness_lower", config)
-        self.assertNotIn("color_brightness_upper", config)
+        self.assertEqual(config["color_brightness_lower"], 0)
+        self.assertEqual(config["color_brightness_upper"], 255)
         self.assertEqual(mapping["match"]["required_dps"], [1, 3, 5])
 
     def test_extended_rgb_hsv_rejects_non_8bit_sv_range(self):

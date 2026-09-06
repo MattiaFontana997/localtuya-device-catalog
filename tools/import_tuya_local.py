@@ -906,9 +906,28 @@ def _light_power_mapping(dp: dict[str, Any], config: dict[str, Any]) -> None:
     rules = _mapping_rules(dp)
 
     if not rules:
-        if dp_type != "boolean":
-            raise ConversionError("light_switch_non_boolean")
-        return
+        if dp_type == "boolean":
+            return
+        if dp_type == "hex":
+            raw_mask = dp.get("mask")
+            if (
+                not isinstance(raw_mask, str)
+                or not raw_mask
+                or len(raw_mask) % 2
+                or any(ch not in "0123456789abcdefABCDEF" for ch in raw_mask)
+                or int(raw_mask, 16) <= 0
+                or dp.get("endianness") not in (None, "big")
+            ):
+                raise ConversionError("light_switch_non_boolean")
+            allowed = {
+                "id", "type", "name", "optional", "readonly", "hidden",
+                "force", "persist", "sensitive", "mask", "endianness",
+            }
+            if set(dp) - allowed:
+                raise ConversionError("light_switch_non_boolean")
+            config["light_power_mask"] = raw_mask
+            return
+        raise ConversionError("light_switch_non_boolean")
 
     if (
         dp_type == "boolean"
@@ -961,20 +980,65 @@ def _convert_light(
     dps = _light_dps(entity)
 
     switch = dps.get("switch")
-    if switch is None:
-        # LocalTuya's light entity currently requires a writable primary power DP.
-        raise ConversionError("light_missing_switch")
-    _check_common_dp_semantics(switch, writable=True)
-
-    config: dict[str, Any] = {
-        "id": _dp_id(switch),
-        "platform": "light",
-        "music_mode": False,
-    }
+    brightness = dps.get("brightness")
     required: set[int] = set()
     optional: set[int] = set()
-    _merge_membership(required, optional, switch)
-    _light_power_mapping(switch, config)
+
+    if switch is None:
+        # Tuya Local permits a light whose brightness DP is also the power DP.
+        # Import only finite, fully enumerated string mappings with explicit
+        # Home Assistant endpoints, so reads/writes are deterministic.
+        if brightness is None:
+            raise ConversionError("light_missing_switch")
+        _check_common_dp_semantics(brightness, writable=True)
+        if _dp_type(brightness) != "string":
+            raise ConversionError("light_missing_switch")
+        rules = _mapping_rules(brightness)
+        if not rules or len(rules) > 32:
+            raise ConversionError("light_missing_switch")
+        brightness_values: dict[str, str] = {}
+        raw_values: set[str] = set()
+        friendly_values: set[int] = set()
+        for rule in rules:
+            if set(rule) != {"dps_val", "value"}:
+                raise ConversionError("light_brightness_power_mapping")
+            raw = rule.get("dps_val")
+            friendly = rule.get("value")
+            if (
+                not isinstance(raw, str)
+                or not raw
+                or isinstance(friendly, bool)
+                or not isinstance(friendly, int)
+                or not 0 <= friendly <= 255
+                or raw in raw_values
+                or friendly in friendly_values
+            ):
+                raise ConversionError("light_brightness_power_mapping")
+            brightness_values[str(friendly)] = raw
+            raw_values.add(raw)
+            friendly_values.add(friendly)
+        if 0 not in friendly_values or 255 not in friendly_values:
+            raise ConversionError("light_brightness_power_mapping")
+        config = {
+            "id": _dp_id(brightness),
+            "platform": "light",
+            "music_mode": False,
+            "brightness": _dp_id(brightness),
+            "brightness_lower": 0,
+            "brightness_upper": 255,
+            "brightness_values": brightness_values,
+            "brightness_as_power": True,
+        }
+        _merge_membership(required, optional, brightness)
+    else:
+        _check_common_dp_semantics(switch, writable=True)
+        config = {
+            "id": _dp_id(switch),
+            "platform": "light",
+            "music_mode": False,
+        }
+        _merge_membership(required, optional, switch)
+        _light_power_mapping(switch, config)
 
     work_mode = dps.get("work_mode")
     if work_mode is not None:
@@ -1077,7 +1141,7 @@ def _convert_light(
         _merge_membership(required, optional, scene_dp)
 
     brightness = dps.get("brightness")
-    if brightness is not None:
+    if brightness is not None and not config.get("brightness_as_power", False):
         _check_common_dp_semantics(brightness, writable=True)
         if _dp_type(brightness) != "integer":
             raise ConversionError("light_brightness_type")
@@ -1132,55 +1196,114 @@ def _convert_light(
         if _dp_type(color_temp) != "integer":
             raise ConversionError("light_color_temp_type")
         raw_min, raw_max = _raw_integer_range(color_temp, "light_color_temp")
-        if raw_min != 0:
-            raise ConversionError("light_color_temp_nonzero_min")
-
         rules = _mapping_rules(color_temp)
-        if len(rules) != 1:
-            raise ConversionError("light_color_temp_mapping")
-        rule = rules[0]
-        if set(rule) - {"target_range", "invert", "step"}:
-            raise ConversionError("light_color_temp_mapping")
-        if rule.get("step") not in (None, 1):
-            raise ConversionError("light_color_temp_step")
-        invert = rule.get("invert", False)
-        if not isinstance(invert, bool):
-            raise ConversionError("light_color_temp_invert")
-        target = rule.get("target_range")
-        if not isinstance(target, dict) or set(target) != {"min", "max"}:
-            raise ConversionError("light_color_temp_target_range")
-        target_min = target["min"]
-        target_max = target["max"]
-        if (
-            isinstance(target_min, bool)
-            or isinstance(target_max, bool)
-            or not isinstance(target_min, (int, float))
-            or not isinstance(target_max, (int, float))
-            or int(target_min) != target_min
-            or int(target_max) != target_max
-        ):
-            raise ConversionError("light_color_temp_target_range")
-        target_min = int(target_min)
-        target_max = int(target_max)
-        if not (1500 <= target_min < target_max <= 8000):
-            raise ConversionError("light_color_temp_target_range")
 
-        _configure_light_scale(
-            config,
-            minimum=0,
-            maximum=raw_max,
-            reason="light_color_temp",
-            require_lower=False,
+        has_explicit_values = any(
+            "dps_val" in rule or "value" in rule for rule in rules
         )
-        config.update(
-            {
-                "color_temp": _dp_id(color_temp),
-                "color_temp_min_kelvin": target_min,
-                "color_temp_max_kelvin": target_max,
-                "color_temp_reverse": invert,
-            }
-        )
-        _merge_membership(required, optional, color_temp)
+        if has_explicit_values:
+            if raw_max - raw_min > 64:
+                raise ConversionError("light_color_temp_discrete_range")
+            explicit: list[tuple[int, int]] = []
+            raw_seen: set[int] = set()
+            kelvin_seen: set[int] = set()
+            fallback_target = None
+            for rule in rules:
+                if set(rule) == {"dps_val", "value"}:
+                    raw = rule.get("dps_val")
+                    kelvin = rule.get("value")
+                    if (
+                        isinstance(raw, bool)
+                        or not isinstance(raw, int)
+                        or raw < raw_min
+                        or raw > raw_max
+                        or isinstance(kelvin, bool)
+                        or not isinstance(kelvin, int)
+                        or not 1500 <= kelvin <= 8000
+                        or raw in raw_seen
+                        or kelvin in kelvin_seen
+                    ):
+                        raise ConversionError("light_color_temp_discrete_mapping")
+                    explicit.append((kelvin, raw))
+                    raw_seen.add(raw)
+                    kelvin_seen.add(kelvin)
+                elif set(rule) == {"target_range"} and fallback_target is None:
+                    fallback_target = rule.get("target_range")
+                else:
+                    raise ConversionError("light_color_temp_discrete_mapping")
+
+            if raw_seen != set(range(raw_min, raw_max + 1)) or not explicit:
+                raise ConversionError("light_color_temp_discrete_mapping")
+            if (
+                not isinstance(fallback_target, dict)
+                or set(fallback_target) != {"min", "max"}
+                or fallback_target.get("min") != min(kelvin_seen)
+                or fallback_target.get("max") != max(kelvin_seen)
+            ):
+                raise ConversionError("light_color_temp_discrete_mapping")
+
+            config.update(
+                {
+                    "color_temp": _dp_id(color_temp),
+                    "color_temp_min_kelvin": min(kelvin_seen),
+                    "color_temp_max_kelvin": max(kelvin_seen),
+                    "color_temp_values": {str(kelvin): raw for kelvin, raw in explicit},
+                }
+            )
+            _merge_membership(required, optional, color_temp)
+        else:
+            if raw_min != 0:
+                raise ConversionError("light_color_temp_nonzero_min")
+            if len(rules) != 1:
+                raise ConversionError("light_color_temp_mapping")
+            rule = rules[0]
+            if set(rule) - {"target_range", "invert", "step"}:
+                raise ConversionError("light_color_temp_mapping")
+            step = rule.get("step", 1)
+            if isinstance(step, bool) or not isinstance(step, int) or step <= 0:
+                raise ConversionError("light_color_temp_step")
+            if step * round(raw_max / step) > raw_max:
+                raise ConversionError("light_color_temp_step_range")
+            invert = rule.get("invert", False)
+            if not isinstance(invert, bool):
+                raise ConversionError("light_color_temp_invert")
+            target = rule.get("target_range")
+            if not isinstance(target, dict) or set(target) != {"min", "max"}:
+                raise ConversionError("light_color_temp_target_range")
+            target_min = target["min"]
+            target_max = target["max"]
+            if (
+                isinstance(target_min, bool)
+                or isinstance(target_max, bool)
+                or not isinstance(target_min, (int, float))
+                or not isinstance(target_max, (int, float))
+                or int(target_min) != target_min
+                or int(target_max) != target_max
+            ):
+                raise ConversionError("light_color_temp_target_range")
+            target_min = int(target_min)
+            target_max = int(target_max)
+            if not (1500 <= target_min < target_max <= 8000):
+                raise ConversionError("light_color_temp_target_range")
+
+            _configure_light_scale(
+                config,
+                minimum=0,
+                maximum=raw_max,
+                reason="light_color_temp",
+                require_lower=False,
+            )
+            config.update(
+                {
+                    "color_temp": _dp_id(color_temp),
+                    "color_temp_min_kelvin": target_min,
+                    "color_temp_max_kelvin": target_max,
+                    "color_temp_reverse": invert,
+                }
+            )
+            if step != 1:
+                config["color_temp_step"] = step
+            _merge_membership(required, optional, color_temp)
 
     rgbhsv = dps.get("rgbhsv")
     if rgbhsv is not None:
@@ -1200,51 +1323,71 @@ def _convert_light(
             raise ConversionError("light_rgbhsv_format")
 
         if len(fmt) == 6:
-            # Tuya's legacy extended color payload is exactly:
-            # R(1), G(1), B(1), H(2), S(1), V(1) => 14 hex characters.
-            # LocalTuya runtime can encode/decode this losslessly when the
-            # catalog marks the RGB-prefixed layout explicitly.
-            expected_extended = (
-                ("r", 1, 0, 255, False),
-                ("g", 1, 0, 255, False),
-                ("b", 1, 0, 255, False),
-                ("h", 2, 0, 360, True),
-                ("s", 1, 0, 255, True),
-                ("v", 1, 0, 255, True),
-            )
-            for item, (name, byte_count, exact_min, exact_max, require_range) in zip(
-                fmt, expected_extended, strict=True
-            ):
+            expected_names = (("r", 1), ("g", 1), ("b", 1), ("h", 2), ("s", 1), ("v", 1))
+            saturation_max = 255
+            value_min = 0
+            value_max = 255
+            for item, (name, byte_count) in zip(fmt, expected_names, strict=True):
                 if not isinstance(item, dict):
                     raise ConversionError("light_rgbhsv_format")
-                allowed_keys = {"name", "bytes", "range"}
-                if set(item) - allowed_keys:
+                if set(item) - {"name", "bytes", "range"}:
                     raise ConversionError("light_rgbhsv_format")
                 if item.get("name") != name or item.get("bytes") != byte_count:
                     raise ConversionError("light_rgbhsv_format")
-
                 value_range = item.get("range")
-                if value_range is None and not require_range:
+                if name in {"r", "g", "b"}:
+                    if value_range is not None:
+                        raise ConversionError("light_rgbhsv_format")
                     continue
-                if (
-                    not isinstance(value_range, dict)
-                    or set(value_range) != {"min", "max"}
-                    or value_range.get("min") != exact_min
-                    or value_range.get("max") != exact_max
+                if name == "h":
+                    if (
+                        not isinstance(value_range, dict)
+                        or set(value_range) != {"min", "max"}
+                        or value_range.get("min") != 0
+                        or value_range.get("max") != 360
+                    ):
+                        raise ConversionError("light_rgbhsv_format")
+                    continue
+                if value_range is None:
+                    minimum, maximum = 0, 255
+                elif (
+                    isinstance(value_range, dict)
+                    and set(value_range) == {"min", "max"}
+                    and isinstance(value_range.get("min"), int)
+                    and not isinstance(value_range.get("min"), bool)
+                    and isinstance(value_range.get("max"), int)
+                    and not isinstance(value_range.get("max"), bool)
                 ):
+                    minimum = value_range["min"]
+                    maximum = value_range["max"]
+                else:
                     raise ConversionError("light_rgbhsv_format")
+                if minimum != 0 or maximum <= 0 or maximum > 255:
+                    raise ConversionError("light_rgbhsv_format")
+                if name == "s":
+                    saturation_max = maximum
+                else:
+                    value_min, value_max = minimum, maximum
 
             config["color"] = _dp_id(rgbhsv)
             config["color_rgb_encoding"] = True
+            if saturation_max != 255:
+                config["color_saturation_upper"] = saturation_max
+            _configure_light_scale(
+                config,
+                minimum=value_min,
+                maximum=value_max,
+                reason="light_rgbhsv",
+                require_lower=True,
+            )
             _merge_membership(required, optional, rgbhsv)
 
         elif len(fmt) == 3:
-            expected = (("h", 0, 360), ("s", 0, 1000), ("v", None, None))
+            expected_names = ("h", "s", "v")
+            saturation_max = None
             v_min = v_max = None
-            for item, (name, exact_min, exact_max) in zip(fmt, expected, strict=True):
-                if not isinstance(item, dict):
-                    raise ConversionError("light_rgbhsv_format")
-                if set(item) != {"name", "bytes", "range"}:
+            for item, name in zip(fmt, expected_names, strict=True):
+                if not isinstance(item, dict) or set(item) != {"name", "bytes", "range"}:
                     raise ConversionError("light_rgbhsv_format")
                 if item.get("name") != name or item.get("bytes") != 2:
                     raise ConversionError("light_rgbhsv_format")
@@ -1256,23 +1399,23 @@ def _convert_light(
                 if (
                     isinstance(minimum, bool)
                     or isinstance(maximum, bool)
-                    or not isinstance(minimum, (int, float))
-                    or not isinstance(maximum, (int, float))
-                    or int(minimum) != minimum
-                    or int(maximum) != maximum
+                    or not isinstance(minimum, int)
+                    or not isinstance(maximum, int)
                 ):
                     raise ConversionError("light_rgbhsv_format")
-                minimum = int(minimum)
-                maximum = int(maximum)
-                if name != "v":
-                    if minimum != exact_min or maximum != exact_max:
+                if name == "h":
+                    if minimum != 0 or maximum != 360:
                         raise ConversionError("light_rgbhsv_format")
+                elif name == "s":
+                    if minimum != 0 or maximum <= 0 or maximum > 65535:
+                        raise ConversionError("light_rgbhsv_format")
+                    saturation_max = maximum
                 else:
                     if minimum < 0 or maximum <= minimum or maximum > 10000:
                         raise ConversionError("light_rgbhsv_format")
                     v_min, v_max = minimum, maximum
 
-            assert v_min is not None and v_max is not None
+            assert saturation_max is not None and v_min is not None and v_max is not None
             _configure_light_scale(
                 config,
                 minimum=v_min,
@@ -1281,6 +1424,8 @@ def _convert_light(
                 require_lower=True,
             )
             config["color"] = _dp_id(rgbhsv)
+            if saturation_max != 1000:
+                config["color_saturation_upper"] = saturation_max
             _merge_membership(required, optional, rgbhsv)
         else:
             raise ConversionError("light_rgbhsv_format")

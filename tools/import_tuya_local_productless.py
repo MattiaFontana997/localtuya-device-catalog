@@ -1196,8 +1196,11 @@ def _convert_time(entity: dict[str, Any]) -> base.Converted:
     no hour DP means minutes contain total minutes; no minute DP means seconds
     contain total seconds. LocalTuya Batch B implements the same algorithm.
     """
-    if entity.get("class") is not None:
+    time_class = entity.get("class")
+    if time_class not in (None, "duration"):
         raise ConversionError("time_device_class")
+    # Tuya Local's time platform does not branch on class=duration; it is
+    # metadata only. LocalTuya reproduces the same component-folding semantics.
     base._entity_metadata(entity, {})
     dps = _named_dps(entity, "time")
     functional = {"hour", "minute", "second", "hms"}
