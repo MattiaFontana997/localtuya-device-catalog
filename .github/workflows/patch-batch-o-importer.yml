@@ -1,0 +1,110 @@
+name: Patch Batch O importer
+
+on:
+  push:
+    paths:
+      - .github/workflows/patch-batch-o-importer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Patch importer and regressions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one match, found {count}')
+              p.write_text(text.replace(old, new))
+
+          path = 'tools/import_tuya_local_productless.py'
+          replace_once(
+              path,
+              '_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect", "range", "step"}',
+              '_RUNTIME_CONDITION_KEYS = {"dps_val", "value", "hidden", "invalid", "value_redirect", "range", "step", "scale"}'
+          )
+
+          old_validate = '''def _validate_redirect_target(dp: dict[str, Any], *, writable_source: bool) -> None:\n    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:\n        raise ConversionError("advanced_mapping_redirect_semantics")\n    if set(dp) & {"mask", "mask_signed", "format", "endianness"}:\n        raise ConversionError("advanced_mapping_redirect_encoding")\n    # Reads recurse through LocalTuya mappings, but writes intentionally redirect\n    # to the target raw DP in one step. Tuya Local recursively applies the target\n    # DP's write mapping, so a writable redirect is lossless only when the target\n    # itself has no mapping transformation.\n    if writable_source and _raw_mapping(dp):\n        raise ConversionError("advanced_mapping_redirect_target_mapping")\n'''
+          new_validate = '''def _positive_transform(value: Any, reason: str) -> float:\n    if isinstance(value, bool) or not isinstance(value, (int, float)):\n        raise ConversionError(reason)\n    value = float(value)\n    if not math.isfinite(value) or value <= 0:\n        raise ConversionError(reason)\n    return value\n\n\ndef _redirect_target_support_rule(\n    source_rule: dict[str, Any], target_dp: dict[str, Any]\n) -> dict[str, Any]:\n    """Return the extra runtime transform needed after redirecting to target_dp.\n\n    The mature platform converter has already applied the source rule's static\n    scale to the logical value. A redirected target with the same scale therefore\n    needs no second scale; a different simple scale is represented as a bounded\n    ratio. Target step/range remain raw target-DP semantics and are enforced by\n    the runtime target mapping. Rich target mappings remain fail-closed.\n    """\n    target_rules = _raw_mapping(target_dp)\n    target_rule: dict[str, Any] = {}\n    if target_rules:\n        if len(target_rules) != 1 or set(target_rules[0]) - {"scale", "step"}:\n            raise ConversionError("advanced_mapping_redirect_target_mapping")\n        target_rule = target_rules[0]\n\n    source_scale = _positive_transform(\n        source_rule.get("scale", 1), "advanced_mapping_redirect_source_scale"\n    )\n    target_scale = _positive_transform(\n        target_rule.get("scale", 1), "advanced_mapping_redirect_target_scale"\n    )\n    support: dict[str, Any] = {}\n    ratio = target_scale / source_scale\n    if not math.isclose(ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):\n        support["scale"] = ratio\n\n    if "step" in target_rule:\n        support["step"] = _positive_transform(\n            target_rule["step"], "advanced_mapping_redirect_target_step"\n        )\n\n    target_range = target_dp.get("range")\n    if target_range is not None:\n        if (\n            not isinstance(target_range, dict)\n            or set(target_range) != {"min", "max"}\n            or any(\n                isinstance(target_range.get(key), bool)\n                or not isinstance(target_range.get(key), (int, float))\n                for key in ("min", "max")\n            )\n            or not math.isfinite(float(target_range["min"]))\n            or not math.isfinite(float(target_range["max"]))\n            or float(target_range["max"]) <= float(target_range["min"])\n        ):\n            raise ConversionError("advanced_mapping_redirect_target_range")\n        support["range"] = {\n            "min": target_range["min"],\n            "max": target_range["max"],\n        }\n    return support\n\n\ndef _validate_redirect_target(\n    dp: dict[str, Any],\n    *,\n    source_rule: dict[str, Any],\n    redirect_support: dict[str, list[dict[str, Any]]],\n) -> None:\n    if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:\n        raise ConversionError("advanced_mapping_redirect_semantics")\n    if set(dp) & {"mask", "mask_signed", "format", "endianness"}:\n        raise ConversionError("advanced_mapping_redirect_encoding")\n    support = _redirect_target_support_rule(source_rule, dp)\n    if not support:\n        return\n    key = str(base._dp_id(dp))\n    value = [support]\n    previous = redirect_support.get(key)\n    if previous is not None and previous != value:\n        raise ConversionError("advanced_mapping_redirect_target_conflict")\n    redirect_support[key] = value\n'''
+          replace_once(path, old_validate, new_validate)
+
+          replace_once(
+              path,
+              '''def _translate_advanced_mapping(\n    dp: dict[str, Any],\n    by_name: dict[str, dict[str, Any]],\n    platform: str,\n) -> tuple[list[dict[str, Any]], set[str]]:\n''',
+              '''def _translate_advanced_mapping(\n    dp: dict[str, Any],\n    by_name: dict[str, dict[str, Any]],\n    platform: str,\n    redirect_support: dict[str, list[dict[str, Any]]] | None = None,\n) -> tuple[list[dict[str, Any]], set[str]]:\n'''
+          )
+          replace_once(
+              path,
+              '''    translated: list[dict[str, Any]] = []\n    references: set[str] = set()\n    writable_source = dp.get("readonly") is not True\n    transform_keys = {"scale", "invert", "step", "range", "target_range"}\n''',
+              '''    translated: list[dict[str, Any]] = []\n    references: set[str] = set()\n    if redirect_support is None:\n        redirect_support = {}\n    transform_keys = {"scale", "invert", "step", "range", "target_range"}\n'''
+          )
+          replace_once(
+              path,
+              '''            _validate_redirect_target(redirect_dp, writable_source=writable_source)\n            references.add(redirect)\n''',
+              '''            _validate_redirect_target(\n                redirect_dp, source_rule=source, redirect_support=redirect_support\n            )\n            references.add(redirect)\n'''
+          )
+
+          old_dynamic = '''                dynamic_metadata = set(condition) & {"range", "step"}\n                if dynamic_metadata and platform not in {"climate", "number"}:\n                    raise ConversionError("advanced_mapping_condition_semantics")\n'''
+          new_dynamic = '''                if "range" in condition and platform not in {"climate", "number", "water_heater"}:\n                    raise ConversionError("advanced_mapping_condition_semantics")\n                if "step" in condition and platform not in {"climate", "number", "water_heater", "fan"}:\n                    raise ConversionError("advanced_mapping_condition_semantics")\n                if "scale" in condition and platform not in {"climate", "number", "water_heater"}:\n                    raise ConversionError("advanced_mapping_condition_semantics")\n'''
+          replace_once(path, old_dynamic, new_dynamic)
+
+          insert_after = '''                for key in ("hidden", "invalid"):\n                    if key in condition:\n                        if not isinstance(condition[key], bool):\n                            raise ConversionError("advanced_mapping_condition_boolean")\n                        out[key] = condition[key]\n'''
+          insert_new = insert_after + '''                if "scale" in condition:\n                    condition_scale = _positive_transform(\n                        condition["scale"], "advanced_mapping_condition_scale"\n                    )\n                    source_scale = _positive_transform(\n                        source.get("scale", 1), "advanced_mapping_source_scale"\n                    )\n                    ratio = condition_scale / source_scale\n                    if not math.isclose(ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):\n                        out["scale"] = ratio\n'''
+          replace_once(path, insert_after, insert_new)
+
+          old_condition_redirect = '''                    _validate_redirect_target(\n                        redirect_dp, writable_source=writable_source\n                    )\n                    references.add(condition_redirect)\n'''
+          new_condition_redirect = '''                    _validate_redirect_target(\n                        redirect_dp,\n                        source_rule=source,\n                        redirect_support=redirect_support,\n                    )\n                    references.add(condition_redirect)\n'''
+          replace_once(path, old_condition_redirect, new_condition_redirect)
+
+          replace_once(
+              path,
+              '''    advanced_by_dp: dict[str, list[dict[str, Any]]] = {}\n    referenced_names: set[str] = set()\n''',
+              '''    advanced_by_dp: dict[str, list[dict[str, Any]]] = {}\n    redirect_support: dict[str, list[dict[str, Any]]] = {}\n    referenced_names: set[str] = set()\n'''
+          )
+          replace_once(
+              path,
+              '''        translated, references = _translate_advanced_mapping(original_dp, by_name, platform)\n''',
+              '''        translated, references = _translate_advanced_mapping(\n            original_dp, by_name, platform, redirect_support\n        )\n'''
+          )
+          replace_once(
+              path,
+              '''    if not advanced_by_dp:\n        return entity, {}, set()\n\n    membership_ids = {int(dp_id) for dp_id in advanced_by_dp}\n''',
+              '''    for dp_id, support in redirect_support.items():\n        previous = advanced_by_dp.get(dp_id)\n        if previous is not None and previous != support:\n            raise ConversionError("advanced_mapping_redirect_target_conflict")\n        advanced_by_dp[dp_id] = support\n\n    if not advanced_by_dp:\n        return entity, {}, set()\n\n    membership_ids = {int(dp_id) for dp_id in advanced_by_dp}\n'''
+          )
+
+          # Keep the old generic redirect regression fail-closed, but make the\n          # target mapping deliberately richer than the newly supported numeric\n          # scale/step subset.\n          test = Path('tests/test_import_tuya_local_productless.py')
+          text = test.read_text()
+          old = '''                            "mapping": [{"scale": 10}],\n'''
+          # This exact line appears in several tests, so replace within the named\n          # test's bounded slice only.\n          start = text.index('    def test_writable_redirect_with_target_mapping_stays_fail_closed')\n          end = text.index('    def test_dynamic_condition_scale_stays_fail_closed', start)\n          block = text[start:end]\n          if old not in block:\n              raise SystemExit('redirect regression target mapping not found')\n          block = block.replace(old, '''                            "mapping": [{"dps_val": 32, "value": 10}],\n''', 1)
+          text = text[:start] + block + text[end:]
+          test.write_text(text)
+
+          Path('tests/test_productless_batch_o.py').write_text('''"""Batch O lossless advanced-mapping importer regressions."""\n\nfrom __future__ import annotations\n\nimport sys\nimport unittest\nfrom pathlib import Path\n\nTOOLS = Path(__file__).resolve().parents[1] / "tools"\nif str(TOOLS) not in sys.path:\n    sys.path.insert(0, str(TOOLS))\n\nfrom import_tuya_local_productless import convert_profile  # noqa: E402\n\n\nclass BatchOImporterTests(unittest.TestCase):\n    def _convert(self, entities):\n        return convert_profile({"name": "Test", "products": [{"id": "synthetic"}], "entities": entities}, source_file="test.yaml")\n\n    def test_climate_condition_scale_is_relative_to_base_scale(self):\n        result = self._convert([{\n            "entity": "climate",\n            "dps": [\n                {"id": 1, "name": "hvac_mode", "type": "boolean", "mapping": [{"dps_val": False, "value": "off"}, {"dps_val": True, "value": "heat"}]},\n                {"id": 2, "name": "temperature", "type": "integer", "range": {"min": 50, "max": 350}, "mapping": [{"scale": 10}]},\n                {"id": 3, "name": "current_temperature", "type": "integer", "mapping": [{"scale": 10, "constraint": "unit", "conditions": [{"dps_val": "f", "scale": 5}]}]},\n                {"id": 4, "name": "unit", "type": "string", "hidden": True},\n            ],\n        }])\n        config = result["entities"][0]["config"]\n        self.assertEqual(config["advanced_mapping_by_dp"]["3"][0]["conditions"][0]["scale"], 0.5)\n        self.assertEqual(result["match"]["required_dps"], [1, 2, 3, 4])\n\n    def test_fan_condition_step_is_preserved(self):\n        result = self._convert([{\n            "entity": "fan",\n            "dps": [\n                {"id": 1, "name": "switch", "type": "boolean"},\n                {"id": 2, "name": "speed", "type": "integer", "range": {"min": 1, "max": 12}, "mapping": [{"constraint": "preset_mode", "conditions": [{"dps_val": "nature", "step": 4}]}]},\n                {"id": 3, "name": "preset_mode", "type": "string", "mapping": [{"dps_val": "normal", "value": "normal"}, {"dps_val": "nature", "value": "nature"}]},\n            ],\n        }])\n        config = result["entities"][0]["config"]\n        self.assertEqual(config["advanced_mapping_by_dp"]["2"][0]["conditions"][0]["step"], 4)\n\n    def test_water_heater_redirect_keeps_target_range(self):\n        result = self._convert([{\n            "entity": "water_heater",\n            "dps": [\n                {"id": 2, "name": "current_temperature", "type": "integer"},\n                {"id": 8, "name": "temperature", "type": "integer", "range": {"min": 0, "max": 100}, "mapping": [{"constraint": "temperature_unit", "conditions": [{"dps_val": "f", "value_redirect": "temp_f", "range": {"min": 32, "max": 212}}]}]},\n                {"id": 9, "name": "temp_f", "type": "integer", "hidden": True, "range": {"min": 32, "max": 212}},\n                {"id": 12, "name": "temperature_unit", "type": "string", "mapping": [{"dps_val": "c", "value": "°C"}, {"dps_val": "f", "value": "°F"}]},\n            ],\n        }])\n        config = result["entities"][0]["config"]\n        self.assertEqual(config["advanced_mapping_by_dp"]["9"], [{"range": {"min": 32, "max": 212}}])\n        self.assertEqual(config["advanced_mapping_by_dp"]["8"][0]["conditions"][0]["range"], {"min": 32, "max": 212})\n\n    def test_redirect_simple_target_scale_uses_ratio_and_target_step(self):\n        result = self._convert([{\n            "entity": "number",\n            "dps": [\n                {"id": 1, "name": "value", "type": "integer", "range": {"min": 70, "max": 300}, "mapping": [{"scale": 10, "step": 5, "constraint": "mode", "conditions": [{"dps_val": "boost", "value_redirect": "target"}]}]},\n                {"id": 2, "name": "mode", "type": "string", "hidden": True},\n                {"id": 3, "name": "target", "type": "integer", "hidden": True, "range": {"min": 300, "max": 700}, "mapping": [{"scale": 10, "step": 5}]},\n            ],\n        }])\n        config = result["entities"][0]["config"]\n        self.assertEqual(config["advanced_mapping_by_dp"]["3"], [{"step": 5.0, "range": {"min": 300, "max": 700}}])\n        self.assertNotIn("scale", config["advanced_mapping_by_dp"]["3"][0])\n\n\nif __name__ == "__main__":\n    unittest.main()\n''')
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5" pytest
+      - name: Run targeted tests
+        run: python -m pytest -q tests/test_import_tuya_local_productless.py tests/test_productless_batch_o.py
+      - name: Commit importer changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py tests/test_productless_batch_o.py
+          git diff --cached --check
+          git commit -m "Import lossless Batch O advanced mappings"
+          git push origin HEAD:develop
