@@ -693,7 +693,7 @@
     }
   ],
   "blocked_candidates": 43,
-  "generated_candidates": 170,
+  "generated_candidates": 171,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -784,6 +784,7 @@
     "fingerprint-nedis_htpl20f_heater-40b5de8922",
     "fingerprint-nwt_wdh06em_dehumidifier-b8006d8ac2",
     "fingerprint-orion_ptc2000_heater-1d6c159639",
+    "fingerprint-parkside_ppwd30a1_vacuum-8e4de2b272",
     "fingerprint-pgst_climate_sensor-ce4b9c73f8",
     "fingerprint-powerstrip_4outlet_usbs-0ec5a74154",
     "fingerprint-princess_panel_heater-abd8dd026e",
@@ -823,5 +824,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 127
+  "safe_candidates": 128
 }

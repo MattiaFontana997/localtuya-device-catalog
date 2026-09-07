@@ -27,8 +27,7 @@
     "sensor_value_mapping_semantics": 2,
     "siren_duplicate_dp_id": 1,
     "unsupported_platform:media_player": 1,
-    "vacuum_activate_mapping": 1,
-    "vacuum_optional_status": 1
+    "vacuum_activate_mapping": 1
   },
   "results": [
     {
@@ -18088,7 +18087,7 @@
     },
     {
       "file": "parkside_ppwd30a1_vacuum.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-parkside_ppwd30a1_vacuum-8e4de2b272",
       "name": "Workshop vacuum",
       "platforms": [
         "vacuum",
@@ -18098,10 +18097,8 @@
         "switch",
         "text"
       ],
-      "reasons": [
-        "vacuum_optional_status"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "parkside_solar_inverter.yaml",
@@ -26896,9 +26893,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 170,
+    "convertible_fingerprint": 171,
     "not_productless": 1526,
-    "skipped": 41
+    "skipped": 40
   },
   "target_schema": 3
 }
