@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
 
+# Trigger: inspect-generated-payload-mapping
 jobs:
   patch:
     runs-on: ubuntu-latest
@@ -45,14 +46,12 @@ jobs:
           report = json.loads(Path('/tmp/productless-import-report.json').read_text())
           item = next(x for x in report['results'] if x['file'] == 'aspen_asp200_fan.yaml')
           assert item['status'] == 'convertible_fingerprint', item
-          candidates = []
-          for path in Path('/tmp/productless-generated').glob('*.json'):
-              data = json.loads(path.read_text())
-              prov = data.get('provenance', {})
-              if prov.get('path', '').endswith('aspen_asp200_fan.yaml'):
-                  candidates.append(data)
-          assert len(candidates) == 1, len(candidates)
-          mapping = candidates[0]
+          path = Path('/tmp/productless-generated') / f"{item['mapping_id']}.json"
+          payload = json.loads(path.read_text())
+          assert payload.get('schema_version') == 3, payload
+          assert len(payload.get('mappings', [])) == 1, payload
+          mapping = payload['mappings'][0]
+          assert mapping['provenance']['path'].endswith('aspen_asp200_fan.yaml'), mapping
           fan = next(e['config'] for e in mapping['entities'] if e['platform'] == 'fan')
           light = next(e['config'] for e in mapping['entities'] if e['platform'] == 'light')
           assert fan['fan_direction_values'] == {'forward':'in','reverse':'out','exchange':'exch'}, fan
