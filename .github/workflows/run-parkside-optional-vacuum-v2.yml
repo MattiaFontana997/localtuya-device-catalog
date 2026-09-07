@@ -23,11 +23,13 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import textwrap
           lines = Path('.github/workflows/patch-parkside-optional-vacuum.yml').read_text().splitlines()
           start = next(i for i, line in enumerate(lines) if line.strip() == "python - <<'PY'")
           end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'PY')
-          exec(compile(textwrap.dedent('\n'.join(lines[start + 1:end])), 'parkside-patch', 'exec'))
+          block = []
+          for line in lines[start + 1:end]:
+              block.append(line[10:] if line.startswith('          ') else line)
+          exec(compile('\n'.join(block), 'parkside-patch', 'exec'))
           PY
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
