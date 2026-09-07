@@ -2545,6 +2545,121 @@ def _convert_sensor_productless(entity: dict[str, Any]) -> base.Converted:
     return converted, required, optional
 
 
+
+def _convert_vacuum_productless(entity: dict[str, Any]) -> base.Converted:
+    """Support only Tuya Local's optional raw-string Vacuum status."""
+    try:
+        return base._convert_vacuum(entity)
+    except ConversionError as err:
+        if str(err) != "vacuum_optional_status":
+            raise
+
+    dps = base._vacuum_dps(entity)
+    status = dps.get("status")
+    if (
+        status is None
+        or status.get("optional") is not True
+        or base._dp_type(status) != "string"
+        or _raw_mapping(status)
+    ):
+        raise ConversionError("vacuum_optional_status")
+    base._check_common_dp_semantics(status, writable=False)
+    allowed_status = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "unit", "class", "category",
+    }
+    if set(status) - allowed_status or status.get("hidden") is True:
+        raise ConversionError("vacuum_optional_status")
+
+    config: dict[str, Any] = {
+        "id": base._dp_id(status),
+        "platform": "vacuum",
+        "vacuum_status_dp": base._dp_id(status),
+        "vacuum_status_values": {},
+    }
+    base._entity_metadata(entity, config)
+    required: set[int] = set()
+    optional: set[int] = set()
+    base._merge_membership(required, optional, status)
+    consumed = {"status"}
+
+    command = dps.get("command")
+    if command is not None:
+        values = base._vacuum_static_values(command, reason="vacuum_command", writable=True)
+        config["vacuum_command_dp"] = base._dp_id(command)
+        config["vacuum_command_values"] = values
+        base._merge_membership(required, optional, command)
+        consumed.add("command")
+
+    direction = dps.get("direction_control")
+    if direction is not None:
+        values = base._vacuum_static_values(direction, reason="vacuum_direction", writable=True)
+        config["vacuum_direction_dp"] = base._dp_id(direction)
+        config["vacuum_direction_values"] = values
+        base._merge_membership(required, optional, direction)
+        consumed.add("direction_control")
+
+    fan = dps.get("fan_speed")
+    if fan is not None:
+        values = base._vacuum_static_values(fan, reason="vacuum_fan_speed", writable=True)
+        config["fan_speed_dp"] = base._dp_id(fan)
+        config["vacuum_fan_speed_values"] = values
+        base._merge_membership(required, optional, fan)
+        consumed.add("fan_speed")
+
+    activate = dps.get("activate")
+    if activate is not None:
+        raw_on, raw_off = base._vacuum_boolean_values(activate, "vacuum_activate")
+        config["vacuum_activate_dp"] = base._dp_id(activate)
+        config["vacuum_activate_on"] = raw_on
+        config["vacuum_activate_off"] = raw_off
+        base._merge_membership(required, optional, activate)
+        consumed.add("activate")
+
+    power = dps.get("power")
+    if power is not None:
+        raw_on, raw_off = base._vacuum_boolean_values(power, "vacuum_power")
+        config["vacuum_power_dp"] = base._dp_id(power)
+        config["vacuum_power_on"] = raw_on
+        config["vacuum_power_off"] = raw_off
+        base._merge_membership(required, optional, power)
+        consumed.add("power")
+
+    locate = dps.get("locate")
+    if locate is not None:
+        config["locate_dp"] = base._dp_id(locate)
+        config["vacuum_locate_on"] = base._vacuum_trigger_value(locate, "vacuum_locate")
+        base._merge_membership(required, optional, locate)
+        consumed.add("locate")
+
+    error = dps.get("error")
+    if error is not None:
+        if error.get("force") is True or error.get("persist") is False or error.get("sensitive") is True:
+            raise ConversionError("vacuum_error_semantics")
+        if error.get("readonly") not in (None, False, True):
+            raise ConversionError("vacuum_error_semantics")
+        allowed_error = {
+            "id", "type", "name", "optional", "readonly", "hidden", "force",
+            "persist", "sensitive", "unit", "class", "category",
+        }
+        if set(error) - allowed_error:
+            raise ConversionError("vacuum_error_semantics")
+        if base._mapping_rules(error):
+            raise ConversionError("vacuum_error_mapping")
+        if base._dp_type(error) not in {"bitfield", "integer", "boolean", "string"}:
+            raise ConversionError("vacuum_error_type")
+        config["fault_dp"] = base._dp_id(error)
+        base._merge_membership(required, optional, error)
+        consumed.add("error")
+
+    for name, dp in dps.items():
+        if name in consumed:
+            continue
+        base._preserve_vacuum_extra(name, dp, config, required, optional)
+
+    return {"platform": "vacuum", "config": config}, required, optional
+
+
 # Extend only the productless conversion surface. Keep the mature product-ID
 # importer unchanged while wrapping its converters for Batch F on this module's
 # develop-only path.
@@ -2554,6 +2669,7 @@ _original_converters["binary_sensor"] = _convert_binary_sensor_productless
 _original_converters["sensor"] = _convert_sensor_productless
 _original_converters["switch"] = _convert_switch_productless
 _original_converters["fan"] = _convert_fan_productless
+_original_converters["vacuum"] = _convert_vacuum_productless
 _original_converters["water_heater"] = _convert_water_heater_productless
 for _platform, _converter in _original_converters.items():
     base._CONVERTERS[_platform] = _advanced_wrapper(_platform, _converter)
