@@ -106,6 +106,31 @@ class ProductlessWaterHeaterTests(unittest.TestCase):
         with self.assertRaisesRegex(base.ConversionError, "water_heater_temperature_unit_mapping"):
             base._CONVERTERS["water_heater"](entity)
 
+    def test_invalid_mapped_unit_token_is_preserved_for_runtime_fallback(self):
+        entity = {
+            "entity": "water_heater",
+            "dps": [
+                {"id": 2, "type": "integer", "name": "current_temperature"},
+                {"id": 8, "type": "integer", "name": "temperature", "range": {"min": 0, "max": 100}, "mapping": [
+                    {"constraint": "temperature_unit", "conditions": [
+                        {"dps_val": "f", "value_redirect": "temp_set_f", "range": {"min": 32, "max": 212}},
+                    ]},
+                ]},
+                {"id": 9, "type": "integer", "name": "temp_set_f", "range": {"min": 32, "max": 212}},
+                {"id": 12, "type": "string", "name": "temperature_unit", "mapping": [
+                    {"dps_val": "c", "value": "C"},
+                    {"dps_val": "f", "value": "V"},
+                ]},
+            ],
+        }
+        converted, required, optional = base._CONVERTERS["water_heater"](entity)
+        config = converted["config"]
+        self.assertEqual(config["water_heater_temperature_unit_values"], {"°C": "c", "V": "f"})
+        self.assertEqual(config["water_heater_temperature_unit_dp"], 12)
+        self.assertIn("8", config["advanced_mapping_by_dp"])
+        self.assertEqual(required, {2, 8, 9, 12})
+        self.assertEqual(optional, set())
+
     def test_mismatched_temperature_scales_fail_closed(self):
         entity = {
             "entity": "water_heater",

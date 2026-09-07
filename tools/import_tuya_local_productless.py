@@ -920,7 +920,8 @@ def _dynamic_unit_runtime_rules(
         # LocalTuya deliberately treats a missing cached DP as unknown and does
         # not apply default mapping rules, unlike Tuya Local get_value(None).
         raise ConversionError(f"{platform}_dynamic_unit_optional")
-    if base._dp_type(dp) != "string":
+    dp_type = base._dp_type(dp)
+    if dp_type not in {"string", "boolean"}:
         raise ConversionError(f"{platform}_dynamic_unit_type")
 
     probe = copy.deepcopy(dp)
@@ -931,7 +932,7 @@ def _dynamic_unit_runtime_rules(
     if not rules:
         return []
     translated: list[dict[str, Any]] = []
-    seen_raw: set[str] = set()
+    seen_raw: list[Any] = []
     saw_default = False
     for rule in rules:
         if set(rule) - {"dps_val", "value", "hidden"}:
@@ -945,9 +946,13 @@ def _dynamic_unit_runtime_rules(
             out["hidden"] = rule["hidden"]
         if "dps_val" in rule:
             raw = rule.get("dps_val")
-            if not isinstance(raw, str) or raw in seen_raw:
+            if dp_type == "string" and not isinstance(raw, str):
                 raise ConversionError(f"{platform}_dynamic_unit_mapping")
-            seen_raw.add(raw)
+            if dp_type == "boolean" and not isinstance(raw, bool):
+                raise ConversionError(f"{platform}_dynamic_unit_mapping")
+            if any(raw == previous and type(raw) is type(previous) for previous in seen_raw):
+                raise ConversionError(f"{platform}_dynamic_unit_mapping")
+            seen_raw.append(raw)
             out["dps_val"] = raw
         else:
             if saw_default:
@@ -2253,6 +2258,11 @@ def _water_heater_unit(value: Any) -> str:
         return "°C"
     if value in {"F", "°F"}:
         return "°F"
+    # Tuya Local validates mapped strings at runtime and falls back to Celsius
+    # when the mapped token is not a Home Assistant temperature unit. Preserve
+    # that exact invalid token here rather than guessing a corrected unit.
+    if isinstance(value, str) and value:
+        return value
     raise ConversionError("water_heater_temperature_unit")
 
 
