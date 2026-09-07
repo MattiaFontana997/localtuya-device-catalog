@@ -1,0 +1,70 @@
+name: Patch productless read-only water heater target
+
+on:
+  push:
+    paths:
+      - .github/workflows/patch-water-heater-readonly.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply importer patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tools/import_tuya_local_productless.py')
+          text = path.read_text()
+          old = '''    target = dps.get("temperature")\n    if target is not None:\n        scaling, range_config, step = _water_heater_numeric(\n            target, writable=True, require_range=True, reason="water_heater_temperature"\n        )\n'''
+          new = '''    target = dps.get("temperature")\n    if target is not None:\n        target_readonly = target.get("readonly") is True\n        if target.get("readonly") not in (None, False, True):\n            raise ConversionError("water_heater_temperature_readonly")\n        scaling, range_config, step = _water_heater_numeric(\n            target, writable=not target_readonly, require_range=True, reason="water_heater_temperature"\n        )\n'''
+          assert text.count(old) == 1
+          text = text.replace(old, new, 1)
+          anchor = '        config["water_heater_target_temperature_dp"] = dp_id\n'
+          assert text.count(anchor) == 1
+          text = text.replace(anchor, anchor + '        if target_readonly:\n            config["water_heater_target_readonly"] = True\n', 1)
+          path.write_text(text)
+
+          test = Path('tests/test_productless_water_heater.py')
+          text = test.read_text()
+          marker = '    def test_conditioned_boolean_mode_projects_to_logical_mode_domain(self):\n'
+          assert text.count(marker) == 1
+          case = '''    def test_readonly_target_temperature_is_preserved_without_write_capability(self):\n        entity = {\n            "entity": "water_heater",\n            "dps": [\n                {"id": 1, "type": "boolean", "name": "operation_mode", "mapping": [\n                    {"dps_val": False, "value": "off"},\n                    {"dps_val": True, "value": "electric"},\n                ]},\n                {"id": 4, "type": "integer", "name": "temperature", "unit": "C",\n                 "readonly": True, "range": {"min": 15, "max": 75}},\n                {"id": 16, "type": "integer", "name": "current_temperature"},\n            ],\n        }\n        converted, required, optional = productless._convert_water_heater_productless(entity)\n        config = converted["config"]\n        self.assertEqual(config["water_heater_target_temperature_dp"], 4)\n        self.assertIs(config["water_heater_target_readonly"], True)\n        self.assertEqual(config["water_heater_temperature_unit"], "°C")\n        self.assertEqual(required, {1, 4, 16})\n        self.assertEqual(optional, set())\n\n'''
+          test.write_text(text.replace(marker, case + marker, 1))
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Run full catalog tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Verify Aquatech pinned profile
+        run: |
+          git clone -q https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout -q 38347807cfc81ae8789974d98532eb928f42f174
+          python - <<'PY'
+          import sys, yaml
+          from pathlib import Path
+          sys.path.insert(0, str(Path('tools').resolve()))
+          from import_tuya_local_fingerprints import convert_productless_profile
+          p = Path('/tmp/tuya-local/custom_components/tuya_local/devices/aquatech_x6_water_heater.yaml')
+          result = convert_productless_profile(yaml.safe_load(p.read_text()), source_file=p.name, revision='38347807cfc81ae8789974d98532eb928f42f174')
+          water = next(e for e in result['entities'] if e['platform'] == 'water_heater')
+          assert water['config']['water_heater_target_readonly'] is True
+          PY
+      - name: Commit importer support
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_productless_water_heater.py
+          git diff --cached --check
+          git commit -m "Import read-only water heater targets"
+          git push origin HEAD:develop
