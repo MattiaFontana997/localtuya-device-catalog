@@ -21,7 +21,7 @@ jobs:
         run: |
           git clone -q https://github.com/make-all/tuya-local.git /tmp/tuya-local
           git -C /tmp/tuya-local checkout -q 38347807cfc81ae8789974d98532eb928f42f174
-      - name: Diagnose selected conversions
+      - name: Diagnose selected productless conversions
         run: |
           python - <<'PY'
           import sys, traceback
@@ -29,7 +29,9 @@ jobs:
           import yaml
           sys.path.insert(0, str(Path('tools').resolve()))
           import import_tuya_local_productless as p
+          from import_tuya_local_fingerprints import convert_productless_profile
 
+          revision = '38347807cfc81ae8789974d98532eb928f42f174'
           root = Path('/tmp/tuya-local')
           names = [
               'aquatech_x6_water_heater.yaml',
@@ -54,9 +56,13 @@ jobs:
                   continue
               data = yaml.safe_load(paths[0].read_text())
               try:
-                  result = p.convert_profile(data, source_file=name)
-                  print('SUCCESS', [(e['platform'], e['config']) for e in result['entities']])
+                  result = convert_productless_profile(
+                      data, source_file=name, revision=revision
+                  )
+                  print('SUCCESS')
+                  for entity in result['entities']:
+                      print('ENTITY', entity['platform'], entity['config'])
               except Exception as exc:
                   print('ERROR', type(exc).__name__, str(exc))
-                  traceback.print_exc(limit=12)
+                  traceback.print_exc(limit=16)
           PY
