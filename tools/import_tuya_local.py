@@ -461,7 +461,14 @@ def _convert_number(entity: dict[str, Any]) -> Converted:
             raise ConversionError("invalid_unit")
         config["unit_of_measurement"] = unit
 
-    _entity_metadata(entity, config)
+    mode = entity.get("mode")
+    if mode not in (None, "auto", "box", "slider"):
+        raise ConversionError("entity_mode")
+    if mode is not None:
+        config["number_mode"] = mode
+    metadata_entity = dict(entity)
+    metadata_entity.pop("mode", None)
+    _entity_metadata(metadata_entity, config)
     return _finish_single_entity("number", config, dp)
 
 
@@ -2849,23 +2856,33 @@ def _convert_text(entity: dict[str, Any]) -> Converted:
     return {"platform": "text", "config": config}, required, optional
 
 
-def _core_position_semantics(dp: dict[str, Any], *, reason: str, writable: bool) -> tuple[float, float, bool]:
+def _core_position_semantics(dp: dict[str, Any], *, reason: str, writable: bool) -> tuple[float, float, bool, float]:
     _check_common_dp_semantics(dp, writable=writable)
     if _dp_type(dp) != "integer":
         raise ConversionError(f"{reason}_type")
     rules = _mapping_rules(dp)
     inverted = False
+    write_step = 1.0
     if rules:
         if len(rules) != 1 or "dps_val" in rules[0]:
             raise ConversionError(f"{reason}_mapping")
         rule = rules[0]
-        if set(rule) - {"invert"}:
+        if set(rule) - {"invert", "step"}:
             raise ConversionError(f"{reason}_mapping")
         inverted = rule.get("invert", False)
         if not isinstance(inverted, bool):
             raise ConversionError(f"{reason}_mapping")
-    step = dp.get("step", 1)
-    if isinstance(step, bool) or not isinstance(step, (int, float)) or float(step) != 1.0:
+        raw_mapping_step = rule.get("step", 1)
+        if (
+            isinstance(raw_mapping_step, bool)
+            or not isinstance(raw_mapping_step, (int, float))
+            or not math.isfinite(float(raw_mapping_step))
+            or float(raw_mapping_step) <= 0
+        ):
+            raise ConversionError(f"{reason}_step")
+        write_step = float(raw_mapping_step)
+    dp_step = dp.get("step", 1)
+    if isinstance(dp_step, bool) or not isinstance(dp_step, (int, float)) or float(dp_step) != 1.0:
         raise ConversionError(f"{reason}_step")
     raw_range = dp.get("range", {"min": 0, "max": 100})
     if not isinstance(raw_range, dict) or "min" not in raw_range or "max" not in raw_range:
@@ -2874,7 +2891,12 @@ def _core_position_semantics(dp: dict[str, Any], *, reason: str, writable: bool)
     maximum = _range_value(raw_range["max"], 1.0, f"{reason}_range")
     if maximum <= minimum:
         raise ConversionError(f"{reason}_range")
-    return minimum, maximum, inverted
+    if writable and write_step != 1.0:
+        stepped_min = write_step * round(minimum / write_step)
+        stepped_max = write_step * round(maximum / write_step)
+        if stepped_min < minimum or stepped_max > maximum:
+            raise ConversionError(f"{reason}_step_range")
+    return minimum, maximum, inverted, write_step
 
 
 def _convert_valve(entity: dict[str, Any]) -> Converted:
@@ -2888,7 +2910,7 @@ def _convert_valve(entity: dict[str, Any]) -> Converted:
     optional: set[int] = set()
 
     if _dp_type(valve) == "integer":
-        minimum, maximum, inverted = _core_position_semantics(
+        minimum, maximum, inverted, write_step = _core_position_semantics(
             valve, reason="valve_position", writable=True
         )
         config.update({
@@ -2897,6 +2919,8 @@ def _convert_valve(entity: dict[str, Any]) -> Converted:
             "valve_position_max": maximum,
             "valve_position_inverted": inverted,
         })
+        if write_step != 1.0:
+            config["valve_position_step"] = write_step
     else:
         raw_open, raw_closed = _core_boolean_values(
             valve, reason="valve_state", writable=True
@@ -2919,7 +2943,7 @@ def _convert_valve(entity: dict[str, Any]) -> Converted:
     if current is not None:
         if not config.get("valve_position_control"):
             raise ConversionError("valve_current_position_without_position_control")
-        cur_min, cur_max, cur_inverted = _core_position_semantics(
+        cur_min, cur_max, cur_inverted, _ = _core_position_semantics(
             current, reason="valve_current_position", writable=False
         )
         if (

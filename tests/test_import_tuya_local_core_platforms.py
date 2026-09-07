@@ -72,6 +72,34 @@ class TuyaLocalCorePlatformImporterTests(unittest.TestCase):
         self.assertTrue(config["valve_position_inverted"])
         self.assertIn(2, mapping["match"]["optional_dps"])
 
+    def test_number_preserves_explicit_slider_mode(self):
+        mapping = convert_profile(profile("number", [
+            {"id": 5, "name": "value", "type": "integer",
+             "range": {"min": 5, "max": 100}, "unit": "%"},
+        ], mode="slider"), source_file="number-slider.yaml")
+        config = mapping["entities"][0]["config"]
+        self.assertEqual(config["number_mode"], "slider")
+        self.assertEqual(config["min_value"], 5.0)
+        self.assertEqual(config["max_value"], 100.0)
+
+    def test_number_unknown_mode_still_fails_closed(self):
+        with self.assertRaisesRegex(ConversionError, "entity_mode"):
+            convert_profile(profile("number", [
+                {"id": 5, "name": "value", "type": "integer",
+                 "range": {"min": 0, "max": 100}},
+            ], mode="dial"), source_file="number-dial.yaml")
+
+    def test_position_valve_preserves_write_only_mapping_step(self):
+        mapping = convert_profile(profile("valve", [
+            {"id": 102, "name": "valve", "type": "integer",
+             "mapping": [{"step": 5}]},
+        ], **{"class": "water"}), source_file="valve-step.yaml")
+        config = mapping["entities"][0]["config"]
+        self.assertTrue(config["valve_position_control"])
+        self.assertEqual(config["valve_position_min"], 0.0)
+        self.assertEqual(config["valve_position_max"], 100.0)
+        self.assertEqual(config["valve_position_step"], 5.0)
+
     def test_direct_lock_preserves_inverted_raw_values(self):
         mapping = convert_profile(profile("lock", [
             {"id": 46, "name": "lock", "type": "string", "mapping": [
