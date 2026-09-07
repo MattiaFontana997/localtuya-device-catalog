@@ -661,10 +661,11 @@
     }
   ],
   "blocked_candidates": 41,
-  "generated_candidates": 161,
+  "generated_candidates": 163,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
+    "fingerprint-airwoods_av_htpf_fresh_air_heat_pump-08ce1af7a6",
     "fingerprint-amico_smart_ceiling_fan-b9ecd0c3b5",
     "fingerprint-apricus_heat_pump_water_heater-bb9dc49aec",
     "fingerprint-arlec_fan-7d3eaf9f7f",
@@ -775,6 +776,7 @@
     "fingerprint-thermex_lima80v_waterheater-d02e689333",
     "fingerprint-weaja_s9_gasalarm-d4005d41a2",
     "fingerprint-weau_pool_heatpump13kW-4148dbe4cd",
+    "fingerprint-webber_apg7800_airpurifier-1a7e4a226f",
     "fingerprint-wetair_wawh1210lw_humidifier-05e8f13234",
     "fingerprint-wetair_wch750_heater-d5c19963e2",
     "fingerprint-wf520d_wifi_dual_touch_dimmer-0d7c8848d0",
@@ -784,5 +786,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 120
+  "safe_candidates": 122
 }

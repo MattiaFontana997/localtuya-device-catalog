@@ -12,19 +12,6 @@
     ]
   },
   {
-    "file": "airwoods_av_htpf_fresh_air_heat_pump.yaml",
-    "platforms": [
-      "climate",
-      "fan",
-      "number",
-      "sensor",
-      "binary_sensor"
-    ],
-    "reasons": [
-      "fan_missing_switch"
-    ]
-  },
-  {
     "file": "aixishs_big_siren.yaml",
     "platforms": [
       "alarm_control_panel",
@@ -37,7 +24,7 @@
       "text"
     ],
     "reasons": [
-      "unsupported_platform:alarm_control_panel"
+      "event_duplicate_dp_id"
     ]
   },
   {
@@ -72,21 +59,6 @@
     ],
     "reasons": [
       "dp_readonly"
-    ]
-  },
-  {
-    "file": "asip_0622_planter.yaml",
-    "platforms": [
-      "switch",
-      "light",
-      "sensor",
-      "binary_sensor",
-      "select",
-      "number",
-      "button"
-    ],
-    "reasons": [
-      "sensor_dp_type"
     ]
   },
   {
@@ -259,34 +231,6 @@
     ]
   },
   {
-    "file": "fujicool_yuzu_heatpump.yaml",
-    "platforms": [
-      "climate",
-      "binary_sensor",
-      "select",
-      "light",
-      "switch",
-      "sensor"
-    ],
-    "reasons": [
-      "switch_non_boolean"
-    ]
-  },
-  {
-    "file": "goldair_gpoc2415_oilheater.yaml",
-    "platforms": [
-      "climate",
-      "lock",
-      "sensor",
-      "binary_sensor",
-      "switch",
-      "number"
-    ],
-    "reasons": [
-      "switch_non_identity_mapping"
-    ]
-  },
-  {
     "file": "goldair_gpph_heater.yaml",
     "platforms": [
       "climate",
@@ -429,7 +373,7 @@
       "sensor"
     ],
     "reasons": [
-      "climate_temperature_unit_mapping"
+      "multi_dp_mapped_extra:unit"
     ]
   },
   {
@@ -511,19 +455,6 @@
     ]
   },
   {
-    "file": "pv28aw_co2detector.yaml",
-    "platforms": [
-      "binary_sensor",
-      "sensor",
-      "number",
-      "switch",
-      "select"
-    ],
-    "reasons": [
-      "switch_non_identity_mapping"
-    ]
-  },
-  {
     "file": "qlima_d820a_dehumidifier.yaml",
     "platforms": [
       "humidifier",
@@ -591,45 +522,6 @@
     ]
   },
   {
-    "file": "sirena_ws902plus_siren.yaml",
-    "platforms": [
-      "siren",
-      "binary_sensor",
-      "sensor",
-      "switch"
-    ],
-    "reasons": [
-      "unsupported_platform:siren"
-    ]
-  },
-  {
-    "file": "space_dog_music_lamp.yaml",
-    "platforms": [
-      "light",
-      "select",
-      "time",
-      "switch",
-      "number"
-    ],
-    "reasons": [
-      "switch_non_identity_mapping"
-    ]
-  },
-  {
-    "file": "starlight_heatpump.yaml",
-    "platforms": [
-      "climate",
-      "sensor",
-      "select",
-      "light",
-      "switch",
-      "binary_sensor"
-    ],
-    "reasons": [
-      "switch_non_boolean"
-    ]
-  },
-  {
     "file": "steinbach_silent_mini_heatpump.yaml",
     "platforms": [
       "climate",
@@ -637,7 +529,7 @@
       "sensor"
     ],
     "reasons": [
-      "climate_temperature_unit_mapping"
+      "multi_dp_mapped_extra:unit"
     ]
   },
   {
@@ -697,22 +589,6 @@
     ]
   },
   {
-    "file": "webber_apg7800_airpurifier.yaml",
-    "platforms": [
-      "climate",
-      "fan",
-      "sensor",
-      "switch",
-      "lock",
-      "light",
-      "button",
-      "select"
-    ],
-    "reasons": [
-      "fan_preset_hidden"
-    ]
-  },
-  {
     "file": "windcalm_fan.yaml",
     "platforms": [
       "fan",
@@ -749,20 +625,6 @@
     ],
     "reasons": [
       "climate_duplicate_dp_id"
-    ]
-  },
-  {
-    "file": "wouej_evcharger.yaml",
-    "platforms": [
-      "sensor",
-      "binary_sensor",
-      "select",
-      "switch",
-      "number",
-      "light"
-    ],
-    "reasons": [
-      "switch_non_boolean"
     ]
   }
 ]

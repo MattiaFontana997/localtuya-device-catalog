@@ -12,15 +12,12 @@
     "climate_hvac_mode_mapping": 1,
     "climate_hvac_mode_missing_off": 2,
     "climate_preset_mapping": 2,
-    "climate_temperature_unit_mapping": 2,
     "cover_action_friendly": 1,
     "dp_readonly": 1,
     "entity_hidden_unavailable": 3,
     "entity_mode": 1,
     "event_duplicate_dp_id": 2,
     "fan_direction_mapping": 1,
-    "fan_missing_switch": 1,
-    "fan_preset_hidden": 1,
     "has_product_id": 1526,
     "humidifier_mode_mapping": 1,
     "humidifier_switch_type": 1,
@@ -28,7 +25,7 @@
     "light_unsupported_dp:main_switch": 1,
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
-    "multi_dp_mapped_extra:unit": 1,
+    "multi_dp_mapped_extra:unit": 3,
     "select_complex_mapping": 6,
     "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
@@ -549,7 +546,7 @@
     },
     {
       "file": "airwoods_av_htpf_fresh_air_heat_pump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-airwoods_av_htpf_fresh_air_heat_pump-08ce1af7a6",
       "name": "Fresh air heat pump",
       "platforms": [
         "climate",
@@ -558,10 +555,8 @@
         "sensor",
         "binary_sensor"
       ],
-      "reasons": [
-        "fan_missing_switch"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "airwoods_avew8df_hrv.yaml",
@@ -16847,7 +16842,7 @@
         "sensor"
       ],
       "reasons": [
-        "climate_temperature_unit_mapping"
+        "multi_dp_mapped_extra:unit"
       ],
       "status": "skipped"
     },
@@ -22764,7 +22759,7 @@
         "sensor"
       ],
       "reasons": [
-        "climate_temperature_unit_mapping"
+        "multi_dp_mapped_extra:unit"
       ],
       "status": "skipped"
     },
@@ -25444,7 +25439,7 @@
     },
     {
       "file": "webber_apg7800_airpurifier.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-webber_apg7800_airpurifier-1a7e4a226f",
       "name": "Purifier heater fan",
       "platforms": [
         "climate",
@@ -25456,10 +25451,8 @@
         "button",
         "select"
       ],
-      "reasons": [
-        "fan_preset_hidden"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "weeket_kes5211tece_kettle.yaml",
@@ -26922,9 +26915,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 161,
+    "convertible_fingerprint": 163,
     "not_productless": 1526,
-    "skipped": 50
+    "skipped": 48
   },
   "target_schema": 3
 }
