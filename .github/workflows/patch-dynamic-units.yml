@@ -80,25 +80,25 @@ jobs:
           root = Path('/tmp/tuya-local/custom_components/tuya_local/devices')
           rev = '38347807cfc81ae8789974d98532eb928f42f174'
 
-          for filename in ('fairland_rmic06_heatpump.yaml', 'fiesta_dk1g_kettle.yaml'):
-              path = root / filename
-              result = convert_productless_profile(
-                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev
-              )
-              assert result['entities'], filename
-              print('PINNED_CONVERTED', filename)
-
-          filename = 'dr_heater_dr008_thermostat.yaml'
+          filename = 'fiesta_dk1g_kettle.yaml'
           path = root / filename
-          try:
-              result = convert_productless_profile(
-                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev
-              )
-              print('PINNED_CONVERTED', filename)
-          except Exception as err:
-              message = str(err)
-              assert 'multi_dp_mapped_extra:unit' not in message, message
-              print('PINNED_ADVANCED', filename, message)
+          result = convert_productless_profile(
+              yaml.safe_load(path.read_text()), source_file=filename, revision=rev
+          )
+          assert result['entities'], filename
+          print('PINNED_CONVERTED', filename)
+
+          for filename in ('fairland_rmic06_heatpump.yaml', 'dr_heater_dr008_thermostat.yaml'):
+              path = root / filename
+              try:
+                  result = convert_productless_profile(
+                      yaml.safe_load(path.read_text()), source_file=filename, revision=rev
+                  )
+                  print('PINNED_CONVERTED', filename)
+              except Exception as err:
+                  message = str(err)
+                  assert 'multi_dp_mapped_extra:unit' not in message, message
+                  print('PINNED_ADVANCED', filename, message)
           PY
       - name: Commit importer support
         run: |
