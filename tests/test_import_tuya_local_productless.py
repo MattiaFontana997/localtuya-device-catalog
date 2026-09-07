@@ -755,27 +755,32 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
             {"fahrenheit": "f", "celsius": "c"},
         )
 
-    def test_climate_temperature_unit_does_not_infer_missing_celsius_raw_value(self):
-        with self.assertRaisesRegex(Exception, "climate_temperature_unit_mapping"):
-            self._convert([
-                {
-                    "entity": "climate",
-                    "dps": [
-                        {
-                            "id": 1, "name": "hvac_mode", "type": "string",
-                            "mapping": [
-                                {"dps_val": "off", "value": "off"},
-                                {"dps_val": "heat", "value": "heat"},
-                            ],
-                        },
-                        {"id": 2, "name": "temperature", "type": "integer", "range": {"min": 5, "max": 35}},
-                        {
-                            "id": 23, "name": "temperature_unit", "type": "string",
-                            "mapping": [{"dps_val": "f", "value": "F"}, {"value": "C"}],
-                        },
-                    ],
-                }
-            ])
+    def test_climate_temperature_unit_default_becomes_explicit_celsius_raw_value(self):
+        result = self._convert([
+            {
+                "entity": "climate",
+                "dps": [
+                    {
+                        "id": 1, "name": "hvac_mode", "type": "string",
+                        "mapping": [
+                            {"dps_val": "off", "value": "off"},
+                            {"dps_val": "heat", "value": "heat"},
+                        ],
+                    },
+                    {"id": 2, "name": "temperature", "type": "integer", "range": {"min": 5, "max": 35}},
+                    {
+                        "id": 23, "name": "temperature_unit", "type": "string",
+                        "mapping": [{"dps_val": "f", "value": "F"}, {"value": "C"}],
+                    },
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(
+            config["temperature_unit_values"],
+            {"fahrenheit": "f", "celsius": "C"},
+        )
+        self.assertEqual(result["match"]["required_dps"], [1, 2, 23])
 
     def test_climate_temperature_unit_rejects_optional_membership_mismatch(self):
         with self.assertRaisesRegex(Exception, "climate_temperature_unit_mapping"):

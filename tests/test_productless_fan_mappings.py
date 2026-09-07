@@ -97,14 +97,18 @@ class ProductlessFanMappingTests(unittest.TestCase):
             {"fan_level": 3},
         )
 
-    def test_switchless_fan_stays_fail_closed(self):
-        with self.assertRaisesRegex(ConversionError, "fan_missing_switch"):
-            self._convert([
-                {"id": 102, "name": "speed", "type": "string", "mapping": [
-                    {"dps_val": "0", "value": 10},
-                    {"dps_val": "9", "value": 100},
-                ]},
-            ])
+    def test_switchless_fan_uses_explicit_no_switch_runtime_flag(self):
+        result = self._convert([
+            {"id": 102, "name": "speed", "type": "string", "mapping": [
+                {"dps_val": "0", "value": 10},
+                {"dps_val": "9", "value": 100},
+            ]},
+        ])
+        config = result["entities"][0]["config"]
+        self.assertIs(config["fan_no_switch"], True)
+        self.assertEqual(config["id"], 102)
+        self.assertEqual(config["fan_speed_control"], 102)
+        self.assertEqual(result["match"]["required_dps"], [102])
 
 
 if __name__ == "__main__":

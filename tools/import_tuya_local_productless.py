@@ -546,6 +546,47 @@ def _normalize_climate_temperature_unit(entity: dict[str, Any]) -> dict[str, Any
     return normalized
 
 
+def _normalize_climate_temperature_unit_default(entity: dict[str, Any]) -> dict[str, Any]:
+    """Make Tuya Local string temperature-unit default mapping explicit.
+
+    For a string DP, a default rule ``value: C`` is written back as the string
+    ``C`` by Tuya Local's type coercion. On reads, any unmatched raw value maps
+    to C. LocalTuya Climate already has the same unmatched->C fallback, so an
+    explicit C->C writable entry preserves both directions exactly.
+    """
+    if entity.get("entity") != "climate":
+        return entity
+    dps = entity.get("dps")
+    if not isinstance(dps, list):
+        return entity
+    unit = next((dp for dp in dps if isinstance(dp, dict) and dp.get("name") == "temperature_unit"), None)
+    if unit is None or base._dp_type(unit) != "string":
+        return entity
+    rules = _raw_mapping(unit)
+    if len(rules) != 2:
+        return entity
+    explicit = [rule for rule in rules if "dps_val" in rule]
+    defaults = [rule for rule in rules if "dps_val" not in rule]
+    if len(explicit) != 1 or len(defaults) != 1:
+        return entity
+    if set(explicit[0]) != {"dps_val", "value"} or set(defaults[0]) != {"value"}:
+        return entity
+    raw = explicit[0]["dps_val"]
+    explicit_value = explicit[0]["value"]
+    default_value = defaults[0]["value"]
+    if not isinstance(raw, str) or {explicit_value, default_value} != {"C", "F"}:
+        return entity
+    if raw == default_value:
+        raise ConversionError("climate_temperature_unit_mapping")
+    transformed = copy.deepcopy(entity)
+    transformed_unit = next(dp for dp in transformed["dps"] if isinstance(dp, dict) and dp.get("name") == "temperature_unit")
+    transformed_unit["mapping"] = [
+        copy.deepcopy(explicit[0]),
+        {"dps_val": default_value, "value": default_value},
+    ]
+    return transformed
+
+
 def _prepare_climate_limit_precisions(
     entity: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, float]]:
@@ -1299,6 +1340,7 @@ def _advanced_wrapper(
         if platform == "sensor":
             flagged, sensor_unix_timestamp = _prepare_productless_unix_timestamp_sensor(flagged)
         elif platform == "climate":
+            flagged = _normalize_climate_temperature_unit_default(flagged)
             flagged = _normalize_climate_temperature_unit(flagged)
             flagged, climate_limit_precisions = _prepare_climate_limit_precisions(flagged)
             flagged, climate_dynamic_target_range = _prepare_climate_dynamic_target_range(flagged)
