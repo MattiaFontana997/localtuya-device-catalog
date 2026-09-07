@@ -14,7 +14,6 @@
     "cover_action_friendly": 1,
     "entity_hidden_unavailable": 3,
     "event_duplicate_dp_id": 2,
-    "fan_direction_mapping": 1,
     "has_product_id": 1526,
     "humidifier_mode_mapping": 1,
     "humidifier_switch_type": 1,
@@ -1607,17 +1606,15 @@
     },
     {
       "file": "aspen_asp200_fan.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-aspen_asp200_fan-b7a0a6d95e",
       "name": "Fan",
       "platforms": [
         "fan",
         "climate",
         "light"
       ],
-      "reasons": [
-        "fan_direction_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "atmosc_aseries_airpurifier.yaml",
@@ -26893,9 +26890,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 171,
+    "convertible_fingerprint": 172,
     "not_productless": 1526,
-    "skipped": 40
+    "skipped": 39
   },
   "target_schema": 3
 }
