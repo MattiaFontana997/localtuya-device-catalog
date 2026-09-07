@@ -75,7 +75,13 @@ jobs:
                   converted, required, optional = base._CONVERTERS["sensor"](entity)
                   config = converted["config"]
                   self.assertEqual(config["id"], 9)
-                  self.assertAlmostEqual(config["scaling"], 0.001)
+                  self.assertEqual(
+                      config["sensor_value_mapping"],
+                      {
+                          "raw_type": "integer",
+                          "rules": [{"scale": 1000}, {"dps_val": None}],
+                      },
+                  )
                   self.assertEqual(
                       config["advanced_mapping_by_dp"]["9"],
                       [{"dps_val": None, "value_redirect_dp": 5}],
@@ -132,7 +138,10 @@ jobs:
           mapping = payload['mappings'][0]
           power = next(e for e in mapping['entities'] if e['platform'] == 'sensor' and e['config'].get('id') == 9)
           cfg = power['config']
-          assert abs(cfg['scaling'] - 0.001) < 1e-12, cfg
+          assert cfg['sensor_value_mapping'] == {
+              'raw_type': 'integer',
+              'rules': [{'scale': 1000}, {'dps_val': None}],
+          }, cfg
           assert cfg['advanced_mapping_by_dp']['9'] == [{'dps_val': None, 'value_redirect_dp': 5}], cfg
           assert 5 in mapping['match']['optional_dps'] and 9 in mapping['match']['optional_dps'], mapping['match']
           print('PINNED_CONVERTED', item)
