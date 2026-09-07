@@ -1,0 +1,76 @@
+name: Run dynamic Sensor and Number units v2
+
+on:
+  push:
+    paths:
+      - .github/workflows/run-dynamic-units-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply reviewed importer patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import textwrap
+          source = Path('.github/workflows/patch-dynamic-units.yml').read_text()
+          marker = "          python - <<'PY'\n"
+          body = source.split(marker, 1)[1].split("\n          PY\n", 1)[0]
+          exec(compile(textwrap.dedent(body), 'dynamic-units-patch', 'exec'))
+
+          path = Path('tests/test_productless_mapped_extras.py')
+          text = path.read_text()
+          old = '''        self.assertEqual(config["mapped_extra_state_attributes_dps"], {"unit": 23})\n        self.assertNotIn("extra_state_attributes_dps", config)\n        self.assertEqual(config["mapped_extra_state_attribute_mappings"]["unit"], [\n            {"dps_val": "c", "value": "C"},\n            {"dps_val": "f", "value": "F"},\n        ])\n        self.assertEqual(advanced, {})\n        self.assertIn(23, required)\n'''
+          new = '''        self.assertEqual(config["dynamic_unit_dp"], 23)\n        self.assertNotIn("extra_state_attributes_dps", config)\n        self.assertNotIn("mapped_extra_state_attributes_dps", config)\n        self.assertEqual(advanced["23"], [\n            {"dps_val": "c", "value": "C"},\n            {"dps_val": "f", "value": "F"},\n        ])\n        self.assertIn(23, required)\n'''
+          assert text.count(old) == 1
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Run full catalog tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Verify pinned profiles
+        run: |
+          git clone -q https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout -q 38347807cfc81ae8789974d98532eb928f42f174
+          python - <<'PY'
+          import sys, yaml
+          from pathlib import Path
+          sys.path.insert(0, str(Path('tools').resolve()))
+          from import_tuya_local_fingerprints import convert_productless_profile
+          root = Path('/tmp/tuya-local/custom_components/tuya_local/devices')
+          rev = '38347807cfc81ae8789974d98532eb928f42f174'
+          for filename in (
+              'inkbird_iaqm129w_airqualitymonitor.yaml',
+              'nashone_mts700wb_thermostat.yaml',
+              'steinbach_silent_mini_heatpump.yaml',
+          ):
+              path = root / filename
+              result = convert_productless_profile(
+                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev
+              )
+              dynamic = [
+                  entity for entity in result['entities']
+                  if entity['config'].get('dynamic_unit_dp') is not None
+              ]
+              assert dynamic, filename
+          PY
+      - name: Commit importer support
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_productless_dynamic_units.py tests/test_productless_mapped_extras.py
+          git diff --cached --check
+          git commit -m "Import dynamic sensor and number units"
+          git push origin HEAD:develop
