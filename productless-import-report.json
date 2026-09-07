@@ -5,7 +5,6 @@
     "advanced_mapping_redirect_target_mapping": 1,
     "advanced_mapping_rule_semantics": 1,
     "advanced_mapping_rule_transform_semantics": 1,
-    "binary_sensor_duplicate_dp_id": 1,
     "button_duplicate_primary_dp": 1,
     "climate_duplicate_dp_id": 4,
     "climate_hvac_action_mapping": 1,
@@ -23,8 +22,8 @@
     "light_unsupported_dp:main_switch": 1,
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
-    "multi_dp_mapped_extra:unit": 3,
-    "select_complex_mapping": 6,
+    "multi_dp_mapped_extra:unit": 2,
+    "select_complex_mapping": 5,
     "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
     "siren_duplicate_dp_id": 1,
@@ -2727,7 +2726,7 @@
     },
     {
       "file": "beok_tr8b_thermostat.yaml",
-      "mapping_id": "fingerprint-beok_tr8b_thermostat-d6581ddf8a",
+      "mapping_id": "fingerprint-beok_tr8b_thermostat-c0b8308bd8",
       "name": "Thermostat",
       "platforms": [
         "climate",
@@ -5916,7 +5915,7 @@
         "number"
       ],
       "reasons": [
-        "select_complex_mapping"
+        "multi_dp_mapped_extra:unit"
       ],
       "status": "skipped"
     },
@@ -8231,7 +8230,7 @@
         "binary_sensor"
       ],
       "reasons": [
-        "binary_sensor_duplicate_dp_id"
+        "multi_dp_mapped_extra:unit"
       ],
       "status": "skipped"
     },
@@ -11770,7 +11769,7 @@
     },
     {
       "file": "inkbird_iaqm129w_airqualitymonitor.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-inkbird_iaqm129w_airqualitymonitor-9d93e0d4fc",
       "name": "Air quality monitor",
       "platforms": [
         "sensor",
@@ -11778,10 +11777,8 @@
         "switch",
         "light"
       ],
-      "reasons": [
-        "multi_dp_mapped_extra:unit"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "inkbird_ibbq4bw_thermometer.yaml",
@@ -16828,7 +16825,7 @@
     },
     {
       "file": "nashone_mts700wb_thermostat.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-nashone_mts700wb_thermostat-fb9e6a9b57",
       "name": "Thermostat",
       "platforms": [
         "climate",
@@ -16837,10 +16834,8 @@
         "select",
         "sensor"
       ],
-      "reasons": [
-        "multi_dp_mapped_extra:unit"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "nbq100_us_microinverter.yaml",
@@ -20962,7 +20957,7 @@
     },
     {
       "file": "salcar_t9w_thermostat.yaml",
-      "mapping_id": "fingerprint-salcar_t9w_thermostat-73b6559a28",
+      "mapping_id": "fingerprint-salcar_t9w_thermostat-118c987d58",
       "name": "Thermostat",
       "platforms": [
         "climate",
@@ -22745,17 +22740,15 @@
     },
     {
       "file": "steinbach_silent_mini_heatpump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-steinbach_silent_mini_heatpump-e1a5f03e68",
       "name": "Heat pump",
       "platforms": [
         "climate",
         "binary_sensor",
         "sensor"
       ],
-      "reasons": [
-        "multi_dp_mapped_extra:unit"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "steinbach_solid_4.3_heatpump.yaml",
@@ -26909,9 +26902,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 165,
+    "convertible_fingerprint": 168,
     "not_productless": 1526,
-    "skipped": 46
+    "skipped": 43
   },
   "target_schema": 3
 }

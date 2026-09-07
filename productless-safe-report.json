@@ -469,6 +469,22 @@
         2,
         3,
         4,
+        13,
+        21
+      ],
+      "best_matches": [
+        "fingerprint-moes_dimmer-25b5c01342",
+        "fingerprint-steinbach_silent_mini_heatpump-e1a5f03e68"
+      ],
+      "mapping_id": "fingerprint-moes_dimmer-25b5c01342",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
+        4,
         7
       ],
       "best_matches": [
@@ -620,6 +636,22 @@
         1,
         2,
         3,
+        4,
+        13,
+        21
+      ],
+      "best_matches": [
+        "fingerprint-moes_dimmer-25b5c01342",
+        "fingerprint-steinbach_silent_mini_heatpump-e1a5f03e68"
+      ],
+      "mapping_id": "fingerprint-steinbach_silent_mini_heatpump-e1a5f03e68",
+      "reason": "ambiguous"
+    },
+    {
+      "available_dps": [
+        1,
+        2,
+        3,
         4
       ],
       "best_matches": [
@@ -660,8 +692,8 @@
       "reason": "ambiguous"
     }
   ],
-  "blocked_candidates": 41,
-  "generated_candidates": 165,
+  "blocked_candidates": 43,
+  "generated_candidates": 168,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -680,7 +712,7 @@
     "fingerprint-awow_th213v2_thermostat-a1ecff6cb7",
     "fingerprint-bauhn_ap5w0624_powerstrip-3487fc6705",
     "fingerprint-beok_tcb38_thermostat-66874d19b0",
-    "fingerprint-beok_tr8b_thermostat-d6581ddf8a",
+    "fingerprint-beok_tr8b_thermostat-c0b8308bd8",
     "fingerprint-blitzwill_ceilingfanlight-36c798b498",
     "fingerprint-blitzwolf_bwshp6_smartplug-039ea1434c",
     "fingerprint-brizlabs_string_lights-29eaa9cea7",
@@ -726,6 +758,7 @@
     "fingerprint-hydrotherm_dynamic_x8_water_heater-82ac7a0bab",
     "fingerprint-illumanance_sensor-14877f2349",
     "fingerprint-illumanance_v2_sensor-7252c8eb46",
+    "fingerprint-inkbird_iaqm129w_airqualitymonitor-9d93e0d4fc",
     "fingerprint-intec_ceilingfanlight-4cd24c5989",
     "fingerprint-klarstein_icewindplus_coolingfan-04f26c215b",
     "fingerprint-kogan_garage_opener-387738bf9b",
@@ -742,10 +775,10 @@
     "fingerprint-me80_thermostat-64f73b117b",
     "fingerprint-minco_mh1823d_thermostat-c09a894cd3",
     "fingerprint-moes_bht002_thermostat_c-8f5eb6f55f",
-    "fingerprint-moes_dimmer-25b5c01342",
     "fingerprint-moes_presencesensor-a21e4bda9f",
     "fingerprint-moes_rgb_socket-076c826a83",
     "fingerprint-moesgo_dimmer-fde463382e",
+    "fingerprint-nashone_mts700wb_thermostat-fb9e6a9b57",
     "fingerprint-nedis_htpl20f_heater-40b5de8922",
     "fingerprint-nwt_wdh06em_dehumidifier-b8006d8ac2",
     "fingerprint-orion_ptc2000_heater-1d6c159639",
@@ -760,7 +793,7 @@
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rgb_nightlight_outlet-196a003dd8",
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
-    "fingerprint-salcar_t9w_thermostat-73b6559a28",
+    "fingerprint-salcar_t9w_thermostat-118c987d58",
     "fingerprint-sd123_hpr01_presence-0d224f860c",
     "fingerprint-sendo_airconditioner_c-8515ed4a85",
     "fingerprint-simple_eight_switch-5280593f7b",
@@ -788,5 +821,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 124
+  "safe_candidates": 125
 }
