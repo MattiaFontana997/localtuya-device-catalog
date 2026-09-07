@@ -43,12 +43,25 @@ jobs:
           )
           if productless != 211:
               raise SystemExit(f'expected 211 productless profiles, found {productless}')
+          print('STATUS_COUNTS', json.dumps(report['status_counts'], sort_keys=True))
+          print('REASON_COUNTS', json.dumps(report['reason_counts'], sort_keys=True))
+          print('SKIPPED_START')
+          for item in report['results']:
+              if item.get('status') == 'skipped':
+                  print(f"{item['file']} :: {','.join(item.get('reasons', []))}")
+          print('SKIPPED_END')
           PY
           python tools/build_safe_fingerprint_catalog.py \
             --catalog catalog.json \
             --generated-dir /tmp/productless-generated \
             --output /tmp/productless-catalog.json \
             --report productless-safe-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('productless-safe-report.json').read_text())
+          print('SAFE_REPORT', json.dumps({k: report.get(k) for k in ('candidate_count','safe_count','rejected_count')}, sort_keys=True))
+          PY
       - name: Commit diagnostic reports
         run: |
           git config user.name github-actions[bot]
