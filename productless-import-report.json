@@ -5,7 +5,6 @@
     "advanced_mapping_redirect_target_mapping": 1,
     "advanced_mapping_rule_semantics": 1,
     "advanced_mapping_rule_transform_semantics": 1,
-    "binary_sensor_duplicate_dp_id": 1,
     "button_duplicate_primary_dp": 1,
     "climate_duplicate_dp_id": 4,
     "climate_hvac_action_mapping": 1,
@@ -8221,17 +8220,15 @@
     },
     {
       "file": "fairland_rmic06_heatpump.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-fairland_rmic06_heatpump-11512f4b53",
       "name": "Pool heat pump",
       "platforms": [
         "climate",
         "sensor",
         "binary_sensor"
       ],
-      "reasons": [
-        "binary_sensor_duplicate_dp_id"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "fairland_x20_poolheatpump.yaml",
@@ -26899,9 +26896,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 169,
+    "convertible_fingerprint": 170,
     "not_productless": 1526,
-    "skipped": 42
+    "skipped": 41
   },
   "target_schema": 3
 }
