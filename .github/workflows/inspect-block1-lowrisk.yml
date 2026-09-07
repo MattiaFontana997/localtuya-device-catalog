@@ -12,29 +12,51 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: develop
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
       - name: Fetch pinned Tuya Local
         run: |
           git clone -q https://github.com/make-all/tuya-local.git /tmp/tuya-local
           git -C /tmp/tuya-local checkout -q 38347807cfc81ae8789974d98532eb928f42f174
-      - name: Dump selected pinned profiles
+      - name: Diagnose selected conversions
         run: |
-          for f in \
-            aquatech_x6_water_heater.yaml \
-            sohome_am43_curtain.yaml \
-            geeklink_fb1_shutter.yaml \
-            temp_humid_sensor.yaml \
-            tuya_rcbo.yaml \
-            nignbo_fan.yaml \
-            hiniso_dehumidifier.yaml \
-            midea_ydw20p1_dehumidifier.yaml \
-            parkside_ppwd30a1_vacuum.yaml \
-            rowenta_xplorer75s_vacuum.yaml \
-            advancedfires_1500_fireplace.yaml \
-            rgbcw_lightbulb_xld_cl002.yaml \
-            aosd_garagedoorwithlight.yaml; do
-            echo "===== $f ====="
-            p=$(find /tmp/tuya-local -type f -name "$f" -print -quit)
-            if [ -z "$p" ]; then echo "NOT FOUND"; continue; fi
-            echo "$p"
-            cat "$p"
-          done
+          python - <<'PY'
+          import sys, traceback
+          from pathlib import Path
+          import yaml
+          sys.path.insert(0, str(Path('tools').resolve()))
+          import import_tuya_local_productless as p
+
+          root = Path('/tmp/tuya-local')
+          names = [
+              'aquatech_x6_water_heater.yaml',
+              'hiniso_dehumidifier.yaml',
+              'parkside_ppwd30a1_vacuum.yaml',
+              'rowenta_xplorer75s_vacuum.yaml',
+              'advancedfires_1500_fireplace.yaml',
+              'rgbcw_lightbulb_xld_cl002.yaml',
+              'aosd_garagedoorwithlight.yaml',
+          ]
+          old_unit = p._water_heater_unit
+          def debug_unit(value):
+              print('WATER_HEATER_UNIT_INPUT', repr(value), type(value).__name__)
+              return old_unit(value)
+          p._water_heater_unit = debug_unit
+
+          for name in names:
+              print('\n===== DIAG', name, '=====')
+              paths = list(root.rglob(name))
+              if not paths:
+                  print('NOT FOUND')
+                  continue
+              data = yaml.safe_load(paths[0].read_text())
+              try:
+                  result = p.convert_profile(data, source_file=name)
+                  print('SUCCESS', [(e['platform'], e['config']) for e in result['entities']])
+              except Exception as exc:
+                  print('ERROR', type(exc).__name__, str(exc))
+                  traceback.print_exc(limit=12)
+          PY
