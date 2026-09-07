@@ -5,6 +5,7 @@
     "advanced_mapping_redirect_target_mapping": 1,
     "advanced_mapping_rule_semantics": 1,
     "advanced_mapping_rule_transform_semantics": 1,
+    "binary_sensor_duplicate_dp_id": 1,
     "button_duplicate_primary_dp": 1,
     "climate_duplicate_dp_id": 4,
     "climate_hvac_action_mapping": 1,
@@ -22,15 +23,13 @@
     "light_unsupported_dp:main_switch": 1,
     "light_unsupported_dp:named_color": 1,
     "lock_direct_control_required": 1,
-    "multi_dp_mapped_extra:unit": 2,
-    "select_complex_mapping": 5,
+    "select_complex_mapping": 6,
     "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
     "siren_duplicate_dp_id": 1,
     "unsupported_platform:media_player": 1,
     "vacuum_activate_mapping": 1,
-    "vacuum_optional_status": 1,
-    "water_heater_temperature_unit": 1
+    "vacuum_optional_status": 1
   },
   "results": [
     {
@@ -5915,7 +5914,7 @@
         "number"
       ],
       "reasons": [
-        "multi_dp_mapped_extra:unit"
+        "select_complex_mapping"
       ],
       "status": "skipped"
     },
@@ -8230,7 +8229,7 @@
         "binary_sensor"
       ],
       "reasons": [
-        "multi_dp_mapped_extra:unit"
+        "binary_sensor_duplicate_dp_id"
       ],
       "status": "skipped"
     },
@@ -8546,7 +8545,7 @@
     },
     {
       "file": "fiesta_dk1g_kettle.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-fiesta_dk1g_kettle-09ca262908",
       "name": "Kettle",
       "platforms": [
         "button",
@@ -8558,10 +8557,8 @@
         "binary_sensor",
         "time"
       ],
-      "reasons": [
-        "water_heater_temperature_unit"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "fisher_ervq_hd_hrv.yaml",
@@ -26902,9 +26899,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 168,
+    "convertible_fingerprint": 169,
     "not_productless": 1526,
-    "skipped": 43
+    "skipped": 42
   },
   "target_schema": 3
 }

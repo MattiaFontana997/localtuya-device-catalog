@@ -693,7 +693,7 @@
     }
   ],
   "blocked_candidates": 43,
-  "generated_candidates": 168,
+  "generated_candidates": 169,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -735,6 +735,7 @@
     "fingerprint-eurom_600_heater-86f6faca72",
     "fingerprint-eurom_601_heater-8978109e06",
     "fingerprint-ezvalo_smart_desklamp-7d6c378897",
+    "fingerprint-fiesta_dk1g_kettle-09ca262908",
     "fingerprint-fisher_ervq_hd_hrv-23a935de72",
     "fingerprint-flinq_breeze_pedestalfan-de82776322",
     "fingerprint-generic_5speed_fanregulator-d227ade2b6",
@@ -821,5 +822,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 125
+  "safe_candidates": 126
 }
