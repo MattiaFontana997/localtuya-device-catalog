@@ -1,4 +1,4 @@
-name: Patch dynamic Sensor and Number units
+name: Patch dynamic units and water-heater fallback
 
 on:
   push:
@@ -26,19 +26,43 @@ jobs:
 
           path = Path('tools/import_tuya_local_productless.py')
           text = path.read_text()
-          marker = '''def _store_mapped_extra(\n'''
-          assert text.count(marker) == 1
-          helper = '''def _dynamic_unit_runtime_rules(\n    dp: dict[str, Any], platform: str\n) -> list[dict[str, Any]]:\n    """Translate one consumed Tuya Local live-unit DP losslessly."""\n    name = "unit"\n    if dp.get("optional") is True:\n        # LocalTuya deliberately treats a missing cached DP as unknown and does\n        # not apply default mapping rules, unlike Tuya Local get_value(None).\n        raise ConversionError(f"{platform}_dynamic_unit_optional")\n    if base._dp_type(dp) != "string":\n        raise ConversionError(f"{platform}_dynamic_unit_type")\n\n    probe = copy.deepcopy(dp)\n    probe.pop("mapping", None)\n    base._preserve_core_extra(platform, name, probe, {}, set(), set())\n\n    rules = _raw_mapping(dp)\n    if not rules:\n        return []\n    translated: list[dict[str, Any]] = []\n    seen_raw: set[str] = set()\n    saw_default = False\n    for rule in rules:\n        if set(rule) - {"dps_val", "value", "hidden"}:\n            raise ConversionError(f"{platform}_dynamic_unit_mapping")\n        if "value" not in rule or not isinstance(rule.get("value"), str):\n            raise ConversionError(f"{platform}_dynamic_unit_mapping")\n        out: dict[str, Any] = {"value": rule["value"]}\n        if "hidden" in rule:\n            if not isinstance(rule.get("hidden"), bool):\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            out["hidden"] = rule["hidden"]\n        if "dps_val" in rule:\n            raw = rule.get("dps_val")\n            if not isinstance(raw, str) or raw in seen_raw:\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            seen_raw.add(raw)\n            out["dps_val"] = raw\n        else:\n            if saw_default:\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            saw_default = True\n        translated.append(out)\n    return translated\n\n\n'''
-          text = text.replace(marker, helper + marker, 1)
 
-          old = '''        if _raw_mapping(dp):\n            try:\n                rules = _mapped_extra_runtime_rules(dp, platform, name)\n            except ConversionError as err:\n                raise ConversionError(f"multi_dp_mapped_extra:{name}") from err\n            _store_mapped_extra(\n                platform, name, dp, rules, advanced_by_dp, config, required, optional\n            )\n            continue\n\n        raw_attrs = config.get("extra_state_attributes_dps", {})\n'''
-          new = '''        if name == "unit" and platform in {"sensor", "number"}:\n            try:\n                rules = _dynamic_unit_runtime_rules(dp, platform)\n            except ConversionError as err:\n                raise ConversionError("multi_dp_mapped_extra:unit") from err\n            unit_dp = base._dp_id(dp)\n            existing_unit = config.get("dynamic_unit_dp")\n            if existing_unit is not None and int(existing_unit) != unit_dp:\n                raise ConversionError(f"{platform}_dynamic_unit_conflict")\n            config["dynamic_unit_dp"] = unit_dp\n            if rules:\n                key = str(unit_dp)\n                existing = advanced_by_dp.get(key)\n                if existing is not None and existing != rules:\n                    raise ConversionError(f"{platform}_dynamic_unit_mapping_conflict")\n                advanced_by_dp[key] = copy.deepcopy(rules)\n            base._merge_membership(required, optional, dp)\n            continue\n\n        if _raw_mapping(dp):\n            try:\n                rules = _mapped_extra_runtime_rules(dp, platform, name)\n            except ConversionError as err:\n                raise ConversionError(f"multi_dp_mapped_extra:{name}") from err\n            _store_mapped_extra(\n                platform, name, dp, rules, advanced_by_dp, config, required, optional\n            )\n            continue\n\n        raw_attrs = config.get("extra_state_attributes_dps", {})\n'''
+          old = '''    if base._dp_type(dp) != "string":\n        raise ConversionError(f"{platform}_dynamic_unit_type")\n'''
+          new = '''    dp_type = base._dp_type(dp)\n    if dp_type not in {"string", "boolean"}:\n        raise ConversionError(f"{platform}_dynamic_unit_type")\n'''
+          assert text.count(old) == 1
+          text = text.replace(old, new, 1)
+
+          old = '''    translated: list[dict[str, Any]] = []\n    seen_raw: set[str] = set()\n    saw_default = False\n'''
+          new = '''    translated: list[dict[str, Any]] = []\n    seen_raw: list[Any] = []\n    saw_default = False\n'''
+          assert text.count(old) == 1
+          text = text.replace(old, new, 1)
+
+          old = '''        if "dps_val" in rule:\n            raw = rule.get("dps_val")\n            if not isinstance(raw, str) or raw in seen_raw:\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            seen_raw.add(raw)\n            out["dps_val"] = raw\n'''
+          new = '''        if "dps_val" in rule:\n            raw = rule.get("dps_val")\n            if dp_type == "string" and not isinstance(raw, str):\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            if dp_type == "boolean" and not isinstance(raw, bool):\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            if any(raw == previous and type(raw) is type(previous) for previous in seen_raw):\n                raise ConversionError(f"{platform}_dynamic_unit_mapping")\n            seen_raw.append(raw)\n            out["dps_val"] = raw\n'''
+          assert text.count(old) == 1
+          text = text.replace(old, new, 1)
+
+          old = '''def _water_heater_unit(value: Any) -> str:\n    if value in {"C", "°C"}:\n        return "°C"\n    if value in {"F", "°F"}:\n        return "°F"\n    raise ConversionError("water_heater_temperature_unit")\n'''
+          new = '''def _water_heater_unit(value: Any) -> str:\n    if value in {"C", "°C"}:\n        return "°C"\n    if value in {"F", "°F"}:\n        return "°F"\n    # Tuya Local validates mapped strings at runtime and falls back to Celsius\n    # when the mapped token is not a Home Assistant temperature unit. Preserve\n    # that exact invalid token here rather than guessing a corrected unit.\n    if isinstance(value, str) and value:\n        return value\n    raise ConversionError("water_heater_temperature_unit")\n'''
           assert text.count(old) == 1
           text = text.replace(old, new, 1)
           path.write_text(text)
 
           test = Path('tests/test_productless_dynamic_units.py')
-          test.write_text('''"""Productless live-unit DP importer regressions."""\n\nimport sys\nimport unittest\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))\nimport import_tuya_local as base\n\n\nclass ProductlessDynamicUnitTests(unittest.TestCase):\n    def test_sensor_consumes_mapped_unit_dp(self):\n        entity = {\n            "entity": "sensor", "class": "temperature",\n            "dps": [\n                {"id": 18, "type": "integer", "name": "sensor", "class": "measurement"},\n                {"id": 101, "type": "string", "name": "unit", "mapping": [\n                    {"dps_val": "f", "value": "F"}, {"value": "C"}\n                ]},\n            ],\n        }\n        converted, required, optional = base._CONVERTERS["sensor"](entity)\n        config = converted["config"]\n        self.assertEqual(config["dynamic_unit_dp"], 101)\n        self.assertEqual(config["advanced_mapping_by_dp"]["101"], [\n            {"dps_val": "f", "value": "F"}, {"value": "C"}\n        ])\n        self.assertEqual(required, {18, 101})\n        self.assertEqual(optional, set())\n        self.assertNotIn("unit", config.get("extra_state_attributes_dps", {}))\n\n    def test_number_consumes_mapped_unit_dp(self):\n        entity = {\n            "entity": "number", "class": "temperature_delta",\n            "dps": [\n                {"id": 27, "type": "integer", "name": "value", "range": {"min": -5, "max": 5}},\n                {"id": 23, "type": "string", "name": "unit", "mapping": [\n                    {"dps_val": "f", "value": "F"}, {"value": "C"}\n                ]},\n            ],\n        }\n        converted, required, optional = base._CONVERTERS["number"](entity)\n        self.assertEqual(converted["config"]["dynamic_unit_dp"], 23)\n        self.assertEqual(required, {23, 27})\n        self.assertEqual(optional, set())\n\n    def test_optional_dynamic_unit_stays_fail_closed(self):\n        entity = {\n            "entity": "sensor", "class": "temperature",\n            "dps": [\n                {"id": 1, "type": "integer", "name": "sensor"},\n                {"id": 2, "type": "string", "name": "unit", "optional": True,\n                 "mapping": [{"value": "C"}]},\n            ],\n        }\n        with self.assertRaisesRegex(base.ConversionError, "multi_dp_mapped_extra:unit"):\n            base._CONVERTERS["sensor"](entity)\n''')
+          body = test.read_text()
+          marker = '\n    def test_optional_dynamic_unit_stays_fail_closed(self):\n'
+          assert body.count(marker) == 1
+          addition = '''\n    def test_boolean_sensor_unit_mapping_preserves_typed_raw_values(self):\n        entity = {\n            "entity": "sensor", "class": "temperature",\n            "dps": [\n                {"id": 120, "type": "integer", "name": "sensor", "class": "measurement"},\n                {"id": 103, "type": "boolean", "name": "unit", "mapping": [\n                    {"dps_val": False, "value": "F"},\n                    {"dps_val": True, "value": "C"},\n                ]},\n            ],\n        }\n        converted, required, optional = base._CONVERTERS["sensor"](entity)\n        config = converted["config"]\n        self.assertEqual(config["dynamic_unit_dp"], 103)\n        self.assertEqual(config["advanced_mapping_by_dp"]["103"], [\n            {"dps_val": False, "value": "F"},\n            {"dps_val": True, "value": "C"},\n        ])\n        self.assertEqual(required, {103, 120})\n        self.assertEqual(optional, set())\n\n    def test_boolean_number_unit_mapping_preserves_typed_raw_values(self):\n        entity = {\n            "entity": "number", "class": "temperature_delta",\n            "dps": [\n                {"id": 112, "type": "integer", "name": "value", "range": {"min": -9, "max": 9}},\n                {"id": 107, "type": "boolean", "name": "unit", "mapping": [\n                    {"dps_val": False, "value": "C"},\n                    {"dps_val": True, "value": "F"},\n                ]},\n            ],\n        }\n        converted, required, optional = base._CONVERTERS["number"](entity)\n        self.assertEqual(converted["config"]["dynamic_unit_dp"], 107)\n        self.assertEqual(converted["config"]["advanced_mapping_by_dp"]["107"], [\n            {"dps_val": False, "value": "C"},\n            {"dps_val": True, "value": "F"},\n        ])\n        self.assertEqual(required, {107, 112})\n        self.assertEqual(optional, set())\n'''
+          body = body.replace(marker, addition + marker, 1)
+          test.write_text(body)
+
+          test = Path('tests/test_productless_water_heater.py')
+          body = test.read_text()
+          marker = '\n    def test_mismatched_temperature_scales_fail_closed(self):\n'
+          assert body.count(marker) == 1
+          addition = '''\n    def test_invalid_mapped_unit_token_is_preserved_for_runtime_fallback(self):\n        entity = {\n            "entity": "water_heater",\n            "dps": [\n                {"id": 2, "type": "integer", "name": "current_temperature"},\n                {"id": 8, "type": "integer", "name": "temperature", "range": {"min": 0, "max": 100}, "mapping": [\n                    {"constraint": "temperature_unit", "conditions": [\n                        {"dps_val": "f", "value_redirect": "temp_set_f", "range": {"min": 32, "max": 212}},\n                    ]},\n                ]},\n                {"id": 9, "type": "integer", "name": "temp_set_f", "range": {"min": 32, "max": 212}},\n                {"id": 12, "type": "string", "name": "temperature_unit", "mapping": [\n                    {"dps_val": "c", "value": "C"},\n                    {"dps_val": "f", "value": "V"},\n                ]},\n            ],\n        }\n        converted, required, optional = base._CONVERTERS["water_heater"](entity)\n        config = converted["config"]\n        self.assertEqual(config["water_heater_temperature_unit_values"], {"°C": "c", "V": "f"})\n        self.assertEqual(config["water_heater_temperature_unit_dp"], 12)\n        self.assertIn("8", config["advanced_mapping_by_dp"])\n        self.assertEqual(required, {2, 8, 9, 12})\n        self.assertEqual(optional, set())\n'''
+          body = body.replace(marker, addition + marker, 1)
+          test.write_text(body)
           PY
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
@@ -55,12 +79,32 @@ jobs:
           from import_tuya_local_fingerprints import convert_productless_profile
           root = Path('/tmp/tuya-local/custom_components/tuya_local/devices')
           rev = '38347807cfc81ae8789974d98532eb928f42f174'
-          for filename in (\n              'inkbird_iaqm129w_airqualitymonitor.yaml',\n              'nashone_mts700wb_thermostat.yaml',\n              'steinbach_silent_mini_heatpump.yaml',\n          ):\n              path = root / filename\n              result = convert_productless_profile(\n                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev\n              )\n              dynamic = [\n                  entity for entity in result['entities']\n                  if entity['config'].get('dynamic_unit_dp') is not None\n              ]\n              assert dynamic, filename\n          PY
+
+          for filename in ('fairland_rmic06_heatpump.yaml', 'fiesta_dk1g_kettle.yaml'):
+              path = root / filename
+              result = convert_productless_profile(
+                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev
+              )
+              assert result['entities'], filename
+              print('PINNED_CONVERTED', filename)
+
+          filename = 'dr_heater_dr008_thermostat.yaml'
+          path = root / filename
+          try:
+              result = convert_productless_profile(
+                  yaml.safe_load(path.read_text()), source_file=filename, revision=rev
+              )
+              print('PINNED_CONVERTED', filename)
+          except Exception as err:
+              message = str(err)
+              assert 'multi_dp_mapped_extra:unit' not in message, message
+              print('PINNED_ADVANCED', filename, message)
+          PY
       - name: Commit importer support
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add tools/import_tuya_local_productless.py tests/test_productless_dynamic_units.py
+          git add tools/import_tuya_local_productless.py tests/test_productless_dynamic_units.py tests/test_productless_water_heater.py
           git diff --cached --check
-          git commit -m "Import dynamic sensor and number units"
+          git commit -m "Support typed dynamic units and unit fallback"
           git push origin HEAD:develop
