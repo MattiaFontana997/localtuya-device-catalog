@@ -1,0 +1,40 @@
+name: Inspect Block 1 low-risk residuals
+
+on:
+  push:
+    paths:
+      - .github/workflows/inspect-block1-lowrisk.yml
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+      - name: Fetch pinned Tuya Local
+        run: |
+          git clone -q https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout -q 38347807cfc81ae8789974d98532eb928f42f174
+      - name: Dump selected pinned profiles
+        run: |
+          for f in \
+            aquatech_x6_water_heater.yaml \
+            sohome_am43_curtain.yaml \
+            geeklink_fb1_shutter.yaml \
+            temp_humid_sensor.yaml \
+            tuya_rcbo.yaml \
+            nignbo_fan.yaml \
+            hiniso_dehumidifier.yaml \
+            midea_ydw20p1_dehumidifier.yaml \
+            parkside_ppwd30a1_vacuum.yaml \
+            rowenta_xplorer75s_vacuum.yaml \
+            advancedfires_1500_fireplace.yaml \
+            rgbcw_lightbulb_xld_cl002.yaml \
+            aosd_garagedoorwithlight.yaml; do
+            echo "===== $f ====="
+            p=$(find /tmp/tuya-local -type f -name "$f" -print -quit)
+            if [ -z "$p" ]; then echo "NOT FOUND"; continue; fi
+            echo "$p"
+            cat "$p"
+          done
