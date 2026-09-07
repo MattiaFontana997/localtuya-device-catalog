@@ -57,7 +57,7 @@ def _named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]
     if not isinstance(dps, list) or not dps:
         raise ConversionError(f"{prefix}_missing_dps")
     result: dict[str, dict[str, Any]] = {}
-    seen_ids: set[int] = set()
+    seen_ids: dict[int, dict[str, Any]] = {}
     for dp in dps:
         if not isinstance(dp, dict):
             raise ConversionError("invalid_dp")
@@ -67,12 +67,30 @@ def _named_dps(entity: dict[str, Any], prefix: str) -> dict[str, dict[str, Any]]
         if name in result:
             raise ConversionError(f"{prefix}_duplicate_dp:{name}")
         dp_id = base._dp_id(dp)
-        # Two semantic attributes pointing at the same raw DP can be meaningful
-        # in Tuya Local, but LocalTuya's catalog entity identity and raw-extra
-        # representation cannot reproduce that generically. Keep it fail-closed.
-        if dp_id in seen_ids:
-            raise ConversionError(f"{prefix}_duplicate_dp_id")
-        seen_ids.add(dp_id)
+        # Duplicate raw-DP aliases remain fail-closed generically. Binary
+        # sensors have one narrow lossless exception: one semantic ``sensor``
+        # DP may also be exposed under an unmapped raw diagnostic attribute.
+        # The alias must keep the exact raw type and required/optional
+        # membership so no second semantic source or fingerprint meaning is
+        # introduced.
+        previous = seen_ids.get(dp_id)
+        if previous is not None:
+            previous_name = previous.get("name")
+            primary = previous if previous_name == "sensor" else dp if name == "sensor" else None
+            alias = dp if name != "sensor" else previous if previous_name != "sensor" else None
+            safe_binary_alias = (
+                prefix == "binary_sensor"
+                and primary is not None
+                and alias is not None
+                and not _raw_mapping(alias)
+                and base._dp_type(primary) == base._dp_type(alias)
+                and base._dp_membership(primary) == base._dp_membership(alias)
+            )
+            if not safe_binary_alias:
+                raise ConversionError(f"{prefix}_duplicate_dp_id")
+            seen_ids[dp_id] = primary
+        else:
+            seen_ids[dp_id] = dp
         result[name] = dp
     return result
 
@@ -122,11 +140,16 @@ def _dependency_dp(
 
 
 def _validate_constraint_dp(dp: dict[str, Any]) -> None:
-    # Tuya Local decodes hex/base64 constraints and gives bitfields special
-    # subset matching. LocalTuya's current advanced matcher compares cached raw
-    # scalar values, so those shapes are deliberately not imported yet.
-    if base._dp_type(dp) not in {"boolean", "integer", "string"}:
+    # Hex/base64 constraints still need decoding support. Raw bitfields are
+    # lossless now that runtime conditions implement Tuya Local full-mask
+    # containment, including the exact-zero special case.
+    dp_type = base._dp_type(dp)
+    if dp_type not in {"boolean", "integer", "string", "bitfield"}:
         raise ConversionError("advanced_mapping_constraint_type")
+    if dp_type == "bitfield" and _raw_mapping(dp):
+        raise ConversionError("advanced_mapping_constraint_mapping")
+    if set(dp) & {"mask", "mask_signed", "format", "endianness"}:
+        raise ConversionError("advanced_mapping_constraint_encoding")
     if dp.get("force") is True or dp.get("persist") is False or dp.get("sensitive") is True:
         raise ConversionError("advanced_mapping_constraint_semantics")
 
@@ -226,10 +249,7 @@ def _translate_advanced_mapping(
     rules = _raw_mapping(dp)
     if not rules:
         return [], set()
-    if base._dp_type(dp) == "bitfield":
-        # Tuya Local uses bit containment for bitfield dps_val matching while the
-        # current LocalTuya mapping engine uses scalar equality.
-        raise ConversionError("advanced_mapping_bitfield")
+    source_bitfield = base._dp_type(dp) == "bitfield"
 
     translated: list[dict[str, Any]] = []
     references: set[str] = set()
@@ -265,9 +285,18 @@ def _translate_advanced_mapping(
             raise ConversionError("advanced_mapping_rule_transform_semantics")
 
         rule: dict[str, Any] = {}
-        for key in ("dps_val", "value"):
-            if key in source:
-                rule[key] = _runtime_scalar(source[key], "advanced_mapping_scalar")
+        if "dps_val" in source:
+            raw_value = _runtime_scalar(source["dps_val"], "advanced_mapping_scalar")
+            if source_bitfield:
+                if isinstance(raw_value, bool) or not isinstance(raw_value, int) or raw_value < 0:
+                    raise ConversionError("advanced_mapping_bitfield_value")
+                rule["bitmask"] = True
+            rule["dps_val"] = raw_value
+        if "value" in source:
+            mapped_value = _runtime_scalar(source["value"], "advanced_mapping_scalar")
+            if platform == "binary_sensor" and not isinstance(mapped_value, bool):
+                raise ConversionError("advanced_mapping_binary_sensor_value")
+            rule["value"] = mapped_value
         for key in ("hidden", "invalid"):
             if key in source:
                 if not isinstance(source[key], bool):
@@ -299,6 +328,7 @@ def _translate_advanced_mapping(
                 constraint, by_name, reason="advanced_mapping_constraint_missing"
             )
             _validate_constraint_dp(constraint_dp)
+            constraint_bitfield = base._dp_type(constraint_dp) == "bitfield"
             references.add(constraint)
             rule["constraint_dp"] = constraint_id
             translated_conditions: list[dict[str, Any]] = []
@@ -321,14 +351,21 @@ def _translate_advanced_mapping(
                     raise ConversionError("advanced_mapping_condition_semantics")
                 if "dps_val" not in condition:
                     raise ConversionError("advanced_mapping_condition_missing_dps_val")
-                out: dict[str, Any] = {
-                    "dps_val": _condition_dps_value(condition["dps_val"])
-                }
+                condition_raw = _condition_dps_value(condition["dps_val"])
+                if constraint_bitfield:
+                    if isinstance(condition_raw, bool) or not isinstance(condition_raw, int) or condition_raw < 0:
+                        raise ConversionError("advanced_mapping_condition_bitfield_value")
+                out: dict[str, Any] = {"dps_val": condition_raw}
+                if constraint_bitfield:
+                    out["bitmask"] = True
                 for key in ("value",):
                     if key in condition:
-                        out[key] = _runtime_scalar(
+                        mapped_value = _runtime_scalar(
                             condition[key], "advanced_mapping_condition_scalar"
                         )
+                        if platform == "binary_sensor" and not isinstance(mapped_value, bool):
+                            raise ConversionError("advanced_mapping_binary_sensor_value")
+                        out[key] = mapped_value
                 for key in ("hidden", "invalid"):
                     if key in condition:
                         if not isinstance(condition[key], bool):
@@ -398,6 +435,14 @@ def _project_mapping_for_base(
         },
         "water_heater": {"operation_mode", "temperature_unit"},
     }
+    if platform == "binary_sensor" and name == "sensor":
+        # Advanced mapping owns the raw bitfield/constraint semantics. Present
+        # its already-mapped boolean result to the mature binary-sensor layer so
+        # it is not interpreted a second time as a raw bitfield.
+        projected = copy.deepcopy(dp)
+        projected["type"] = "boolean"
+        projected.pop("mapping", None)
+        return projected
     if name not in enum_names.get(platform, set()):
         projected = copy.deepcopy(dp)
         rules = _raw_mapping(dp)
@@ -1093,15 +1138,26 @@ def _preserve_simple_multi_dp_extras(
         if not isinstance(name, str) or not name:
             raise ConversionError(f"{platform}_missing_dp_name")
 
-        # Constraint/redirect DPS are internal to Batch F and already retained
-        # in fingerprint membership. Do not expose them as unrelated raw attrs.
-        if dp_id in dependency_ids:
+        # Constraint/redirect DPS are normally internal to Batch F. For a
+        # binary sensor, however, an explicitly declared unmapped companion DP
+        # is also a Tuya Local extra-state attribute, so preserve that raw
+        # diagnostic instead of silently dropping it.
+        raw_binary_diagnostic = platform == "binary_sensor" and not _raw_mapping(dp)
+        if dp_id in dependency_ids and not raw_binary_diagnostic:
             continue
 
         # An extra DP with its own advanced mapping has HA-facing semantics of
-        # its own. Treating it as a raw attribute would silently discard them.
+        # its own. The only safe alias is an unmapped binary-sensor attribute
+        # pointing at the same raw DP as the primary sensor.
         if dp_id in advanced_source_ids:
-            raise ConversionError(f"multi_dp_advanced_extra:{name}")
+            primary_id = config.get("id")
+            same_primary_raw_alias = (
+                raw_binary_diagnostic
+                and primary_id is not None
+                and int(primary_id) == dp_id
+            )
+            if not same_primary_raw_alias:
+                raise ConversionError(f"multi_dp_advanced_extra:{name}")
 
         if name == "unit" and platform in {"sensor", "number"}:
             try:
