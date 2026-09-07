@@ -19,18 +19,205 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
-      - name: Apply reviewed patch body
+      - name: Apply Parkside importer patch
         run: |
           python - <<'PY'
           from pathlib import Path
-          lines = Path('.github/workflows/patch-parkside-optional-vacuum.yml').read_text().splitlines()
-          start = next(i for i, line in enumerate(lines) if line.strip() == "python - <<'PY'")
-          end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'PY')
-          block = []
-          for line in lines[start + 1:end]:
-              block.append(line[10:] if line.startswith('          ') else line)
-          exec(compile('\n'.join(block), 'parkside-patch', 'exec'))
+          import textwrap
+
+          source = Path('tools/import_tuya_local_productless.py')
+          text = source.read_text()
+          marker = '# Extend only the productless conversion surface. Keep the mature product-ID\n'
+          assert text.count(marker) == 1
+          addition = textwrap.dedent('''
+          def _convert_vacuum_productless(entity: dict[str, Any]) -> base.Converted:
+              """Support only Tuya Local's optional raw-string Vacuum status."""
+              try:
+                  return base._convert_vacuum(entity)
+              except ConversionError as err:
+                  if str(err) != "vacuum_optional_status":
+                      raise
+
+              dps = base._vacuum_dps(entity)
+              status = dps.get("status")
+              if (
+                  status is None
+                  or status.get("optional") is not True
+                  or base._dp_type(status) != "string"
+                  or _raw_mapping(status)
+              ):
+                  raise ConversionError("vacuum_optional_status")
+              base._check_common_dp_semantics(status, writable=False)
+              allowed_status = {
+                  "id", "type", "name", "optional", "readonly", "hidden", "force",
+                  "persist", "sensitive", "unit", "class", "category",
+              }
+              if set(status) - allowed_status or status.get("hidden") is True:
+                  raise ConversionError("vacuum_optional_status")
+
+              config: dict[str, Any] = {
+                  "id": base._dp_id(status),
+                  "platform": "vacuum",
+                  "vacuum_status_dp": base._dp_id(status),
+                  "vacuum_status_values": {},
+              }
+              base._entity_metadata(entity, config)
+              required: set[int] = set()
+              optional: set[int] = set()
+              base._merge_membership(required, optional, status)
+              consumed = {"status"}
+
+              command = dps.get("command")
+              if command is not None:
+                  values = base._vacuum_static_values(command, reason="vacuum_command", writable=True)
+                  config["vacuum_command_dp"] = base._dp_id(command)
+                  config["vacuum_command_values"] = values
+                  base._merge_membership(required, optional, command)
+                  consumed.add("command")
+
+              direction = dps.get("direction_control")
+              if direction is not None:
+                  values = base._vacuum_static_values(direction, reason="vacuum_direction", writable=True)
+                  config["vacuum_direction_dp"] = base._dp_id(direction)
+                  config["vacuum_direction_values"] = values
+                  base._merge_membership(required, optional, direction)
+                  consumed.add("direction_control")
+
+              fan = dps.get("fan_speed")
+              if fan is not None:
+                  values = base._vacuum_static_values(fan, reason="vacuum_fan_speed", writable=True)
+                  config["fan_speed_dp"] = base._dp_id(fan)
+                  config["vacuum_fan_speed_values"] = values
+                  base._merge_membership(required, optional, fan)
+                  consumed.add("fan_speed")
+
+              activate = dps.get("activate")
+              if activate is not None:
+                  raw_on, raw_off = base._vacuum_boolean_values(activate, "vacuum_activate")
+                  config["vacuum_activate_dp"] = base._dp_id(activate)
+                  config["vacuum_activate_on"] = raw_on
+                  config["vacuum_activate_off"] = raw_off
+                  base._merge_membership(required, optional, activate)
+                  consumed.add("activate")
+
+              power = dps.get("power")
+              if power is not None:
+                  raw_on, raw_off = base._vacuum_boolean_values(power, "vacuum_power")
+                  config["vacuum_power_dp"] = base._dp_id(power)
+                  config["vacuum_power_on"] = raw_on
+                  config["vacuum_power_off"] = raw_off
+                  base._merge_membership(required, optional, power)
+                  consumed.add("power")
+
+              locate = dps.get("locate")
+              if locate is not None:
+                  config["locate_dp"] = base._dp_id(locate)
+                  config["vacuum_locate_on"] = base._vacuum_trigger_value(locate, "vacuum_locate")
+                  base._merge_membership(required, optional, locate)
+                  consumed.add("locate")
+
+              error = dps.get("error")
+              if error is not None:
+                  if error.get("force") is True or error.get("persist") is False or error.get("sensitive") is True:
+                      raise ConversionError("vacuum_error_semantics")
+                  if error.get("readonly") not in (None, False, True):
+                      raise ConversionError("vacuum_error_semantics")
+                  allowed_error = {
+                      "id", "type", "name", "optional", "readonly", "hidden", "force",
+                      "persist", "sensitive", "unit", "class", "category",
+                  }
+                  if set(error) - allowed_error:
+                      raise ConversionError("vacuum_error_semantics")
+                  if base._mapping_rules(error):
+                      raise ConversionError("vacuum_error_mapping")
+                  if base._dp_type(error) not in {"bitfield", "integer", "boolean", "string"}:
+                      raise ConversionError("vacuum_error_type")
+                  config["fault_dp"] = base._dp_id(error)
+                  base._merge_membership(required, optional, error)
+                  consumed.add("error")
+
+              for name, dp in dps.items():
+                  if name in consumed:
+                      continue
+                  base._preserve_vacuum_extra(name, dp, config, required, optional)
+
+              return {"platform": "vacuum", "config": config}, required, optional
+
+
+          ''')
+          text = text.replace(marker, addition + marker, 1)
+          old = '_original_converters["fan"] = _convert_fan_productless\n_original_converters["water_heater"] = _convert_water_heater_productless\n'
+          new = '_original_converters["fan"] = _convert_fan_productless\n_original_converters["vacuum"] = _convert_vacuum_productless\n_original_converters["water_heater"] = _convert_water_heater_productless\n'
+          assert text.count(old) == 1
+          source.write_text(text.replace(old, new, 1))
+
+          test = Path('tests/test_productless_vacuum_optional_status.py')
+          test.write_text(textwrap.dedent('''
+          """Productless Vacuum optional raw-status semantics."""
+
+          import sys
+          import unittest
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+          import import_tuya_local as base
+          import import_tuya_local_productless  # noqa: F401
+
+
+          class ProductlessVacuumOptionalStatusTests(unittest.TestCase):
+              def test_optional_raw_string_status_is_identity_and_stays_optional(self):
+                  entity = {
+                      "entity": "vacuum",
+                      "dps": [
+                          {"id": 4, "type": "string", "optional": True, "name": "status"},
+                          {
+                              "id": 3, "type": "string", "optional": True, "name": "command",
+                              "mapping": [
+                                  {"dps_val": "smart", "value": "Auto"},
+                                  {"dps_val": "manual", "value": "Manual"},
+                              ],
+                          },
+                          {"id": 26, "type": "bitfield", "optional": True, "name": "error"},
+                          {
+                              "id": 8, "type": "string", "optional": True, "name": "fan_speed",
+                              "mapping": [
+                                  {"dps_val": "gentle", "value": "low"},
+                                  {"dps_val": "normal", "value": "medium"},
+                                  {"dps_val": "strong", "value": "high"},
+                              ],
+                          },
+                      ],
+                  }
+                  converted, required, optional = base._CONVERTERS["vacuum"](entity)
+                  config = converted["config"]
+                  self.assertEqual(config["id"], 4)
+                  self.assertEqual(config["vacuum_status_dp"], 4)
+                  self.assertEqual(config["vacuum_status_values"], {})
+                  self.assertEqual(config["vacuum_command_values"], {"Auto": "smart", "Manual": "manual"})
+                  self.assertEqual(config["vacuum_fan_speed_values"], {"low": "gentle", "medium": "normal", "high": "strong"})
+                  self.assertEqual(config["fault_dp"], 26)
+                  self.assertEqual(required, set())
+                  self.assertEqual(optional, {3, 4, 8, 26})
+
+              def test_optional_non_string_status_stays_fail_closed(self):
+                  entity = {
+                      "entity": "vacuum",
+                      "dps": [{"id": 4, "type": "integer", "optional": True, "name": "status"}],
+                  }
+                  with self.assertRaisesRegex(base.ConversionError, "vacuum_optional_status"):
+                      base._CONVERTERS["vacuum"](entity)
+
+              def test_required_unmapped_status_stays_fail_closed(self):
+                  entity = {
+                      "entity": "vacuum",
+                      "dps": [{"id": 4, "type": "string", "name": "status"}],
+                  }
+                  with self.assertRaisesRegex(base.ConversionError, "vacuum_status_mapping"):
+                      base._CONVERTERS["vacuum"](entity)
+          '''))
           PY
+      - name: Syntax check
+        run: python -m py_compile tools/import_tuya_local_productless.py tests/test_productless_vacuum_optional_status.py
       - name: Install dependencies
         run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
       - name: Run full catalog tests
