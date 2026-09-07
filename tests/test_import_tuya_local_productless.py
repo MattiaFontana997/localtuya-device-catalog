@@ -909,6 +909,54 @@ class ProductlessExtendedConverterTests(unittest.TestCase):
                 }
             ])
 
+    def test_aspen_three_way_fan_direction_is_exact(self):
+        result = self._convert([
+            {
+                "entity": "fan",
+                "dps": [
+                    {"id": 1, "type": "boolean", "name": "switch"},
+                    {"id": 2, "type": "string", "name": "direction", "mapping": [
+                        {"dps_val": "in", "value": "forward"},
+                        {"dps_val": "out", "value": "reverse"},
+                        {"dps_val": "exch", "value": "exchange"},
+                    ]},
+                    {"id": 3, "type": "integer", "name": "speed", "range": {"min": 1, "max": 3}},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["fan_direction"], 2)
+        self.assertEqual(config["fan_direction_values"], {
+            "forward": "in", "reverse": "out", "exchange": "exch"
+        })
+
+    def test_brightness_only_integer_light_preserves_zero_off(self):
+        result = self._convert([
+            {
+                "entity": "light",
+                "dps": [
+                    {"id": 102, "type": "integer", "name": "brightness", "range": {"min": 1, "max": 3}},
+                ],
+            }
+        ])
+        config = result["entities"][0]["config"]
+        self.assertEqual(config["id"], 102)
+        self.assertEqual(config["brightness"], 102)
+        self.assertTrue(config["brightness_as_power"])
+        self.assertEqual(config["brightness_power_off_value"], 0)
+        self.assertEqual((config["brightness_lower"], config["brightness_upper"]), (1, 3))
+
+    def test_brightness_only_zero_based_range_stays_fail_closed(self):
+        with self.assertRaisesRegex(ConversionError, "light_missing_switch"):
+            self._convert([
+                {
+                    "entity": "light",
+                    "dps": [
+                        {"id": 102, "type": "integer", "name": "brightness", "range": {"min": 0, "max": 3}},
+                    ],
+                }
+            ])
+
 
 if __name__ == "__main__":
     unittest.main()

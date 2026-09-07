@@ -2027,6 +2027,7 @@ _FAN_EXTENDED_REASONS = {
     "fan_preset_optional",
     "fan_preset_hidden",
     "fan_missing_switch",
+    "fan_direction_mapping",
 }
 
 
@@ -2172,6 +2173,45 @@ def _fan_productless_presets(dp: dict[str, Any], config: dict[str, Any]) -> None
         config["fan_preset_default"] = default_friendly
 
 
+def _fan_productless_direction(dp: dict[str, Any], config: dict[str, Any]) -> None:
+    """Preserve Aspen's exact three-way fan direction mapping."""
+    try:
+        base._fan_direction_config(dp, config)
+        return
+    except ConversionError as err:
+        if str(err) != "fan_direction_mapping":
+            raise
+
+    base._check_common_dp_semantics(dp, writable=True)
+    if base._dp_type(dp) != "string":
+        raise ConversionError("fan_direction_mapping")
+    rules = _raw_mapping(dp)
+    if len(rules) != 3:
+        raise ConversionError("fan_direction_mapping")
+    values: dict[str, str] = {}
+    seen_raw: set[str] = set()
+    for rule in rules:
+        if set(rule) != {"dps_val", "value"}:
+            raise ConversionError("fan_direction_mapping")
+        raw = rule.get("dps_val")
+        friendly = rule.get("value")
+        if (
+            not isinstance(raw, str)
+            or not raw
+            or not isinstance(friendly, str)
+            or friendly not in {"forward", "reverse", "exchange"}
+            or raw in seen_raw
+            or friendly in values
+        ):
+            raise ConversionError("fan_direction_mapping")
+        values[friendly] = raw
+        seen_raw.add(raw)
+    if set(values) != {"forward", "reverse", "exchange"}:
+        raise ConversionError("fan_direction_mapping")
+    config["fan_direction"] = base._dp_id(dp)
+    config["fan_direction_values"] = values
+
+
 def _convert_fan_productless(entity: dict[str, Any]) -> base.Converted:
     """Extend productless fans with exact enumerated mapping semantics."""
     try:
@@ -2223,7 +2263,7 @@ def _convert_fan_productless(entity: dict[str, Any]) -> base.Converted:
 
     direction = dps.get("direction")
     if direction is not None:
-        base._fan_direction_config(direction, config)
+        _fan_productless_direction(direction, config)
         base._merge_membership(required, optional, direction)
 
     functional = {"switch", "speed", "preset_mode", "oscillate", "direction"}
@@ -2660,15 +2700,75 @@ def _convert_vacuum_productless(entity: dict[str, Any]) -> base.Converted:
     return {"platform": "vacuum", "config": config}, required, optional
 
 
+def _convert_light_productless(
+    entity: dict[str, Any],
+    *,
+    scene_dp: dict[str, Any] | None = None,
+    scene_values: dict[str, str] | None = None,
+) -> base.Converted:
+    """Extend productless lights with exact brightness-as-power integer DPS."""
+    if _PRODUCTLESS_BASE_LIGHT is None:
+        raise ConversionError("light_missing_switch")
+    try:
+        return _PRODUCTLESS_BASE_LIGHT(
+            entity, scene_dp=scene_dp, scene_values=scene_values
+        )
+    except ConversionError as err:
+        if str(err) != "light_missing_switch":
+            raise
+
+    if scene_dp is not None or scene_values:
+        raise ConversionError("light_missing_switch")
+    if entity.get("class") is not None:
+        raise ConversionError("light_device_class")
+    base._entity_metadata(entity, {})
+    dps = base._light_dps(entity)
+    if set(dps) != {"brightness"}:
+        raise ConversionError("light_missing_switch")
+    brightness = dps["brightness"]
+    base._check_common_dp_semantics(brightness, writable=True)
+    if base._dp_type(brightness) != "integer":
+        raise ConversionError("light_missing_switch")
+    if _raw_mapping(brightness):
+        raise ConversionError("light_brightness_power_mapping")
+    if brightness.get("step") not in (None, 1):
+        raise ConversionError("light_brightness_step")
+    minimum, maximum = base._raw_integer_range(brightness, "light_brightness")
+    if minimum <= 0 or maximum <= minimum:
+        raise ConversionError("light_missing_switch")
+    allowed = {
+        "id", "type", "name", "optional", "readonly", "hidden", "force",
+        "persist", "sensitive", "range", "step", "unit", "class", "category",
+    }
+    if set(brightness) - allowed:
+        raise ConversionError("light_brightness_power_semantics")
+    config: dict[str, Any] = {
+        "id": base._dp_id(brightness),
+        "platform": "light",
+        "music_mode": False,
+        "brightness": base._dp_id(brightness),
+        "brightness_lower": minimum,
+        "brightness_upper": maximum,
+        "brightness_as_power": True,
+        "brightness_power_off_value": 0,
+    }
+    required: set[int] = set()
+    optional: set[int] = set()
+    base._merge_membership(required, optional, brightness)
+    return {"platform": "light", "config": config}, required, optional
+
+
 # Extend only the productless conversion surface. Keep the mature product-ID
 # importer unchanged while wrapping its converters for Batch F on this module's
 # develop-only path.
 base.SUPPORTED_PLATFORMS.update({"time", "event", "water_heater", "alarm_control_panel", "siren"})
 _original_converters = dict(base._CONVERTERS)
+_PRODUCTLESS_BASE_LIGHT = _original_converters.get("light")
 _original_converters["binary_sensor"] = _convert_binary_sensor_productless
 _original_converters["sensor"] = _convert_sensor_productless
 _original_converters["switch"] = _convert_switch_productless
 _original_converters["fan"] = _convert_fan_productless
+_original_converters["light"] = _convert_light_productless
 _original_converters["vacuum"] = _convert_vacuum_productless
 _original_converters["water_heater"] = _convert_water_heater_productless
 for _platform, _converter in _original_converters.items():
@@ -2677,7 +2777,7 @@ for _platform, _converter in _original_converters.items():
 # convert_profile has a special light-scene path that calls _convert_light
 # directly rather than through _CONVERTERS, so wrap that reference as well.
 if "light" in _original_converters:
-    base._convert_light = _advanced_wrapper("light", base._convert_light)
+    base._convert_light = _advanced_wrapper("light", _convert_light_productless)
 
 base._CONVERTERS.update({
     "time": _advanced_wrapper("time", _convert_time),
