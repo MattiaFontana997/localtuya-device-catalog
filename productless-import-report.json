@@ -14,7 +14,6 @@
     "climate_preset_mapping": 2,
     "cover_action_friendly": 1,
     "entity_hidden_unavailable": 3,
-    "entity_mode": 1,
     "event_duplicate_dp_id": 2,
     "fan_direction_mapping": 1,
     "has_product_id": 1526,
@@ -28,10 +27,10 @@
     "select_complex_mapping": 6,
     "sensor_dp_type": 1,
     "sensor_value_mapping_semantics": 2,
+    "siren_duplicate_dp_id": 1,
     "unsupported_platform:media_player": 1,
     "vacuum_activate_mapping": 1,
     "vacuum_optional_status": 1,
-    "valve_position_mapping": 1,
     "water_heater_temperature_unit": 1
   },
   "results": [
@@ -5356,7 +5355,7 @@
         "sensor"
       ],
       "reasons": [
-        "entity_mode"
+        "siren_duplicate_dp_id"
       ],
       "status": "skipped"
     },
@@ -19863,7 +19862,7 @@
     },
     {
       "file": "qoto_03_sprinkler.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-qoto_03_sprinkler-bf2d3753cd",
       "name": "Sprinkler controller",
       "platforms": [
         "valve",
@@ -19871,10 +19870,8 @@
         "time",
         "binary_sensor"
       ],
-      "reasons": [
-        "valve_position_mapping"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "qoto_05_water_valve.yaml",
@@ -26912,9 +26909,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 164,
+    "convertible_fingerprint": 165,
     "not_productless": 1526,
-    "skipped": 47
+    "skipped": 46
   },
   "target_schema": 3
 }

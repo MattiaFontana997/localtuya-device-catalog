@@ -661,7 +661,7 @@
     }
   ],
   "blocked_candidates": 41,
-  "generated_candidates": 164,
+  "generated_candidates": 165,
   "published_mapping_ids": [
     "fingerprint-DH-CSK03W_dehumidifier-a255f7732f",
     "fingerprint-agl_ultracontato-e715cc46e1",
@@ -756,6 +756,7 @@
     "fingerprint-purline_m100_heater-7591ca90d2",
     "fingerprint-pv28aw_co2detector-f27200370a",
     "fingerprint-pziot_e01_energymeter-ca4e3b4c2e",
+    "fingerprint-qoto_03_sprinkler-bf2d3753cd",
     "fingerprint-rectec_rt700_grill-57f94dc5a1",
     "fingerprint-rgb_nightlight_outlet-196a003dd8",
     "fingerprint-rumba_bathroom_heater-f7d9b74383",
@@ -787,5 +788,5 @@
     "fingerprint-zemismart_spm02d2tw_energymeter-721d93e24b",
     "fingerprint-zmp71sh_pool_pump-f2337f5301"
   ],
-  "safe_candidates": 123
+  "safe_candidates": 124
 }
