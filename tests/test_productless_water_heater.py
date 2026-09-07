@@ -38,6 +38,27 @@ class ProductlessWaterHeaterTests(unittest.TestCase):
         self.assertEqual(required, {1, 9, 13, 20, 101, 102})
         self.assertEqual(optional, set())
 
+    def test_readonly_target_temperature_is_preserved_without_write_capability(self):
+        entity = {
+            "entity": "water_heater",
+            "dps": [
+                {"id": 1, "type": "boolean", "name": "operation_mode", "mapping": [
+                    {"dps_val": False, "value": "off"},
+                    {"dps_val": True, "value": "electric"},
+                ]},
+                {"id": 4, "type": "integer", "name": "temperature", "unit": "C",
+                 "readonly": True, "range": {"min": 15, "max": 75}},
+                {"id": 16, "type": "integer", "name": "current_temperature"},
+            ],
+        }
+        converted, required, optional = productless._convert_water_heater_productless(entity)
+        config = converted["config"]
+        self.assertEqual(config["water_heater_target_temperature_dp"], 4)
+        self.assertIs(config["water_heater_target_readonly"], True)
+        self.assertEqual(config["water_heater_temperature_unit"], "°C")
+        self.assertEqual(required, {1, 4, 16})
+        self.assertEqual(optional, set())
+
     def test_conditioned_boolean_mode_projects_to_logical_mode_domain(self):
         entity = {
             "entity": "water_heater",

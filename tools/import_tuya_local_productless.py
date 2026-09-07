@@ -2250,12 +2250,17 @@ def _convert_water_heater_productless(entity: dict[str, Any]) -> base.Converted:
 
     target = dps.get("temperature")
     if target is not None:
+        target_readonly = target.get("readonly") is True
+        if target.get("readonly") not in (None, False, True):
+            raise ConversionError("water_heater_temperature_readonly")
         scaling, range_config, step = _water_heater_numeric(
-            target, writable=True, require_range=True, reason="water_heater_temperature"
+            target, writable=not target_readonly, require_range=True, reason="water_heater_temperature"
         )
         scales.append(scaling)
         dp_id = base._dp_id(target)
         config["water_heater_target_temperature_dp"] = dp_id
+        if target_readonly:
+            config["water_heater_target_readonly"] = True
         assert range_config is not None
         config["water_heater_temperature_min"] = base._range_value(
             range_config["min"], scaling, "water_heater_temperature_range"
