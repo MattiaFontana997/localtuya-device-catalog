@@ -1,0 +1,72 @@
+name: Run Aspen productless importer patch
+
+on:
+  push:
+    paths:
+      - .github/workflows/run-productless-aspen.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Apply Aspen importer patch
+        run: python .github/scripts/patch_productless_aspen.py
+      - name: Syntax check
+        run: python -m py_compile tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Run full catalog suite
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Fetch pinned Tuya Local
+        run: |
+          git clone https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout 38347807cfc81ae8789974d98532eb928f42f174
+      - name: Verify pinned Aspen profile end to end
+        run: |
+          rm -rf /tmp/productless-generated
+          mkdir -p /tmp/productless-generated
+          python tools/import_tuya_local_fingerprints.py /tmp/tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/productless-generated \
+            --json /tmp/productless-import-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('/tmp/productless-import-report.json').read_text())
+          item = next(x for x in report['results'] if x['file'] == 'aspen_asp200_fan.yaml')
+          assert item['status'] == 'convertible_fingerprint', item
+          candidates = []
+          for path in Path('/tmp/productless-generated').glob('*.json'):
+              data = json.loads(path.read_text())
+              prov = data.get('provenance', {})
+              if prov.get('path', '').endswith('aspen_asp200_fan.yaml'):
+                  candidates.append(data)
+          assert len(candidates) == 1, len(candidates)
+          mapping = candidates[0]
+          fan = next(e['config'] for e in mapping['entities'] if e['platform'] == 'fan')
+          light = next(e['config'] for e in mapping['entities'] if e['platform'] == 'light')
+          assert fan['fan_direction_values'] == {'forward':'in','reverse':'out','exchange':'exch'}, fan
+          assert fan['fan_direction'] == 2, fan
+          assert light['brightness_as_power'] is True, light
+          assert light['brightness_power_off_value'] == 0, light
+          assert (light['brightness_lower'], light['brightness_upper']) == (1, 3), light
+          print('ASPEN_OK', item['mapping_id'])
+          PY
+      - name: Commit importer support
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tools/import_tuya_local_productless.py tests/test_import_tuya_local_productless.py
+          git diff --cached --check
+          git commit -m "Import Aspen fan and display light semantics"
+          git push origin HEAD:develop
