@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
 
-# Trigger: dynamic-units-2026-09-07
+# Trigger: typed-dynamic-units-2026-09-07
 jobs:
   rebuild:
     runs-on: ubuntu-latest
