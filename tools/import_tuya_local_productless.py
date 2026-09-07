@@ -911,6 +911,52 @@ def _mapped_extra_runtime_rules(
     return translated
 
 
+def _dynamic_unit_runtime_rules(
+    dp: dict[str, Any], platform: str
+) -> list[dict[str, Any]]:
+    """Translate one consumed Tuya Local live-unit DP losslessly."""
+    name = "unit"
+    if dp.get("optional") is True:
+        # LocalTuya deliberately treats a missing cached DP as unknown and does
+        # not apply default mapping rules, unlike Tuya Local get_value(None).
+        raise ConversionError(f"{platform}_dynamic_unit_optional")
+    if base._dp_type(dp) != "string":
+        raise ConversionError(f"{platform}_dynamic_unit_type")
+
+    probe = copy.deepcopy(dp)
+    probe.pop("mapping", None)
+    base._preserve_core_extra(platform, name, probe, {}, set(), set())
+
+    rules = _raw_mapping(dp)
+    if not rules:
+        return []
+    translated: list[dict[str, Any]] = []
+    seen_raw: set[str] = set()
+    saw_default = False
+    for rule in rules:
+        if set(rule) - {"dps_val", "value", "hidden"}:
+            raise ConversionError(f"{platform}_dynamic_unit_mapping")
+        if "value" not in rule or not isinstance(rule.get("value"), str):
+            raise ConversionError(f"{platform}_dynamic_unit_mapping")
+        out: dict[str, Any] = {"value": rule["value"]}
+        if "hidden" in rule:
+            if not isinstance(rule.get("hidden"), bool):
+                raise ConversionError(f"{platform}_dynamic_unit_mapping")
+            out["hidden"] = rule["hidden"]
+        if "dps_val" in rule:
+            raw = rule.get("dps_val")
+            if not isinstance(raw, str) or raw in seen_raw:
+                raise ConversionError(f"{platform}_dynamic_unit_mapping")
+            seen_raw.add(raw)
+            out["dps_val"] = raw
+        else:
+            if saw_default:
+                raise ConversionError(f"{platform}_dynamic_unit_mapping")
+            saw_default = True
+        translated.append(out)
+    return translated
+
+
 def _store_mapped_extra(
     platform: str,
     name: str,
@@ -1051,6 +1097,25 @@ def _preserve_simple_multi_dp_extras(
         # its own. Treating it as a raw attribute would silently discard them.
         if dp_id in advanced_source_ids:
             raise ConversionError(f"multi_dp_advanced_extra:{name}")
+
+        if name == "unit" and platform in {"sensor", "number"}:
+            try:
+                rules = _dynamic_unit_runtime_rules(dp, platform)
+            except ConversionError as err:
+                raise ConversionError("multi_dp_mapped_extra:unit") from err
+            unit_dp = base._dp_id(dp)
+            existing_unit = config.get("dynamic_unit_dp")
+            if existing_unit is not None and int(existing_unit) != unit_dp:
+                raise ConversionError(f"{platform}_dynamic_unit_conflict")
+            config["dynamic_unit_dp"] = unit_dp
+            if rules:
+                key = str(unit_dp)
+                existing = advanced_by_dp.get(key)
+                if existing is not None and existing != rules:
+                    raise ConversionError(f"{platform}_dynamic_unit_mapping_conflict")
+                advanced_by_dp[key] = copy.deepcopy(rules)
+            base._merge_membership(required, optional, dp)
+            continue
 
         if _raw_mapping(dp):
             try:
