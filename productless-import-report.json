@@ -13,7 +13,6 @@
     "climate_hvac_mode_missing_off": 2,
     "climate_preset_mapping": 2,
     "cover_action_friendly": 1,
-    "dp_readonly": 1,
     "entity_hidden_unavailable": 3,
     "entity_mode": 1,
     "event_duplicate_dp_id": 2,
@@ -1099,16 +1098,14 @@
     },
     {
       "file": "aquatech_x6_water_heater.yaml",
-      "mapping_id": null,
+      "mapping_id": "fingerprint-aquatech_x6_water_heater-0d01fbc345",
       "name": "Water heater",
       "platforms": [
         "water_heater",
         "binary_sensor"
       ],
-      "reasons": [
-        "dp_readonly"
-      ],
-      "status": "skipped"
+      "reasons": [],
+      "status": "convertible_fingerprint"
     },
     {
       "file": "aquatech_x8fusion_waterheater.yaml",
@@ -26915,9 +26912,9 @@
   ],
   "source": "make-all/tuya-local",
   "status_counts": {
-    "convertible_fingerprint": 163,
+    "convertible_fingerprint": 164,
     "not_productless": 1526,
-    "skipped": 48
+    "skipped": 47
   },
   "target_schema": 3
 }
