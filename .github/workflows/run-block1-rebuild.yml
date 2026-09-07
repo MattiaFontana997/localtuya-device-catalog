@@ -1,0 +1,62 @@
+name: Block 1 current productless rebuild
+
+on:
+  push:
+    paths:
+      - .github/workflows/run-block1-rebuild.yml
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: python -m pip install "PyYAML>=6,<7" "jsonschema>=4.23,<5"
+      - name: Fetch pinned Tuya Local snapshot
+        run: |
+          git clone https://github.com/make-all/tuya-local.git /tmp/tuya-local
+          git -C /tmp/tuya-local checkout 38347807cfc81ae8789974d98532eb928f42f174
+      - name: Rebuild current corpus
+        run: |
+          rm -rf /tmp/productless-generated
+          mkdir -p /tmp/productless-generated
+          python tools/import_tuya_local_fingerprints.py /tmp/tuya-local \
+            --revision 38347807cfc81ae8789974d98532eb928f42f174 \
+            --output-dir /tmp/productless-generated \
+            --json productless-import-report.json
+          python tools/build_safe_fingerprint_catalog.py \
+            --catalog catalog.json \
+            --generated-dir /tmp/productless-generated \
+            --output /tmp/productless-catalog.json \
+            --report productless-safe-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('productless-import-report.json').read_text())
+          productless = [x for x in report['results'] if x.get('status') != 'not_productless']
+          if len(productless) != 211:
+              raise SystemExit(f'expected 211 productless profiles, found {len(productless)}')
+          skipped = [{
+              'file': x['file'],
+              'platforms': x.get('platforms', []),
+              'reasons': x.get('reasons', []),
+          } for x in productless if x.get('status') == 'skipped']
+          Path('productless-skipped-compact.json').write_text(json.dumps(skipped, indent=2, sort_keys=True) + '\n')
+          PY
+      - name: Commit current diagnostics
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add productless-import-report.json productless-safe-report.json productless-skipped-compact.json
+          git diff --cached --check
+          git commit -m "Refresh block 1 productless diagnostics"
+          git push origin HEAD:develop
